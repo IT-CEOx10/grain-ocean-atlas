@@ -12,7 +12,7 @@ let renderer,scene,camera,controls,water,ship,routeLine,progressLine,portGroup,f
 let selected=ROUTES[0],countryMeshes=[],labelItems=[],routeSamples=[],distances=[],routeTotal=0;
 // Ocean motion is the requested exhibit content; only the explicit pause control stops it.
 let paused=false;
-let highQuality=!mobile(),time=0,lastFrame=0,progress=0,journey='idle',cameraTween=null;
+let highQuality=true,time=0,lastFrame=0,progress=0,journey='idle',cameraTween=null;
 let didDrag=false,pointerStart=null,toastTimeout,routeMaterial,activeCountry=null,simVisible=true;
 let sceneReady=false,homeTimer,followShip=false,waterUniforms,shaderFailure=null,oceanReady,seaMode=false;
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
