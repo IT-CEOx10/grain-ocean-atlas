@@ -114,10 +114,13 @@ function clipRing(ring,minX,maxX,minY,maxY){
 }
 
 async function loadCountries(){
- const response=await fetch('./countries.json');if(!response.ok)throw new Error('Не удалось загрузить контуры стран');
- const data=await response.json();
- const borderPoints=[];
- for(const feature of data.features){
+ const responses=await Promise.all([fetch('./countries.json'),fetch('./cartography.json')]);
+ if(responses.some(r=>!r.ok))throw new Error('Не удалось загрузить контуры стран');
+ const [data,view]=await Promise.all(responses.map(r=>r.json()));
+ const overrides=new Map(view.features.map(f=>[f.properties.code,f]));
+ const borderPoints=[],russianBorderPoints=[];
+ for(const original of data.features){
+  const feature=overrides.get(original.properties.code)||original;
   const polys=feature.geometry.type==='Polygon'?[feature.geometry.coordinates]:feature.geometry.coordinates;
   const code=feature.properties.code;
   const base=new THREE.Color('#2f4c36');
@@ -133,11 +136,12 @@ async function loadCountries(){
    const geometry=new THREE.ExtrudeGeometry(shape,{depth:.20,bevelEnabled:false,steps:1,curveSegments:1});
    const mesh=new THREE.Mesh(geometry,[mat,side]);mesh.rotation.x=-Math.PI/2;mesh.position.y=.035;mesh.userData={code,name:feature.properties.label,mat};
    scene.add(mesh);countryMeshes.push(mesh);
-   for(let i=0;i<outer.length;i++){borderPoints.push(point(...outer[i],.248),point(...outer[(i+1)%outer.length],.248));}
+   for(let i=0;i<outer.length;i++){borderPoints.push(point(...outer[i],.248),point(...outer[(i+1)%outer.length],.248));if(code==='RUS')russianBorderPoints.push(point(...outer[i],.258),point(...outer[(i+1)%outer.length],.258));}
   }
  }
  const borderGeo=new THREE.BufferGeometry().setFromPoints(borderPoints);
  const borders=new THREE.LineSegments(borderGeo,new THREE.LineBasicMaterial({color:'#a6a17a',transparent:true,opacity:.33}));scene.add(borders);
+ const outline=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(russianBorderPoints),new THREE.LineBasicMaterial({color:'#edcf8f',transparent:true,opacity:.85}));scene.add(outline);
 }
 
 function label(text,lng,lat,kind='',y=.6){const el=document.createElement('div');el.className='map-label '+kind;el.textContent=text;$('labels').append(el);const item={el,pos:point(lng,lat,y),kind};labelItems.push(item);return item;}

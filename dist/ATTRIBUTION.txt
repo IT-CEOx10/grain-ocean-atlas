@@ -3,3 +3,7 @@ https://www.naturalearthdata.com/about/terms-of-use/
 Source: https://github.com/nvkelso/natural-earth-vector
 Three.js r170 and OrbitControls: MIT license, see vendor/THREE-LICENSE.txt.
 Route geometry and trade numbers are illustrative demonstration data, not navigation or verified statistics.
+
+Cartographic view override: approximate customer reference reflecting the Russian Federation position; not a map of internationally recognized borders or actual control.
+Regional boundary source: geoBoundaries UKR ADM1 14850775, OSM/Wambacher (2017), https://www.geoboundaries.org/ . © OpenStreetMap contributors, https://www.openstreetmap.org/copyright .
+The derived database cartography.json and data/cartographic-regions.geojson are available under ODbL 1.0: https://opendatacommons.org/licenses/odbl/1-0/ . Geometries have been clipped, buffered and merged for this presentation.
