@@ -6,6 +6,11 @@
 @media(prefers-reduced-motion:reduce){.loading-grain{animation:none}*{scroll-behavior:auto}}
 
 .ocean-paused .water-indicator{background:#a5ada4;box-shadow:none}.ocean-paused #water-state{color:#edcf8f}
+/* The destination panel ends above the fixed footer; long content scrolls inside. */
+.destinations{bottom:102px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#799487 transparent}
+@media(min-width:1700px){.destinations{bottom:116px}}
+@media(max-height:790px) and (min-width:1001px){.destinations{bottom:88px}}
+@media(max-width:650px){.destinations{bottom:auto;overflow-y:visible}}
 /* Keep the route caption inside the map, clear of both side panels. */
 .scene-caption{left:320px;right:350px}
 .scene-caption>div{min-width:0;overflow-wrap:anywhere;line-height:1.4}
