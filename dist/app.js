@@ -3,12 +3,13 @@ import {OrbitControls} from './vendor/OrbitControls.js';
 import {landVertex,landFragment} from './shaders.js';
 import {createOcean,swell} from './ocean.js';
 import {createFleet} from './fleet.js';
+import {createLandmarks} from './landmarks.js';
 import {ROUTES,ORIGIN} from './routes.js';
 
 const $=id=>document.getElementById(id);
 const host=$('scene');
 const mobile=()=>innerWidth<=650;
-let renderer,scene,camera,controls,water,ship,routeLine,progressLine,portGroup,fleet;
+let renderer,scene,camera,controls,water,ship,routeLine,progressLine,portGroup,fleet,landmarks;
 let selected=ROUTES[0],countryMeshes=[],labelItems=[],routeSamples=[],distances=[],routeTotal=0;
 // Ocean motion is the requested exhibit content; only the explicit pause control stops it.
 let paused=false;
@@ -46,7 +47,7 @@ function setup(){
  controls.addEventListener('start',()=>{cameraTween=null;followShip=false;awake();});
  scene.add(new THREE.HemisphereLight('#ceddce','#112d35',2.0));
  const sun=new THREE.DirectionalLight('#ffe5af',3.0);sun.position.set(-20,35,-15);scene.add(sun);
- createWater();createShip();fleet=createFleet(scene,ship);addMapLabels();resize();bindEvents();setPaused(paused);$('quality').textContent=highQuality?'Высокое качество':'Экономный режим';
+ createWater();createShip();fleet=createFleet(scene,ship);landmarks=createLandmarks(scene,point);addMapLabels();resize();bindEvents();setPaused(paused);$('quality').textContent=highQuality?'Высокое качество':'Экономный режим';
 }
 
 function createWater(){
@@ -56,7 +57,7 @@ function createWater(){
 }
 
 function setSeaView(enabled){
- seaMode=enabled;cameraTween=null;followShip=enabled;
+ seaMode=enabled;if(landmarks)landmarks.group.visible=!enabled;cameraTween=null;followShip=enabled;
  $('app').classList.toggle('sea-view',enabled);
  $('tilt').textContent=enabled?'Карта':'Море';
  $('tilt').setAttribute('aria-label',enabled?'Вернуться к карте':'Посмотреть море рядом с кораблём');
@@ -189,7 +190,7 @@ function renderCountryList(query=''){
  $('no-results').hidden=count>0;
 }
 function selectRoute(route){
- selected=route;activeCountry=route.id;progress=0;journey='idle';followShip=false;
+ selected=route;landmarks.select(route.id);activeCountry=route.id;progress=0;journey='idle';followShip=false;
  for(const mesh of countryMeshes)mesh.userData.mat.uniforms.uSelected.value=mesh.userData.code===route.id?1:0;
  $('destination').textContent=route.name;$('port-name').textContent=route.port;$('port-short').textContent=route.port;$('volume').textContent=route.volume.toLocaleString('ru-RU');$('country-code').textContent=route.number+' / 05';
  $('journey').innerHTML='Пройти маршрут <span>→</span>';$('reset').hidden=true;$('progress-wrap').hidden=true;shipLabel.el.style.display='none';
@@ -216,6 +217,8 @@ function toggleJourney(){
 function pick(event){
  if(seaMode)return;
  pointer.x=(event.clientX/innerWidth)*2-1;pointer.y=-(event.clientY/innerHeight)*2+1;raycaster.setFromCamera(pointer,camera);
+ const modelHits=raycaster.intersectObjects(landmarks.group.children,true);
+ if(modelHits.length){const route=ROUTES.find(r=>r.id===modelHits[0].object.userData.code);if(route){selectRoute(route);toast(landmarks.items.find(item=>item.code===route.id).name);return;}}
  const hits=raycaster.intersectObjects(countryMeshes,false);
  if(hits.length){const code=hits[0].object.userData.code;const route=ROUTES.find(r=>r.id===code);if(route)selectRoute(route);else toast(`${hits[0].object.userData.name}: маршрут пока не включён в демоверсию`);return;}
 
