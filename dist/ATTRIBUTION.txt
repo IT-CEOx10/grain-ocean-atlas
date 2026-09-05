@@ -1,0 +1,5 @@
+Map data: Natural Earth 1:50m Admin 0 Countries, public domain.
+https://www.naturalearthdata.com/about/terms-of-use/
+Source: https://github.com/nvkelso/natural-earth-vector
+Three.js r170 and OrbitControls: MIT license, see vendor/THREE-LICENSE.txt.
+Route geometry and trade numbers are illustrative demonstration data, not navigation or verified statistics.
