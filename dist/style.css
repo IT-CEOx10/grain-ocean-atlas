@@ -6,6 +6,15 @@
 @media(prefers-reduced-motion:reduce){.loading-grain{animation:none}*{scroll-behavior:auto}}
 
 .ocean-paused .water-indicator{background:#a5ada4;box-shadow:none}.ocean-paused #water-state{color:#edcf8f}
+/* Keep the route caption inside the map, clear of both side panels. */
+.scene-caption{left:320px;right:350px}
+.scene-caption>div{min-width:0;overflow-wrap:anywhere;line-height:1.4}
+.caption-line{flex:0 0 28px}
+@media(min-width:1700px){.scene-caption{left:366px;right:414px}}
+@media(max-height:790px) and (min-width:1001px){.scene-caption{left:295px;right:326px}}
+@media(max-height:790px) and (min-width:1700px){.scene-caption{left:303px;right:334px}}
+@media(min-width:651px) and (max-width:1000px){.scene-caption{left:247px;right:279px}}
+@media(max-width:650px){.scene-caption{left:18px;right:90px}}
 .view-controls button:last-child{width:76px}
 .sea-view .details .route-summary,.sea-view .details .cargo-row{display:none}
 .sea-view .details{top:auto;bottom:185px}
