@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Маршруты экспорта</title>
+<link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+
+<div id="stage">
+  <div id="card">
+
+    <canvas id="globe"></canvas>
+
+    <!-- ========== состояние A: список стран ========== -->
+    <section id="panel-left" class="panel">
+      <h1 class="screen-title">Маршруты экспорта</h1>
+
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true">
+          <circle cx="9" cy="9" r="6"></circle><line x1="13.5" y1="13.5" x2="18" y2="18"></line>
+        </svg>
+        <input id="search" type="search" placeholder="Поиск по странам" autocomplete="off">
+      </div>
+
+      <div id="country-list" class="country-list"></div>
+      <div class="list-hint">Выберите страну</div>
+    </section>
+
+    <!-- ========== состояние A: сводка ========== -->
+    <section id="panel-summary" class="panel box">
+      <button id="summary-head" class="box-head" type="button">
+        <span id="summary-title">Экспорт зерна</span>
+        <svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><polyline points="4,6 8,10 12,6"></polyline></svg>
+      </button>
+
+      <div id="summary-body" class="box-body">
+        <div class="metric">
+          <span id="sum-total" class="metric-value">—</span>
+          <span class="metric-unit">тыс. т</span>
+        </div>
+        <div class="metric-caption">поставлено на экспорт</div>
+
+        <div class="stat-row">
+          <div class="stat"><b id="sum-countries">—</b><span>стран-получателей</span></div>
+          <div class="stat"><b id="sum-groups">—</b><span>групп продукции</span></div>
+        </div>
+
+        <div class="section-title">Топ-3 направлений</div>
+        <div id="sum-top" class="top-list"></div>
+      </div>
+    </section>
+
+    <!-- ========== состояние B: видео ========== -->
+    <section id="panel-video" class="hidden">
+      <video id="ship-video" muted loop playsinline preload="auto"></video>
+      <div id="video-fallback" class="video-fallback">
+        <canvas id="video-canvas"></canvas>
+        <div class="video-overlay">
+          <div class="play-badge">
+            <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="26,20 46,32 26,44"></polygon></svg>
+          </div>
+          <div class="play-caption">Видео: путь корабля</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== состояние B: карточка страны ========== -->
+    <section id="panel-country" class="panel box hidden">
+      <div class="box-head static"><span id="country-name">—</span></div>
+      <div class="box-body">
+        <div class="metric">
+          <span id="country-total" class="metric-value">—</span>
+          <span class="metric-unit">тыс. т</span>
+        </div>
+        <div class="metric-caption"><span id="country-year">—</span> год</div>
+
+        <div class="rank-row">
+          <b id="country-rank">—</b>
+          <span>среди стран-получателей</span>
+        </div>
+
+        <div class="section-title">Что поставлено</div>
+        <div id="country-products" class="product-grid"></div>
+        <div id="country-more" class="product-more"></div>
+      </div>
+    </section>
+
+    <!-- ========== таймлайн (состояние A) ========== -->
+    <div id="timeline" class="timeline">
+      <button id="reset-view" class="round-btn" type="button" title="Сбросить вид">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5"></circle>
+          <ellipse cx="12" cy="12" rx="3.6" ry="8.5"></ellipse>
+          <line x1="3.5" y1="12" x2="20.5" y2="12"></line>
+        </svg>
+      </button>
+      <div class="timeline-track"><div id="years" class="years"></div></div>
+    </div>
+
+    <!-- ========== низ (состояние B) ========== -->
+    <div id="bottom-b" class="bottom-b hidden">
+      <button id="reset-view-b" class="round-btn" type="button" title="Сбросить вид">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5"></circle>
+          <ellipse cx="12" cy="12" rx="3.6" ry="8.5"></ellipse>
+          <line x1="3.5" y1="12" x2="20.5" y2="12"></line>
+        </svg>
+      </button>
+      <button id="back-map" class="ghost-btn" type="button">&larr;&nbsp; К карте</button>
+    </div>
+
+    <div id="loading" class="loading">Загрузка данных…</div>
+  </div>
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="src/util.js"></script>
+<script src="src/globe.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>

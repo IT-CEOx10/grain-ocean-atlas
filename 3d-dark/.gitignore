@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+
+# крупные медиа кладём вручную, в репозиторий не тащим
+assets/video/*.mp4
+dist/
