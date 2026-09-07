@@ -29,7 +29,12 @@
     var out = [];
     DATA.countries.forEach(function (c) {
       var v = c.totals[i];
-      if (v > 0) out.push({ name: c.name, value: v, lat: c.lat, lon: c.lon });
+      if (v > 0) {
+        out.push({
+          name: c.name, value: v, lat: c.lat, lon: c.lon,
+          iso: c.iso, port: c.port || c.name
+        });
+      }
     });
     out.sort(function (a, b) { return b.value - a.value; });
     return out;
@@ -52,7 +57,7 @@
     yearIdx = DATA.years.indexOf(y);
     listCache = countriesForYear(y);
 
-    UI.renderYears(DATA.years, y);
+    UI.renderYears(DATA.years, y, DATA.summary);
     UI.setList(listCache);
     UI.renderSummary(y, DATA.summary[String(y)]);
     Globe.setRoutes(listCache, animate !== false);
@@ -68,12 +73,16 @@
     selected = name;
     state = 'B';
     UI.setState('B');
+    var c = listCache[i];
     UI.renderCountry({
       name: name,
-      value: listCache[i].value,
+      value: c.value,
       year: year,
       rank: i + 1,
-      products: productsFor(name, year)
+      products: productsFor(name, year),
+      origin: CFG.origin.name,
+      port: c.port,
+      distanceKm: U.greatCircleKm(CFG.origin.lat, CFG.origin.lon, c.lat, c.lon)
     });
     Globe.setSelected(name);
     Globe.focus(name);
@@ -171,10 +180,12 @@
     var root = document.documentElement.style;
     if (c.pageBg) root.setProperty('--page-bg', c.pageBg);
     if (c.cardBg) root.setProperty('--card-bg', c.cardBg);
+    if (c.panelBg) root.setProperty('--panel', c.panelBg);
     if (c.accent) root.setProperty('--accent', c.accent);
     if (c.text) root.setProperty('--text', c.text);
     if (c.textMuted) root.setProperty('--muted', c.textMuted);
     if (c.route) root.setProperty('--route', c.route);
+    if (c.routeActive) root.setProperty('--gold2', c.routeActive);
   }
 
   if (document.readyState === 'loading') {

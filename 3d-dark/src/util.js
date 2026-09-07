@@ -53,6 +53,31 @@
     });
   }
 
+  /**
+   * Путь к файлу из assets/. В собранном dist файлы вшиты как data:URI
+   * и лежат в window.INLINE_ASSETS — тогда возвращаем их.
+   */
+  function asset(path) {
+    var map = global.INLINE_ASSETS;
+    return (map && map[path]) || path;
+  }
+
+  /** Расстояние по дуге большого круга, км. */
+  function greatCircleKm(lat1, lon1, lat2, lon2) {
+    var D = Math.PI / 180;
+    var a = Math.sin(lat1 * D) * Math.sin(lat2 * D) +
+            Math.cos(lat1 * D) * Math.cos(lat2 * D) * Math.cos((lon2 - lon1) * D);
+    return 6371 * Math.acos(Math.max(-1, Math.min(1, a)));
+  }
+
+  /** Правильная форма слова по числу: 1 день, 2 дня, 5 дней. */
+  function plural(n, one, few, many) {
+    var m10 = n % 10, m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  }
+
   function easeInOutCubic(t) {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
@@ -73,6 +98,9 @@
     fmtInt: fmtInt,
     capitalize: capitalize,
     loadJSON: loadJSON,
+    asset: asset,
+    greatCircleKm: greatCircleKm,
+    plural: plural,
     easeInOutCubic: easeInOutCubic,
     clamp: clamp,
     el: el

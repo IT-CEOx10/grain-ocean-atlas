@@ -215,7 +215,7 @@ def main():
             if items:
                 per_year[str(y)] = items
             totals.append(round(exact, ROUND))
-        countries.append({
+        rec = {
             "name": name,
             "en": info.get("en") or name,
             "iso": info.get("iso"),
@@ -223,7 +223,12 @@ def main():
             "lon": info["lon"],
             "totals": totals,
             "years": per_year,
-        })
+        }
+        # необязательное поле: порт назначения для экрана «Путь».
+        # Если его нет в справочнике — приложение подставит название страны.
+        if info.get("port"):
+            rec["port"] = info["port"]
+        countries.append(rec)
 
     # --- сводка по годам -----------------------------------------------------
     summary = {}

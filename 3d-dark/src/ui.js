@@ -1,6 +1,6 @@
 /* ===================================================================
    Отрисовка панелей: список стран, сводка за год, карточка страны,
-   таймлайн и заглушка вместо видео.
+   таймлайн, три факта о пути и заглушка вместо видео.
    =================================================================== */
 (function (global) {
   'use strict';
@@ -16,6 +16,7 @@
       search: $('search'),
       list: $('country-list'),
       years: $('years'),
+      leftEyebrow: $('left-eyebrow'),
       summary: $('panel-summary'),
       summaryHead: $('summary-head'),
       summaryTitle: $('summary-title'),
@@ -30,13 +31,22 @@
       countryRank: $('country-rank'),
       countryProducts: $('country-products'),
       countryMore: $('country-more'),
+      facts: $('facts'),
+      factDist: $('fact-dist'),
+      factDays: $('fact-days'),
+      factPort: $('fact-port'),
       video: $('panel-video'),
       videoEl: $('ship-video'),
       videoCanvas: $('video-canvas'),
+      videoRoute: $('video-route'),
+      videoTime: $('video-time'),
       timeline: $('timeline'),
       bottomB: $('bottom-b'),
+      stars: $('stars'),
       loading: $('loading')
     };
+
+    drawStars();
 
     els.search.addEventListener('input', function () {
       listState.filter = els.search.value.trim().toLowerCase();
@@ -54,13 +64,50 @@
     $('back-map').addEventListener('click', function () { handlers.onBackToMap(); });
   }
 
+  /* --------------------------- звёздное зерно --------------------------- */
+
+  function drawStars() {
+    var c = els.stars;
+    if (!c) return;
+    c.width = 1920; c.height = 1080;
+    var g = c.getContext('2d');
+    for (var i = 0; i < 620; i++) {
+      var x = Math.random() * 1920, y = Math.random() * 1080;
+      var r = Math.random() * 1.1 + 0.2, a = Math.random() * 0.38 + 0.04;
+      g.fillStyle = 'rgba(190,208,240,' + a.toFixed(3) + ')';
+      g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
+    }
+    for (var j = 0; j < 22; j++) {
+      var x2 = Math.random() * 1920, y2 = Math.random() * 1080;
+      var gr = g.createRadialGradient(x2, y2, 0, x2, y2, 26);
+      gr.addColorStop(0, 'rgba(180,205,255,.16)');
+      gr.addColorStop(1, 'rgba(180,205,255,0)');
+      g.fillStyle = gr;
+      g.fillRect(x2 - 26, y2 - 26, 52, 52);
+    }
+  }
+
   /* ------------------------------ таймлайн ------------------------------ */
 
-  function renderYears(years, active) {
+  /** summary: {год: {total}} — по нему рисуются мини-столбики объёма. */
+  function renderYears(years, active, summary) {
+    var max = 1;
+    years.forEach(function (y) {
+      var s = summary && summary[String(y)];
+      if (s && s.total > max) max = s.total;
+    });
+
     els.years.innerHTML = '';
     years.forEach(function (y) {
-      var b = U.el('button', 'year-pill' + (y === active ? ' is-active' : ''), String(y));
+      var s = summary && summary[String(y)];
+      var h = 8 + 34 * ((s ? s.total : 0) / max);
+      var b = U.el('button', 'year-pill' + (y === active ? ' is-active' : ''));
       b.type = 'button';
+      var bar = U.el('span', 'mb');
+      bar.style.height = h.toFixed(1) + 'px';
+      b.appendChild(bar);
+      b.appendChild(U.el('span', 'dot'));
+      b.appendChild(U.el('span', 'yr', String(y)));
       b.addEventListener('click', function () { handlers.onYear(y); });
       els.years.appendChild(b);
     });
@@ -90,8 +137,7 @@
 
     els.list.innerHTML = '';
     if (!items.length) {
-      var empty = U.el('div', 'list-hint', 'Ничего не найдено');
-      els.list.appendChild(empty);
+      els.list.appendChild(U.el('div', 'list-hint', 'Ничего не найдено'));
       return;
     }
 
@@ -102,7 +148,7 @@
       }
       var row = U.el('div', 'country-row');
       row.appendChild(U.el('span', 'nm', it.name));
-      row.appendChild(U.el('span', 'vl', U.fmtVolume(it.value) + ' тыс. т'));
+      row.appendChild(U.el('span', 'vl', U.fmtVolume(it.value)));
       row.addEventListener('click', function () {
         listState.expanded = it.name;
         renderList();
@@ -113,11 +159,13 @@
   }
 
   function buildExpanded(it) {
+    var rank = listState.items.findIndex(function (i) { return i.name === it.name; }) + 1;
     var card = U.el('div', 'country-card');
     var head = U.el('div', 'cc-head');
     var left = U.el('div');
     left.appendChild(U.el('div', 'cc-name', it.name));
-    left.appendChild(U.el('div', 'cc-value', U.fmtVolume(it.value) + ' тыс. т'));
+    left.appendChild(U.el('div', 'cc-value',
+      U.fmtVolume(it.value) + ' тыс. т' + (rank ? ' · ' + rank + ' место' : '')));
     head.appendChild(left);
 
     var close = U.el('button', 'cc-close', '✕');
@@ -131,8 +179,11 @@
     head.appendChild(close);
     card.appendChild(head);
 
-    var go = U.el('button', 'btn-primary', 'Начать путь');
+    var go = U.el('button', 'btn-primary');
     go.type = 'button';
+    go.appendChild(U.el('span', null, 'Начать путь'));
+    go.insertAdjacentHTML('beforeend',
+      '<svg viewBox="0 0 16 12" aria-hidden="true"><path d="M1 6h13M9.5 1.5L14 6l-4.5 4.5"/></svg>');
     go.addEventListener('click', function (e) {
       e.stopPropagation();
       handlers.onStart(it.name);
@@ -162,15 +213,24 @@
 
   function renderSummary(year, s) {
     els.summaryTitle.textContent = 'Экспорт зерна, ' + year;
+    els.leftEyebrow.textContent = 'Российское зерно · ' + year;
     els.sumTotal.textContent = U.fmtVolume(s.total);
     els.sumCountries.textContent = U.fmtInt(s.countries);
     els.sumGroups.textContent = U.fmtInt(s.groups);
 
+    var max = s.top.length ? s.top[0].value : 1;
     els.sumTop.innerHTML = '';
     s.top.forEach(function (t) {
       var row = U.el('div', 'top-row');
-      row.appendChild(U.el('span', 'nm', t.name));
-      row.appendChild(U.el('span', 'vl', U.fmtVolume(t.value) + ' тыс. т'));
+      var ln = U.el('div', 'ln');
+      ln.appendChild(U.el('b', 'nm', t.name));
+      ln.appendChild(U.el('span', 'vl', U.fmtVolume(t.value)));
+      row.appendChild(ln);
+      var bar = U.el('div', 'bar');
+      var fill = U.el('i');
+      fill.style.width = (100 * t.value / max).toFixed(1) + '%';
+      bar.appendChild(fill);
+      row.appendChild(bar);
       row.addEventListener('click', function () { handlers.onStart(t.name); });
       els.sumTop.appendChild(row);
     });
@@ -191,18 +251,21 @@
     shown.forEach(function (p) {
       var item = U.el('div', 'product-item');
       item.appendChild(U.el('span', 'pn', U.capitalize(p.name)));
-      item.appendChild(U.el('span', 'pv', U.fmtVolume(p.value) + ' тыс. т'));
+      item.appendChild(U.el('span', 'pv', U.fmtVolume(p.value)));
       els.countryProducts.appendChild(item);
     });
     var rest = info.products.length - shown.length;
-    els.countryMore.textContent = rest > 0 ? ('и ещё ' + rest + ' ' + plural(rest, 'позиция', 'позиции', 'позиций')) : '';
-  }
+    els.countryMore.textContent = rest > 0
+      ? ('и ещё ' + rest + ' ' + U.plural(rest, 'позиция', 'позиции', 'позиций'))
+      : '';
 
-  function plural(n, one, few, many) {
-    var m10 = n % 10, m100 = n % 100;
-    if (m10 === 1 && m100 !== 11) return one;
-    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
-    return many;
+    // три факта о пути: расстояние по дуге, время в пути, порт назначения
+    var km = Math.round(info.distanceKm / 50) * 50;
+    var days = Math.max(1, Math.round(info.distanceKm / 1070));   // ~24 узла
+    els.factDist.textContent = '~' + U.fmtInt(km) + ' км';
+    els.factDays.textContent = '~' + days + ' ' + U.plural(days, 'день', 'дня', 'дней');
+    els.factPort.textContent = info.port;
+    els.videoRoute.textContent = info.origin + ' → ' + info.port;
   }
 
   /* ------------------------------ видео ------------------------------ */
@@ -214,6 +277,11 @@
     var v = els.videoEl;
     v.addEventListener('error', function () { els.video.classList.remove('has-video'); });
     v.addEventListener('canplay', function () { els.video.classList.add('has-video'); });
+    v.addEventListener('loadedmetadata', function () {
+      if (!isFinite(v.duration)) return;
+      var m = Math.floor(v.duration / 60), s = Math.round(v.duration % 60);
+      els.videoTime.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    });
     v.src = src;
     v.load();
   }
@@ -232,78 +300,85 @@
     }
   }
 
-  /** Процедурная заглушка: море, волны и силуэт судна. */
+  /** Процедурная заглушка: ночное море, лунная дорожка и силуэт судна. */
   function startWaves() {
     var cv = els.videoCanvas;
     if (!cv) return;
-    var w = cv.width = 616, h = cv.height = 1028;
+    var W = cv.width = 1200, H = cv.height = 784;
     var ctx = cv.getContext('2d');
-    var t0 = performance.now();
 
-    var HORIZON = 0.60;
+    function ship(x, y, s) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(s, s);
+      ctx.fillStyle = '#0A1019';
+      ctx.strokeStyle = 'rgba(150,180,230,.14)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(-150, 0); ctx.lineTo(150, 0); ctx.lineTo(126, 34); ctx.lineTo(-124, 34);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillRect(-150, -16, 210, 16); ctx.strokeRect(-150, -16, 210, 16);
+      ctx.fillRect(56, -62, 62, 62); ctx.strokeRect(56, -62, 62, 62);
+      ctx.fillStyle = '#1A2333';
+      for (var i = 0; i < 6; i++) ctx.fillRect(-140 + i * 34, -13, 24, 10);
+      ctx.fillStyle = 'rgba(255,206,140,.85)';
+      ctx.fillRect(66, -52, 9, 7); ctx.fillRect(84, -52, 9, 7); ctx.fillRect(102, -52, 9, 7);
+      ctx.fillRect(66, -36, 9, 7); ctx.fillRect(84, -36, 9, 7);
+      ctx.fillStyle = 'rgba(255,220,170,.9)';
+      ctx.fillRect(112, -74, 4, 14);
+      ctx.restore();
+    }
 
     function frame(now) {
       waveRAF = requestAnimationFrame(frame);
-      var t = (now - t0) / 1000;
+      var t = now / 1000;
 
-      // небо
-      var sky = ctx.createLinearGradient(0, 0, 0, h * HORIZON);
-      sky.addColorStop(0, '#cfe0f4');
-      sky.addColorStop(0.75, '#e9f0f8');
-      sky.addColorStop(1, '#f6f9fc');
+      var sky = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+      sky.addColorStop(0, '#050912');
+      sky.addColorStop(0.65, '#0B1526');
+      sky.addColorStop(1, '#16233A');
       ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, h * HORIZON);
+      ctx.fillRect(0, 0, W, H * 0.56);
 
-      // солнце
-      var glow = ctx.createRadialGradient(w * 0.68, h * 0.30, 6, w * 0.68, h * 0.30, 190);
-      glow.addColorStop(0, 'rgba(255,246,222,.95)');
-      glow.addColorStop(1, 'rgba(255,246,222,0)');
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w, h * HORIZON);
+      var moon = ctx.createRadialGradient(W * 0.72, H * 0.18, 0, W * 0.72, H * 0.18, 180);
+      moon.addColorStop(0, 'rgba(255,236,200,.55)');
+      moon.addColorStop(1, 'rgba(255,236,200,0)');
+      ctx.fillStyle = moon;
+      ctx.fillRect(0, 0, W, H * 0.56);
+      ctx.fillStyle = 'rgba(255,244,222,.95)';
+      ctx.beginPath(); ctx.arc(W * 0.72, H * 0.18, 17, 0, 6.283); ctx.fill();
 
-      // море
-      var sea = ctx.createLinearGradient(0, h * HORIZON, 0, h);
-      sea.addColorStop(0, '#b7d0e9');
-      sea.addColorStop(1, '#7ea3ca');
+      var sea = ctx.createLinearGradient(0, H * 0.5, 0, H);
+      sea.addColorStop(0, '#0B1526');
+      sea.addColorStop(1, '#03060C');
       ctx.fillStyle = sea;
-      ctx.fillRect(0, h * HORIZON, w, h * (1 - HORIZON));
+      ctx.fillRect(0, H * 0.55, W, H * 0.45);
 
-      // судно на линии горизонта
-      var bob = Math.sin(t * 0.85) * 8;
-      ctx.save();
-      ctx.translate(w * 0.46, h * HORIZON + 46 + bob);
-      ctx.rotate(Math.sin(t * 0.55) * 0.02);
-      ctx.fillStyle = '#3c4a63';
-      ctx.beginPath();
-      ctx.moveTo(-172, -6); ctx.lineTo(178, -6); ctx.lineTo(142, 44); ctx.lineTo(-136, 44);
-      ctx.closePath(); ctx.fill();
-      ctx.fillRect(52, -58, 68, 52);          // надстройка
-      ctx.fillRect(80, -92, 14, 34);          // труба
-      ctx.fillStyle = '#66789a';
-      for (var b = 0; b < 7; b++) ctx.fillRect(-162 + b * 30, -40, 24, 34);
-      ctx.fillStyle = '#93a5c1';
-      for (var b2 = 0; b2 < 5; b2++) ctx.fillRect(-152 + b2 * 30, -66, 24, 26);
-      ctx.restore();
-
-      // волны поверх корпуса: каждая следующая темнее и ближе к зрителю
-      var layers = [
-        { a: 10, k: 0.013, s: 0.8, y: HORIZON + 0.06, c: 'rgba(255,255,255,.28)' },
-        { a: 16, k: 0.009, s: -0.55, y: HORIZON + 0.16, c: 'rgba(124,163,203,.45)' },
-        { a: 26, k: 0.006, s: 0.4, y: HORIZON + 0.29, c: 'rgba(88,127,172,.55)' }
-      ];
-      layers.forEach(function (L) {
+      for (var i = 0; i < 38; i++) {
+        var yy = H * 0.575 + i * 8.8;
+        var amp = 1 + i * 0.7, sp = 0.5 + i * 0.05;
+        ctx.strokeStyle = 'rgba(120,160,220,' + (0.012 + i * 0.0021).toFixed(3) + ')';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(0, h);
-        for (var x = 0; x <= w; x += 8) {
-          var y = h * L.y + Math.sin(x * L.k + t * L.s * 2) * L.a;
-          ctx.lineTo(x, y);
+        for (var x = 0; x <= W; x += 8) {
+          var yv = yy + Math.sin(x * 0.012 + t * sp + i) * amp;
+          if (x === 0) ctx.moveTo(x, yv); else ctx.lineTo(x, yv);
         }
-        ctx.lineTo(w, h);
-        ctx.closePath();
-        ctx.fillStyle = L.c;
-        ctx.fill();
-      });
+        ctx.stroke();
+      }
+
+      // лунная дорожка
+      for (var j = 0; j < 84; j++) {
+        var yy2 = H * 0.575 + j * 3.9;
+        var w = (16 + j * 3.4) * (0.55 + 0.45 * Math.abs(Math.sin(t * 0.7 + j * 0.9)));
+        var xx = W * 0.72 + Math.sin(t * 0.8 + j * 0.5) * (3 + j * 0.35);
+        ctx.fillStyle = 'rgba(255,228,180,' + (0.10 * (1 - j / 84)).toFixed(3) + ')';
+        ctx.fillRect(xx - w / 2, yy2, w, 1.8);
+      }
+
+      ship(W * 0.42, H * 0.72 + Math.sin(t * 0.9) * 5, 1.9);
     }
+
     stopWaves();
     waveRAF = requestAnimationFrame(frame);
   }
@@ -316,11 +391,13 @@
   /* ------------------------------ состояния ------------------------------ */
 
   function setState(state) {
-    document.body.className = state === 'B' ? 'state-b' : '';
-    els.countryPanel.classList.toggle('hidden', state !== 'B');
-    els.video.classList.toggle('hidden', state !== 'B');
-    els.bottomB.classList.toggle('hidden', state !== 'B');
-    playVideo(state === 'B');
+    var b = state === 'B';
+    document.body.className = b ? 'state-b' : '';
+    els.countryPanel.classList.toggle('hidden', !b);
+    els.video.classList.toggle('hidden', !b);
+    els.facts.classList.toggle('hidden', !b);
+    els.bottomB.classList.toggle('hidden', !b);
+    playVideo(b);
   }
 
   function hideLoading() {

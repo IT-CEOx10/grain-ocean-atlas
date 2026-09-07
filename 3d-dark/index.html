@@ -11,21 +11,25 @@
 <div id="stage">
   <div id="card">
 
+    <canvas id="stars"></canvas>
     <canvas id="globe"></canvas>
+    <div id="vignette"></div>
+    <div id="glabels"></div>
 
     <!-- ========== состояние A: список стран ========== -->
     <section id="panel-left" class="panel">
       <h1 class="screen-title">Маршруты экспорта</h1>
+      <div id="left-eyebrow" class="eyebrow">Российское зерно</div>
 
       <div class="search">
-        <svg class="search-icon" viewBox="0 0 20 20" aria-hidden="true">
-          <circle cx="9" cy="9" r="6"></circle><line x1="13.5" y1="13.5" x2="18" y2="18"></line>
+        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
         </svg>
         <input id="search" type="search" placeholder="Поиск по странам" autocomplete="off">
       </div>
 
       <div id="country-list" class="country-list"></div>
-      <div class="list-hint">Выберите страну</div>
+      <div class="list-hint">Выберите страну или маршрут на глобусе</div>
     </section>
 
     <!-- ========== состояние A: сводка ========== -->
@@ -53,64 +57,79 @@
     </section>
 
     <!-- ========== состояние B: видео ========== -->
-    <section id="panel-video" class="hidden">
-      <video id="ship-video" muted loop playsinline preload="auto"></video>
-      <div id="video-fallback" class="video-fallback">
-        <canvas id="video-canvas"></canvas>
-        <div class="video-overlay">
-          <div class="play-badge">
-            <svg viewBox="0 0 64 64" aria-hidden="true"><polygon points="26,20 46,32 26,44"></polygon></svg>
-          </div>
-          <div class="play-caption">Видео: путь корабля</div>
+    <section id="panel-video" class="panel hidden">
+      <div class="video-box">
+        <video id="ship-video" muted loop playsinline preload="auto"></video>
+        <div id="video-fallback" class="video-fallback">
+          <canvas id="video-canvas"></canvas>
+        </div>
+        <div class="play-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="4,2 21,12 4,22"></polygon></svg>
         </div>
       </div>
+      <div class="video-cap">
+        <div>
+          <div id="video-route" class="eyebrow">Новороссийск</div>
+          <div class="t">Видео: путь корабля</div>
+        </div>
+        <div id="video-time" class="eyebrow" style="letter-spacing:.06em"></div>
+      </div>
     </section>
+
+    <!-- ========== состояние B: три факта ========== -->
+    <div id="facts" class="hidden">
+      <div class="fact"><div class="l">Расстояние</div><div id="fact-dist" class="v">—</div></div>
+      <div class="fact"><div class="l">В пути</div><div id="fact-days" class="v">—</div></div>
+      <div class="fact"><div class="l">Порт назначения</div><div id="fact-port" class="v">—</div></div>
+    </div>
 
     <!-- ========== состояние B: карточка страны ========== -->
     <section id="panel-country" class="panel box hidden">
-      <div class="box-head static"><span id="country-name">—</span></div>
-      <div class="box-body">
-        <div class="metric">
-          <span id="country-total" class="metric-value">—</span>
-          <span class="metric-unit">тыс. т</span>
-        </div>
-        <div class="metric-caption"><span id="country-year">—</span> год</div>
+      <div class="eyebrow">Направление</div>
+      <span id="country-name">—</span>
 
-        <div class="rank-row">
-          <b id="country-rank">—</b>
-          <span>среди стран-получателей</span>
-        </div>
-
-        <div class="section-title">Что поставлено</div>
-        <div id="country-products" class="product-grid"></div>
-        <div id="country-more" class="product-more"></div>
+      <div class="metric">
+        <span id="country-total" class="metric-value">—</span>
+        <span class="metric-unit">тыс. т</span>
       </div>
+
+      <div class="rank-row">
+        <b id="country-rank">—</b>
+        <span>среди стран-получателей российского зерна</span>
+      </div>
+
+      <div class="divider"></div>
+      <div class="eyebrow">Продукция, <span id="country-year">—</span></div>
+      <div id="country-products" class="product-grid"></div>
+      <div id="country-more" class="product-more"></div>
+      <div class="eyebrow card-foot">Данные ФГИС «Зерно» · тыс. тонн</div>
     </section>
 
     <!-- ========== таймлайн (состояние A) ========== -->
-    <div id="timeline" class="timeline">
-      <button id="reset-view" class="round-btn" type="button" title="Сбросить вид">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="8.5"></circle>
-          <ellipse cx="12" cy="12" rx="3.6" ry="8.5"></ellipse>
-          <line x1="3.5" y1="12" x2="20.5" y2="12"></line>
-        </svg>
-      </button>
-      <div class="timeline-track"><div id="years" class="years"></div></div>
-    </div>
+    <button id="reset-view" class="round-btn" type="button" title="Сбросить вид">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+        <line x1="3.4" y1="9" x2="20.6" y2="9"></line>
+        <line x1="3.4" y1="15" x2="20.6" y2="15"></line>
+      </svg>
+    </button>
+    <div id="timeline" class="panel"><div id="years" class="years"></div></div>
 
     <!-- ========== низ (состояние B) ========== -->
-    <div id="bottom-b" class="bottom-b hidden">
+    <div id="bottom-b" class="hidden">
       <button id="reset-view-b" class="round-btn" type="button" title="Сбросить вид">
         <svg viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="8.5"></circle>
-          <ellipse cx="12" cy="12" rx="3.6" ry="8.5"></ellipse>
-          <line x1="3.5" y1="12" x2="20.5" y2="12"></line>
+          <circle cx="12" cy="12" r="9"></circle>
+          <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+          <line x1="3.4" y1="9" x2="20.6" y2="9"></line>
+          <line x1="3.4" y1="15" x2="20.6" y2="15"></line>
         </svg>
       </button>
       <button id="back-map" class="ghost-btn" type="button">&larr;&nbsp; К карте</button>
     </div>
 
+    <div id="brand">ЦОК АПК · Государственный мониторинг зерна</div>
     <div id="loading" class="loading">Загрузка данных…</div>
   </div>
 </div>

@@ -1,6 +1,7 @@
 /* ===================================================================
-   Глобус: земля с текстурой-картой, дуги маршрутов, маркеры,
-   управление касанием (одним пальцем — вращение, двумя — зум).
+   Глобус: ночная Земля (текстура огней городов + затемнённая суша),
+   золотые дуги маршрутов с бегущими частицами, подписи стран поверх
+   холста, управление касанием (одним пальцем — вращение, двумя — зум).
    Наружу отдаёт объект window.Globe.
    =================================================================== */
 (function (global) {
@@ -9,18 +10,27 @@
   var DEG = Math.PI / 180;
   var R = 1;
 
+  var TEX_LIGHTS = 'assets/textures/earth_lights_2048.png';
+  var TEX_ATMOS = 'assets/textures/earth_atmos_1024.jpg';
+
   var cfg, colors, gcfg;
   var renderer, scene, camera, canvas;
   var pivotTilt, pivotSpin, world;      // tilt(rot.x) > spin(rot.y) > world
-  var earth, atmo;
-  var arcGroup, hitGroup, shipDot;
-  var markerPoints = null, originPoints = null;
+  var earth, borders, highlight, atmo, halo;
+  var arcGroup, hitGroup, shipDot, originDot;
+  var endPointsBig = null, endPointsSmall = null, particles = null;
+
+  var topoFeatures = null;              // контуры стран для подсветки
+  var highlightCtx = null, highlightTex = null, highlightIso = null;
 
   var routes = [];                      // [{name, curve, mesh, hit, value, norm}]
   var routeByName = {};
   var selected = null;
 
-  var view = { phi: 0.28, theta: -1.9, zoom: 4.6, fx: 0.57, fy: 0.48 };
+  // домашний ракурс: Россия, Чёрное море, Ближний Восток, Африка, Индия
+  var HOME = { phi: 0.33, theta: -2.36, fx: 0.52, fy: 0.52 };
+
+  var view = { phi: HOME.phi, theta: HOME.theta, zoom: 4.3, fx: HOME.fx, fy: HOME.fy };
   var target = null;                    // анимация камеры
   var autoRotate = true;
   var lastFrame = 0;
@@ -62,88 +72,143 @@
     };
   }
 
-  /* --------------------------- текстура карты --------------------------- */
+  /* --------------------------- контуры стран --------------------------- */
 
-  function buildEarthTexture(topo) {
+  /**
+   * Рисует контур страны на холсте текстуры (равнопрямоугольная проекция).
+   * Кольца, пересекающие 180-й меридиан (Россия, Фиджи), разворачиваются
+   * в непрерывную последовательность долгот и рисуются трижды — со сдвигом
+   * на -W, 0 и +W; лишнее обрезает холст.
+   */
+  function tracePath(ctx, feature, W, H) {
+    var g = feature.geometry;
+    if (!g) return;
+    var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+    var SHIFTS = [-W, 0, W];
+    ctx.beginPath();
+    for (var s = 0; s < SHIFTS.length; s++) {
+      for (var p = 0; p < polys.length; p++) {
+        var poly = polys[p];
+        for (var r = 0; r < poly.length; r++) {
+          var ring = poly[r];
+          var lon = ring[0][0];
+          for (var i = 0; i < ring.length; i++) {
+            if (i > 0) {
+              var d = ring[i][0] - ring[i - 1][0];
+              if (d > 180) d -= 360; else if (d < -180) d += 360;
+              lon += d;
+            }
+            var x = (lon + 180) / 360 * W + SHIFTS[s];
+            var y = (90 - ring[i][1]) / 180 * H;
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+        }
+      }
+    }
+  }
+
+  /** Едва заметная сетка границ поверх ночной Земли. */
+  function buildBordersTexture(topo) {
     var W = 4096, H = 2048;
     var cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     var ctx = cv.getContext('2d');
 
-    ctx.fillStyle = colors.ocean;
-    ctx.fillRect(0, 0, W, H);
-
-    var fc = topojson.feature(topo, topo.objects.countries);
-
-    // Некоторые страны (Россия, Фиджи) заданы одним кольцом, пересекающим
-    // 180-й меридиан. Если рисовать «в лоб», долгота прыгает с 180 на -180 и
-    // через всю текстуру протягивается ложная линия. Поэтому долготы
-    // разворачиваются в непрерывную последовательность, а кольцо рисуется
-    // трижды — со сдвигом на -W, 0 и +W; лишнее обрезает холст.
-    var SHIFTS = [-W, 0, W];
-
-    function path(feature) {
-      var g = feature.geometry;
-      if (!g) return;
-      var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
-      ctx.beginPath();
-      for (var s = 0; s < SHIFTS.length; s++) {
-        for (var p = 0; p < polys.length; p++) {
-          var poly = polys[p];
-          for (var r = 0; r < poly.length; r++) {
-            var ring = poly[r];
-            var lon = ring[0][0];
-            for (var i = 0; i < ring.length; i++) {
-              if (i > 0) {
-                var d = ring[i][0] - ring[i - 1][0];
-                if (d > 180) d -= 360; else if (d < -180) d += 360;
-                lon += d;
-              }
-              var x = (lon + 180) / 360 * W + SHIFTS[s];
-              var y = (90 - ring[i][1]) / 180 * H;
-              if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-            }
-            ctx.closePath();
-          }
-        }
-      }
-    }
+    topoFeatures = topojson.feature(topo, topo.objects.countries).features;
 
     ctx.lineJoin = 'round';
-    ctx.lineWidth = 2.4;
-
-    for (var i = 0; i < fc.features.length; i++) {
-      var f = fc.features[i];
-      var isRu = String(f.id) === '643';
-      ctx.fillStyle = isRu ? colors.russia : colors.land;
-      ctx.strokeStyle = isRu ? colors.russiaBorder : colors.landBorder;
-      path(f);
-      ctx.fill('evenodd');
+    ctx.lineWidth = 1.6;
+    ctx.strokeStyle = colors.border;
+    for (var i = 0; i < topoFeatures.length; i++) {
+      tracePath(ctx, topoFeatures[i], W, H);
       ctx.stroke();
     }
 
     var tex = new THREE.CanvasTexture(cv);
     if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    tex.needsUpdate = true;
     return tex;
   }
 
-  function dotTexture(hex) {
+  /** Отдельный слой: тёплый контур выбранной страны. */
+  function buildHighlightTexture() {
+    var W = 2048, H = 1024;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    highlightCtx = cv.getContext('2d');
+    highlightCtx.lineJoin = 'round';
+    highlightTex = new THREE.CanvasTexture(cv);
+    if (THREE.SRGBColorSpace) highlightTex.colorSpace = THREE.SRGBColorSpace;
+    highlightTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return highlightTex;
+  }
+
+  function drawHighlight(iso) {
+    if (!highlightCtx || highlightIso === iso) return;
+    highlightIso = iso;
+    var W = 2048, H = 1024;
+    highlightCtx.clearRect(0, 0, W, H);
+    if (iso && topoFeatures) {
+      for (var i = 0; i < topoFeatures.length; i++) {
+        if (String(topoFeatures[i].id) !== String(iso)) continue;
+        tracePath(highlightCtx, topoFeatures[i], W, H);
+        highlightCtx.fillStyle = colors.highlightFill;
+        highlightCtx.fill('evenodd');
+        highlightCtx.lineWidth = 2.2;
+        highlightCtx.strokeStyle = colors.highlight;
+        highlightCtx.stroke();
+        break;
+      }
+    }
+    highlightTex.needsUpdate = true;
+    highlight.visible = !!iso;
+  }
+
+  /** Круглое мягкое свечение — общая текстура точек и спрайтов. */
+  function glowTexture(rgb) {
     var s = 64;
     var cv = document.createElement('canvas');
     cv.width = cv.height = s;
     var ctx = cv.getContext('2d');
-    ctx.beginPath();
-    ctx.arc(s / 2, s / 2, s / 2 - 6, 0, Math.PI * 2);
-    ctx.fillStyle = hex;
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = '#ffffff';
-    ctx.stroke();
+    var gr = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    gr.addColorStop(0, 'rgba(' + rgb + ',1)');
+    gr.addColorStop(0.25, 'rgba(' + rgb + ',.55)');
+    gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    ctx.fillStyle = gr;
+    ctx.fillRect(0, 0, s, s);
     var t = new THREE.CanvasTexture(cv);
     if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
     return t;
+  }
+
+  var TEX_GOLD = null, TEX_WHITE = null;
+
+  /* ----------------------- ободок и свечение ----------------------- */
+
+  var RIM_VERT =
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){ vN = normalize(normalMatrix * normal);' +
+    'vec4 mv = modelViewMatrix * vec4(position,1.0); vP = mv.xyz;' +
+    'gl_Position = projectionMatrix * mv; }';
+
+  function rimMaterial(color, power, strength) {
+    return new THREE.ShaderMaterial({
+      transparent: true, blending: THREE.AdditiveBlending,
+      side: THREE.BackSide, depthWrite: false,
+      uniforms: {
+        uColor: { value: new THREE.Color(color) },
+        uPow: { value: power },
+        uStr: { value: strength }
+      },
+      vertexShader: RIM_VERT,
+      fragmentShader:
+        'uniform vec3 uColor; uniform float uPow; uniform float uStr;' +
+        'varying vec3 vN; varying vec3 vP;' +
+        'void main(){' +
+        '  float f = pow(clamp(1.0 - abs(dot(normalize(vN), normalize(-vP))), 0.0, 1.0), uPow);' +
+        '  gl_FragColor = vec4(uColor, f * uStr); }'
+    });
   }
 
   /* ------------------------------ сцена ------------------------------ */
@@ -155,10 +220,12 @@
     gcfg = cfg.globe;
     onPick = opts.onPick || onPick;
     onInteract = opts.onInteract || onInteract;
+    view.zoom = gcfg.defaultZoom;
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(global.devicePixelRatio || 1, 2));
     if (THREE.SRGBColorSpace) renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0x000000, 0);
 
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -171,25 +238,66 @@
     pivotSpin.add(world);
     scene.add(pivotTilt);
 
-    earth = new THREE.Mesh(
-      new THREE.SphereGeometry(R, 96, 64),
-      new THREE.MeshBasicMaterial({ map: buildEarthTexture(opts.topo) })
-    );
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+    var dir = new THREE.DirectionalLight(0x9fc0ff, 0.45);
+    dir.position.set(-2, 1.4, 2.2);
+    scene.add(dir);
+
+    TEX_GOLD = glowTexture('255,205,120');
+    TEX_WHITE = glowTexture('255,240,214');
+
+    // ночная Земля: очень тёмная суша (карта) + тёплые огни городов (emissive)
+    var earthMat = new THREE.MeshPhongMaterial({
+      color: new THREE.Color(colors.land),
+      specular: new THREE.Color(colors.ocean),
+      shininess: 6,
+      emissive: new THREE.Color(colors.cityLights),
+      emissiveIntensity: 2.0
+    });
+    var loader = new THREE.TextureLoader();
+    loader.load(U.asset(TEX_ATMOS), function (t) {
+      if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      earthMat.map = t; earthMat.needsUpdate = true;
+    });
+    loader.load(U.asset(TEX_LIGHTS), function (t) {
+      if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      earthMat.emissiveMap = t; earthMat.needsUpdate = true;
+    });
+    earth = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), earthMat);
     world.add(earth);
 
-    // мягкий ободок вокруг планеты
-    atmo = new THREE.Mesh(
-      new THREE.SphereGeometry(R * 1.018, 64, 40),
+    // едва заметные границы стран
+    borders = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.0012, 96, 64),
       new THREE.MeshBasicMaterial({
-        color: new THREE.Color(colors.accent),
-        transparent: true,
-        opacity: 0.07,
-        side: THREE.BackSide,
-        depthWrite: false
+        map: buildBordersTexture(opts.topo),
+        transparent: true, opacity: 0.28, depthWrite: false
       })
     );
-    scene.add(atmo);
-    atmo.visible = true;
+    borders.renderOrder = 1;
+    world.add(borders);
+
+    // тёплый контур выбранной страны
+    highlight = new THREE.Mesh(
+      new THREE.SphereGeometry(R * 1.0024, 96, 64),
+      new THREE.MeshBasicMaterial({
+        map: buildHighlightTexture(),
+        transparent: true, depthWrite: false
+      })
+    );
+    highlight.renderOrder = 2;
+    highlight.visible = false;
+    world.add(highlight);
+
+    // синий ободок атмосферы и мягкое внешнее свечение
+    atmo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.012, 64, 48),
+      rimMaterial(colors.atmosphere, 6.5, 0.50));
+    world.add(atmo);
+    halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.13, 48, 32),
+      rimMaterial(colors.halo, 4.5, 0.15));
+    world.add(halo);
 
     arcGroup = new THREE.Group();
     hitGroup = new THREE.Group();
@@ -199,23 +307,24 @@
 
     // точка отправления
     var o = cfg.origin;
-    originPoints = new THREE.Points(
-      new THREE.BufferGeometry().setAttribute('position',
-        new THREE.Float32BufferAttribute(toVec3(o.lat, o.lon, R * 1.006).toArray(), 3)),
-      new THREE.PointsMaterial({
-        size: 15, sizeAttenuation: false, map: dotTexture(colors.origin),
-        transparent: true, alphaTest: 0.4, depthWrite: false
-      })
-    );
-    world.add(originPoints);
+    originDot = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: TEX_WHITE, transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    originDot.position.copy(toVec3(o.lat, o.lon, R * 1.004));
+    originDot.scale.setScalar(0.062);
+    world.add(originDot);
 
-    shipDot = new THREE.Mesh(
-      new THREE.SphereGeometry(0.016, 16, 12),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(colors.routeActive) })
-    );
+    // «корабль» — светящаяся точка, бегущая по выбранному маршруту
+    shipDot = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: TEX_WHITE, transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    shipDot.scale.setScalar(0.06);
     shipDot.visible = false;
     world.add(shipDot);
 
+    initLabels();
     bindPointer();
     resize();
     global.addEventListener('resize', resize);
@@ -223,18 +332,154 @@
   }
 
   function resize() {
-    var w = canvas.clientWidth || 1868;
-    var h = canvas.clientHeight || 1028;
+    var w = canvas.clientWidth || 1920;
+    var h = canvas.clientHeight || 1080;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     applyViewOffset();
   }
 
   function applyViewOffset() {
-    var w = canvas.clientWidth || 1868;
-    var h = canvas.clientHeight || 1028;
+    var w = canvas.clientWidth || 1920;
+    var h = canvas.clientHeight || 1080;
     camera.setViewOffset(w, h, -(view.fx - 0.5) * w, -(view.fy - 0.5) * h, w, h);
     camera.updateProjectionMatrix();
+  }
+
+  /* ----------------------------- подписи ----------------------------- */
+
+  var labelHost = null;
+  var labels = [];                      // подписи топ-стран
+  var originLabel = null, selLabel = null;
+
+  function makeLabel(cls) {
+    var el = document.createElement('div');
+    el.className = 'glabel' + (cls ? ' ' + cls : '');
+    el.style.opacity = 0;
+    labelHost.appendChild(el);
+    return { el: el, w: 0, h: 0, x: 0, y: 0, vis: false };
+  }
+
+  function setLabelText(L, title, sub) {
+    L.el.innerHTML = '<span>' + title + '</span><i>' + sub + '</i>';
+    L.w = L.el.offsetWidth;
+    L.h = L.el.offsetHeight;
+  }
+
+  function initLabels() {
+    labelHost = document.getElementById('glabels');
+    originLabel = makeLabel('is-port');
+    setLabelText(originLabel, cfg.origin.name, 'порт отправления');
+    selLabel = makeLabel('is-port');
+    // до подгрузки шрифтов ширина подписей меряется неверно — пересчитываем
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () {
+        var all = labels.concat([originLabel, selLabel]);
+        all.forEach(function (L) { L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; });
+      });
+    }
+  }
+
+  var pTmp = new THREE.Vector3(), pNrm = new THREE.Vector3();
+
+  /** Экранная позиция точки на глобусе + признак «лицевая сторона». */
+  function project(worldPos, out) {
+    var w = canvas.clientWidth || 1920;
+    var h = canvas.clientHeight || 1080;
+    pTmp.copy(worldPos);
+    pNrm.copy(pTmp).normalize();
+    var toCam = pTmp.clone().sub(camera.position).normalize();
+    out.front = -toCam.dot(pNrm) > 0.06;
+    pTmp.project(camera);
+    out.x = (pTmp.x * 0.5 + 0.5) * w;
+    out.y = (-pTmp.y * 0.5 + 0.5) * h;
+    out.front = out.front && pTmp.z < 1;
+    return out;
+  }
+
+  /** Прямоугольник подписи с учётом transform: translate(-50%, -140%). */
+  function labelRect(L, dy) {
+    return { l: L.x - L.w / 2, r: L.x + L.w / 2, t: L.y - L.h * 1.4 + dy, b: L.y - L.h * 0.4 + dy };
+  }
+
+  function overlaps(a, b) {
+    return a.l < b.r + 6 && a.r > b.l - 6 && a.t < b.b + 4 && a.b > b.t - 4;
+  }
+
+  var placed = [];
+  var tmpV = new THREE.Vector3();
+  var centre = { x: 960, y: 540, front: true };
+  var originPt = { x: 960, y: 540 };
+  var zeroV = new THREE.Vector3();
+
+  function placeLabel(L, worldPos, alpha, isOrigin) {
+    if (alpha <= 0.01) { L.el.style.opacity = 0; return; }
+    project(worldPos, L);
+    if (isOrigin) { originPt.x = L.x; originPt.y = L.y; }
+    if (!L.front) { L.el.style.opacity = 0; return; }
+
+    // Подпись отодвигается от центра глобуса, а рядом с точкой отправления —
+    // от неё самой: иначе подписи ближних стран тонут в узле маршрутов.
+    var ax = centre.x, ay = centre.y, push = 18;
+    if (!isOrigin) {
+      var d = Math.hypot(L.x - originPt.x, L.y - originPt.y);
+      if (d > 2 && d < 170) { ax = originPt.x; ay = originPt.y; push = 52; }
+    }
+    var ox = L.x - ax, oy = L.y - ay;
+    var len = Math.hypot(ox, oy) || 1;
+    L.x += ox / len * push;
+    L.y += oy / len * push;
+    // если подпись налезает на уже размещённую — сдвигаем вниз, иначе прячем
+    var dy = 0, ok = false;
+    for (var step = 0; step < 3 && !ok; step++) {
+      var rect = labelRect(L, dy);
+      ok = true;
+      for (var i = 0; i < placed.length; i++) {
+        if (overlaps(rect, placed[i])) { ok = false; break; }
+      }
+      if (!ok) dy += L.h + 6;
+    }
+    if (!ok) { L.el.style.opacity = 0; return; }
+    placed.push(labelRect(L, dy));
+    L.el.style.transform = 'translate(-50%, -140%) translate(' +
+      L.x.toFixed(1) + 'px,' + (L.y + dy).toFixed(1) + 'px)';
+    L.el.style.opacity = alpha;
+  }
+
+  function updateLabels() {
+    placed.length = 0;
+    world.updateMatrixWorld();
+    project(zeroV, centre);
+
+    tmpV.copy(originDot.position).applyMatrix4(world.matrixWorld);
+    placeLabel(originLabel, tmpV, 1, true);
+
+    if (selected && routeByName[selected]) {
+      var r = routeByName[selected];
+      tmpV.copy(r.dest).multiplyScalar(1.004).applyMatrix4(world.matrixWorld);
+      placeLabel(selLabel, tmpV, 1);
+    } else {
+      selLabel.el.style.opacity = 0;
+    }
+
+    for (var i = 0; i < labels.length; i++) {
+      var L = labels[i];
+      if (selected) { L.el.style.opacity = 0; continue; }
+      tmpV.copy(L.pos).applyMatrix4(world.matrixWorld);
+      placeLabel(L, tmpV, 1);
+    }
+  }
+
+  function rebuildLabels(items) {
+    for (var i = 0; i < labels.length; i++) labelHost.removeChild(labels[i].el);
+    labels = [];
+    var top = items.slice(0, 8);       // items уже отсортированы по убыванию
+    for (var j = 0; j < top.length; j++) {
+      var L = makeLabel(null);
+      setLabelText(L, top[j].name, U.fmtVolume(top[j].value) + ' тыс. т');
+      L.pos = toVec3(top[j].lat, top[j].lon, R * 1.004);
+      labels.push(L);
+    }
   }
 
   /* ----------------------------- маршруты ----------------------------- */
@@ -250,24 +495,47 @@
     });
     routes = [];
     routeByName = {};
-    if (markerPoints) {
-      world.remove(markerPoints);
-      markerPoints.geometry.dispose();
-      markerPoints.material.dispose();
-      markerPoints = null;
-    }
+    [endPointsBig, endPointsSmall, particles].forEach(function (p) {
+      if (!p) return;
+      world.remove(p);
+      p.geometry.dispose();
+      p.material.dispose();
+    });
+    endPointsBig = endPointsSmall = particles = null;
   }
 
   var hitMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
+  function endPoints(list, size, opacity) {
+    if (!list.length) return null;
+    var pos = [];
+    for (var i = 0; i < list.length; i++) {
+      var d = list[i].dest.clone().multiplyScalar(1.004);
+      pos.push(d.x, d.y, d.z);
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    var p = new THREE.Points(g, new THREE.PointsMaterial({
+      size: size, sizeAttenuation: true, map: TEX_GOLD,
+      color: 0xFFD9A0, transparent: true, opacity: opacity,
+      blending: THREE.AdditiveBlending, depthWrite: false
+    }));
+    p.renderOrder = 4;
+    world.add(p);
+    return p;
+  }
+
+  var PPA = 3;                          // частиц на одну дугу
+
   /**
-   * items: [{name, lat, lon, value}] — только страны с объёмом > 0.
-   * animate: рисовать дуги «от РФ к стране».
+   * items: [{name, lat, lon, value, iso}] — только страны с объёмом > 0,
+   * отсортированные по убыванию. animate: рисовать дуги «от РФ к стране».
    */
   function setRoutes(items, animate) {
     disposeRoutes();
     selected = null;
     shipDot.visible = false;
+    drawHighlight(null);
 
     var origin = toVec3(cfg.origin.lat, cfg.origin.lon, R);
     var maxV = 0, minV = Infinity;
@@ -279,15 +547,13 @@
     var lgMax = Math.log10(Math.max(maxV, 1e-3));
     var span = Math.max(lgMax - lgMin, 0.001);
 
-    var positions = [];
-
     items.forEach(function (it) {
       var norm = (Math.log10(Math.max(it.value, 1e-4)) - lgMin) / span;
       norm = Math.max(0, Math.min(1, norm));
 
       var dest = toVec3(it.lat, it.lon, R);
       var angle = Math.acos(Math.max(-1, Math.min(1, origin.dot(dest))));
-      var alt = 0.06 + 0.22 * (angle / Math.PI);
+      var alt = 0.03 + 0.235 * (angle / Math.PI);   // высота дуги по дальности
 
       var pts = [];
       var N = gcfg.arcSegments;
@@ -299,16 +565,18 @@
       }
       var curve = new THREE.CatmullRomCurve3(pts);
 
-      var radius = 0.0013 + 0.0050 * Math.pow(norm, 1.15);
-      var geo = new THREE.TubeGeometry(curve, N, radius, 7, false);
+      var radius = 0.0019 + 0.0072 * norm * norm;   // толщина по лог-шкале объёма
+      var opacity = 0.26 + 0.42 * norm;
+      var geo = new THREE.TubeGeometry(curve, N, radius, 6, false);
       var mat = new THREE.MeshBasicMaterial({
         color: new THREE.Color(colors.route),
         transparent: true,
-        opacity: 0.30 + 0.55 * norm,
+        opacity: opacity,
+        blending: THREE.AdditiveBlending,
         depthWrite: false
       });
       var mesh = new THREE.Mesh(geo, mat);
-      mesh.renderOrder = 2;
+      mesh.renderOrder = 3;
       arcGroup.add(mesh);
 
       // невидимая «толстая» геометрия под палец
@@ -322,28 +590,35 @@
       hitDot.userData.dot = true;
       hitGroup.add(hitDot);
 
-      var d = dest.clone().multiplyScalar(1.006);
-      positions.push(d.x, d.y, d.z);
-
       var route = {
-        name: it.name, value: it.value, norm: norm,
-        curve: curve, mesh: mesh, hit: hit, hitDot: hitDot,
-        baseOpacity: 0.30 + 0.55 * norm, dest: dest
+        name: it.name, value: it.value, norm: norm, iso: it.iso, port: it.port,
+        curve: curve, pts: pts, mesh: mesh, hit: hit, hitDot: hitDot,
+        baseOpacity: opacity, dest: dest, phase: Math.random()
       };
       routes.push(route);
       routeByName[it.name] = route;
     });
 
-    if (positions.length) {
+    // светящиеся точки на концах: два размера — крупные направления заметнее
+    var big = routes.slice(0, 8), small = routes.slice(8);
+    endPointsBig = endPoints(big, 0.085, 0.95);
+    endPointsSmall = endPoints(small, 0.05, 0.75);
+
+    // бегущие частицы: один Points-объект на все дуги
+    if (routes.length) {
       var g = new THREE.BufferGeometry();
-      g.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-      markerPoints = new THREE.Points(g, new THREE.PointsMaterial({
-        size: 9, sizeAttenuation: false, map: dotTexture(colors.marker),
-        transparent: true, alphaTest: 0.4, depthWrite: false
+      g.setAttribute('position',
+        new THREE.Float32BufferAttribute(new Float32Array(routes.length * PPA * 3), 3));
+      particles = new THREE.Points(g, new THREE.PointsMaterial({
+        size: 0.022, sizeAttenuation: true, map: TEX_GOLD,
+        color: 0xFFD9A0, transparent: true, opacity: 0.9,
+        blending: THREE.AdditiveBlending, depthWrite: false
       }));
-      markerPoints.renderOrder = 3;
-      world.add(markerPoints);
+      particles.renderOrder = 5;
+      world.add(particles);
     }
+
+    rebuildLabels(items);
 
     if (animate === false) {
       routes.forEach(function (r) { r.mesh.geometry.setDrawRange(0, Infinity); });
@@ -371,6 +646,18 @@
     }
   }
 
+  /** Точка на дуге по доле пути — по заранее посчитанным узлам, без аллокаций. */
+  function pointAt(r, f, out) {
+    var n = r.pts.length - 1;
+    var s = f * n;
+    var i = s | 0;
+    if (i >= n) i = n - 1;
+    var k = s - i;
+    var a = r.pts[i], b = r.pts[i + 1];
+    out.set(a.x + (b.x - a.x) * k, a.y + (b.y - a.y) * k, a.z + (b.z - a.z) * k);
+    return out;
+  }
+
   /* ------------------------ выделение и фокус ------------------------ */
 
   function setSelected(name) {
@@ -382,14 +669,25 @@
         r.mesh.material.opacity = r.baseOpacity;
       } else if (isSel) {
         r.mesh.material.color.set(colors.routeActive);
-        r.mesh.material.opacity = 1;
+        r.mesh.material.opacity = Math.min(1, r.baseOpacity + 0.35);
       } else {
         r.mesh.material.color.set(colors.route);
-        r.mesh.material.opacity = 0.05;
+        r.mesh.material.opacity = r.baseOpacity * 0.15;   // остальные приглушены
       }
     });
-    if (markerPoints) markerPoints.material.opacity = selected ? 0.25 : 1;
+    var dim = selected ? 0.18 : 1;
+    if (endPointsBig) endPointsBig.material.opacity = 0.95 * dim;
+    if (endPointsSmall) endPointsSmall.material.opacity = 0.75 * dim;
+    if (particles) particles.material.opacity = 0.9 * (selected ? 0.3 : 1);
     shipDot.visible = !!selected;
+
+    var r = selected ? routeByName[selected] : null;
+    drawHighlight(r ? r.iso : null);
+    if (r) {
+      setLabelText(selLabel, r.name,
+        (r.port && r.port !== r.name ? r.port + ' · ' : '') +
+        U.fmtVolume(r.value) + ' тыс. т');
+    }
   }
 
   function focus(name) {
@@ -402,20 +700,20 @@
     var angle = Math.acos(Math.max(-1, Math.min(1, origin.dot(r.dest.clone().normalize()))));
     // чем длиннее маршрут, тем дальше камера — чтобы дуга влезла целиком
     var zoom = U.clamp(gcfg.focusZoom + angle * 0.55, gcfg.focusZoom, gcfg.defaultZoom);
-    animateTo({ phi: U.clamp(a.phi, -1.2, 1.2), theta: a.theta, zoom: zoom, fx: 0.58, fy: 0.47 }, 1000);
+    animateTo({ phi: U.clamp(a.phi, -1.2, 1.2), theta: a.theta, zoom: zoom, fx: 0.55, fy: 0.51 }, 1000);
     autoRotate = false;
   }
 
   function resetView() {
-    animateTo({ phi: 0.28, theta: -1.9, zoom: gcfg.defaultZoom, fx: 0.57, fy: 0.48 }, 800);
+    animateTo({ phi: HOME.phi, theta: HOME.theta, zoom: gcfg.defaultZoom, fx: HOME.fx, fy: HOME.fy }, 800);
     autoRotate = true;
   }
 
   function setLayout(mode) {
     if (mode === 'A') {
-      animateTo({ fx: 0.57, fy: 0.48 }, 700);
+      animateTo({ fx: HOME.fx, fy: HOME.fy }, 700);
     } else {
-      animateTo({ fx: 0.58, fy: 0.47 }, 700);
+      animateTo({ fx: 0.55, fy: 0.51 }, 700);
     }
   }
 
@@ -545,6 +843,8 @@
 
   /* ------------------------------ цикл ------------------------------ */
 
+  var partVec = new THREE.Vector3();
+
   function loop(now) {
     requestAnimationFrame(loop);
     var dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.1) : 0.016;
@@ -570,12 +870,27 @@
 
     stepDrawAnim(now);
 
+    // бегущие частицы вдоль всех дуг — один буфер на кадр
+    if (particles) {
+      var arr = particles.geometry.attributes.position.array;
+      var t = now * 0.001, n = 0;
+      for (var i = 0; i < routes.length; i++) {
+        var r = routes[i];
+        for (var k = 0; k < PPA; k++) {
+          var f = (t * (0.10 + 0.05 * r.norm) + r.phase + k / PPA) % 1;
+          pointAt(r, f, partVec);
+          arr[n++] = partVec.x; arr[n++] = partVec.y; arr[n++] = partVec.z;
+        }
+      }
+      particles.geometry.attributes.position.needsUpdate = true;
+    }
+
     if (selected && routeByName[selected]) {
-      var t = (now * 0.00016) % 1;
-      shipDot.position.copy(routeByName[selected].curve.getPoint(t));
+      shipDot.position.copy(pointAt(routeByName[selected], (now * 0.00016) % 1, partVec));
     }
 
     renderer.render(scene, camera);
+    updateLabels();
   }
 
   /* ------------------------------ API ------------------------------ */
@@ -605,6 +920,8 @@
       };
     },
     _showHits: function (on) { hitGroup.visible = !!on; },
-    _stats: function () { return { routes: routes.length, hits: hitGroup.children.length }; }
+    _stats: function () {
+      return { routes: routes.length, hits: hitGroup.children.length, calls: renderer.info.render.calls };
+    }
   };
 })(window);

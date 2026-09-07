@@ -3,8 +3,11 @@
 
 Внутрь складываются CSS, все скрипты (включая vendor) и все данные
 (config.json, data/export.json, data/geo/countries-110m.json) как блоки
-<script type="application/json">. Ни одного внешнего запроса — файл
-открывается двойным щелчком по file:// и годится для публикации как есть.
+<script type="application/json">. Файлы из assets/ (шрифты, текстуры глобуса,
+видео) вшиваются как data:URI: шрифты — прямо в CSS, текстуры — в объект
+window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
+Ни одного внешнего запроса — файл открывается двойным щелчком по file://
+и годится для публикации как есть.
 
 Запуск:  python3 tools/build_dist.py
 Перед этим — python3 tools/build_data.py, если менялся xlsx.
@@ -29,11 +32,24 @@ INLINE_JSON = [
 ]
 
 MAX_VIDEO_MB = 60
+MAX_DIST_MB = 6          # предупреждение, если файл разросся
+
+mimetypes.add_type("font/woff2", ".woff2")
+mimetypes.add_type("font/woff", ".woff")
+
+# ссылки на файлы из assets/ ищутся в CSS и в скриптах
+ASSET_RE = re.compile(r"assets/[A-Za-z0-9_./-]+\.(?:png|jpe?g|webp|svg|woff2?|mp4|webm)")
 
 
 def read(path):
     with open(path, encoding="utf-8") as f:
         return f.read()
+
+
+def data_uri(path):
+    mime = mimetypes.guess_type(path)[0] or "application/octet-stream"
+    with open(path, "rb") as f:
+        return "data:%s;base64,%s" % (mime, base64.b64encode(f.read()).decode("ascii"))
 
 
 def die(msg):
@@ -86,28 +102,64 @@ def main():
 
     data_html = "\n".join(json_block(el_id, obj) for el_id, obj, _ in blocks)
 
-    # 3. стили
+    # 3. стили: заодно вшиваем шрифты и картинки из url(...)
+    fonts_kb = [0]
+
     def repl_css(m):
-        path = os.path.join(ROOT, m.group(1))
+        rel_css = m.group(1)
+        path = os.path.join(ROOT, rel_css)
         if not os.path.exists(path):
-            die("нет стиля %s" % m.group(1))
-        return "<style>\n" + guard(read(path), m.group(1)) + "\n</style>"
+            die("нет стиля %s" % rel_css)
+        css_dir = os.path.dirname(path)
+
+        def repl_url(u):
+            raw = u.group(1).strip().strip("'\"")
+            if raw.startswith("data:") or raw.startswith("#"):
+                return u.group(0)
+            src = os.path.normpath(os.path.join(css_dir, raw))
+            if not os.path.exists(src):
+                die("в %s не найден файл %s" % (rel_css, raw))
+            fonts_kb[0] += os.path.getsize(src)
+            return "url(%s)" % data_uri(src)
+
+        css = re.sub(r"url\(([^)]+)\)", repl_url, read(path))
+        return "<style>\n" + guard(css, rel_css) + "\n</style>"
 
     html = re.sub(r'<link[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>', repl_css, html)
+    if fonts_kb[0]:
+        print("Файлы из CSS (шрифты и т. п.) вшиты: %.0f КБ" % (fonts_kb[0] / 1024.0))
 
     # 4. скрипты
     scripts = re.findall(r'<script src="([^"]+)"></script>', html)
     if not scripts:
         die("в index.html не найдено ни одного <script src=...>")
     inlined = []
+    assets = {}
     for rel in scripts:
         path = os.path.join(ROOT, rel)
         if not os.path.exists(path):
             die("нет скрипта %s" % rel)
-        inlined.append("<!-- %s -->\n<script>\n%s\n</script>" % (rel, guard(read(path), rel)))
+        code = guard(read(path), rel)
+        for a in ASSET_RE.findall(code):
+            assets.setdefault(a, None)
+        inlined.append("<!-- %s -->\n<script>\n%s\n</script>" % (rel, code))
+
+    # 4a. файлы из assets/, на которые ссылаются скрипты (текстуры глобуса)
+    assets_bytes = 0
+    for rel in list(assets):
+        src = os.path.join(ROOT, rel)
+        if not os.path.exists(src):
+            die("нет файла %s, на который ссылается код" % rel)
+        assets_bytes += os.path.getsize(src)
+        assets[rel] = data_uri(src)
+    if assets:
+        print("Файлы из assets/ вшиты: %d шт., %.0f КБ"
+              % (len(assets), assets_bytes / 1024.0))
+    assets_html = ("<script>window.INLINE_ASSETS=%s;</script>"
+                   % json.dumps(assets, ensure_ascii=False))
 
     first = '<script src="%s"></script>' % scripts[0]
-    html = html.replace(first, data_html + "\n" + inlined[0], 1)
+    html = html.replace(first, data_html + "\n" + assets_html + "\n" + inlined[0], 1)
     for rel, code in zip(scripts[1:], inlined[1:]):
         html = html.replace('<script src="%s"></script>' % rel, code, 1)
 
@@ -122,7 +174,10 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
 
-    print("Собрано: %s (%.1f МБ)" % (os.path.relpath(out, ROOT), os.path.getsize(out) / 1048576.0))
+    size_mb = os.path.getsize(out) / 1048576.0
+    print("Собрано: %s (%.1f МБ)" % (os.path.relpath(out, ROOT), size_mb))
+    if size_mb > MAX_DIST_MB:
+        print("ВНИМАНИЕ: файл больше %d МБ — проверьте, что вшито." % MAX_DIST_MB)
     print("Файл открывается двойным щелчком, сервер не нужен.")
 
 
