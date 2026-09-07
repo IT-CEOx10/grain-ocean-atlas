@@ -1,5 +1,5 @@
 /* ===================================================================
-   Глобус: ночная Земля (текстура огней городов + затемнённая суша),
+   Глобус: ночная Земля (снимки NASA: огни городов + затемнённая суша),
    золотые дуги маршрутов с бегущими частицами, подписи стран поверх
    холста, управление касанием (одним пальцем — вращение, двумя — зум).
    Наружу отдаёт объект window.Globe.
@@ -10,8 +10,9 @@
   var DEG = Math.PI / 180;
   var R = 1;
 
-  var TEX_LIGHTS = 'assets/textures/earth_lights_2048.png';
-  var TEX_ATMOS = 'assets/textures/earth_atmos_1024.jpg';
+  // текстуры из снимков NASA, готовит tools/make_earth_textures.py
+  var TEX_LIGHTS = 'assets/textures/earth_night_4096.jpg';   // огни городов
+  var TEX_ATMOS = 'assets/textures/earth_land_2048.jpg';     // подложка суши
 
   var cfg, colors, gcfg;
   var renderer, scene, camera, canvas;
