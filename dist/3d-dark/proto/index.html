@@ -1048,13 +1048,13 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   var renderer, scene, camera, canvas;
   var pivotTilt, pivotSpin, world;      // tilt(rot.x) > spin(rot.y) > world
   var earth, borders, highlight, atmo, halo;
-  var arcGroup, hitGroup, shipDot, originDot;
+  var arcGroup, shipDot, originDot;
   var endPointsBig = null, endPointsSmall = null, particles = null;
 
   var topoFeatures = null;              // контуры стран для подсветки
   var highlightCtx = null, highlightTex = null, highlightIso = null;
 
-  var routes = [];                      // [{name, curve, mesh, hit, value, norm}]
+  var routes = [];                      // [{name, curve, pts, mesh, value, norm, baseHalf}]
   var routeByName = {};
   var selected = null;
 
@@ -1258,6 +1258,60 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     });
   }
 
+  /* --------------------- дуги: ширина в пикселях --------------------- */
+
+  /*
+   * Трубка дуги строится один раз с фиксированным радиусом ARC_BASE, а её
+   * настоящая толщина считается в вершинном шейдере: вершина возвращается
+   * на ось (position − normal·ARC_BASE) и отодвигается обратно на радиус,
+   * который даёт нужную ширину в пикселях на этой глубине. Поэтому дуга
+   * выглядит одинаково и на общем плане, и при сильном приближении —
+   * геометрию перестраивать не нужно, меняются только два uniform-а.
+   *
+   * Фрагментный шейдер гасит яркость к краю трубки: у обращённой к камере
+   * стороны dot(нормаль, взгляд) равен единице, у силуэта — нулю. Резкая
+   * степень даёт светящуюся сердцевину, пологая — ореол вокруг неё.
+   */
+  var ARC_BASE = 0.01;                  // радиус, с которым построена трубка
+  var ARC_HALO = 3.0;                   // во сколько раз ореол шире сердцевины
+  var uPxK = { value: 0.00064 };        // 2·tan(fov/2)/высота холста, общий uniform
+
+  var ARC_VERT =
+    'uniform float uBase; uniform float uHalf; uniform float uPxK;' +
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){' +
+    '  vec3 n = normalize(normal);' +
+    '  vec4 mv = modelViewMatrix * vec4(position - n * uBase, 1.0);' +
+    '  vec3 nv = normalize(normalMatrix * n);' +
+    '  mv.xyz += nv * (uHalf * max(-mv.z, 0.05) * uPxK);' +
+    '  vN = nv; vP = mv.xyz;' +
+    '  gl_Position = projectionMatrix * mv; }';
+
+  var ARC_FRAG =
+    'uniform vec3 uColor; uniform float uOpacity;' +
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){' +
+    '  float d = clamp(dot(normalize(vN), normalize(-vP)), 0.0, 1.0);' +
+    '  float core = pow(d, 12.0);' +
+    '  float halo = pow(d, 1.3);' +
+    '  vec3 c = uColor + vec3(0.28) * core;' +   // сердцевина горячее и белее
+    '  gl_FragColor = vec4(c, (core + halo * 0.38) * uOpacity); }';
+
+  function arcMaterial(color, half, opacity) {
+    return new THREE.ShaderMaterial({
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+      uniforms: {
+        uBase: { value: ARC_BASE },
+        uHalf: { value: half },
+        uPxK: uPxK,                     // общий объект: обновляется при resize
+        uColor: { value: new THREE.Color(color) },
+        uOpacity: { value: opacity }
+      },
+      vertexShader: ARC_VERT,
+      fragmentShader: ARC_FRAG
+    });
+  }
+
   /* ------------------------------ сцена ------------------------------ */
 
   function init(opts) {
@@ -1344,27 +1398,24 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     world.add(halo);
 
     arcGroup = new THREE.Group();
-    hitGroup = new THREE.Group();
-    hitGroup.visible = false;           // не рисуем, но лучами проверяем
     world.add(arcGroup);
-    world.add(hitGroup);
 
+    // Спрайты с sizeAttenuation:false меряют scale не в мировых единицах,
+    // а как долю экрана, поэтому размер задаётся в пикселях (см. setPxSizes).
     // точка отправления
     var o = cfg.origin;
     originDot = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: TEX_WHITE, transparent: true,
+      map: TEX_WHITE, transparent: true, sizeAttenuation: false,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     originDot.position.copy(toVec3(o.lat, o.lon, R * 1.004));
-    originDot.scale.setScalar(0.062);
     world.add(originDot);
 
     // «корабль» — светящаяся точка, бегущая по выбранному маршруту
     shipDot = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: TEX_WHITE, transparent: true,
+      map: TEX_WHITE, transparent: true, sizeAttenuation: false,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
-    shipDot.scale.setScalar(0.06);
     shipDot.visible = false;
     world.add(shipDot);
 
@@ -1380,7 +1431,18 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     var h = canvas.clientHeight || 1080;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    setPxSizes(h);
     applyViewOffset();
+  }
+
+  /** Размеры в пикселях: спрайты и точки — CSS-пиксели, дуги — через uniform. */
+  var PX = { origin: 28, ship: 26, endBig: 38, endSmall: 22, particle: 10 };
+
+  function setPxSizes(h) {
+    // мировая длина, дающая один пиксель по вертикали на расстоянии 1 от камеры
+    uPxK.value = 2 * Math.tan(camera.fov * DEG / 2) / h;
+    if (originDot) originDot.scale.setScalar(PX.origin * uPxK.value);
+    if (shipDot) shipDot.scale.setScalar(PX.ship * uPxK.value);
   }
 
   function applyViewOffset() {
@@ -1533,9 +1595,6 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       arcGroup.remove(r.mesh);
       r.mesh.geometry.dispose();
       r.mesh.material.dispose();
-      hitGroup.remove(r.hit);
-      r.hit.geometry.dispose();
-      if (r.hitDot) { hitGroup.remove(r.hitDot); r.hitDot.geometry.dispose(); }
     });
     routes = [];
     routeByName = {};
@@ -1548,8 +1607,6 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     endPointsBig = endPointsSmall = particles = null;
   }
 
-  var hitMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
   function endPoints(list, size, opacity) {
     if (!list.length) return null;
     var pos = [];
@@ -1559,8 +1616,9 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     }
     var g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    // sizeAttenuation:false — size прямо в CSS-пикселях, зум на него не влияет
     var p = new THREE.Points(g, new THREE.PointsMaterial({
-      size: size, sizeAttenuation: true, map: TEX_GOLD,
+      size: size, sizeAttenuation: false, map: TEX_GOLD,
       color: 0xFFD9A0, transparent: true, opacity: opacity,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
@@ -1609,35 +1667,18 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       }
       var curve = new THREE.CatmullRomCurve3(pts);
 
-      var radius = 0.0019 + 0.0072 * norm * norm;   // толщина по лог-шкале объёма
-      var opacity = 0.26 + 0.42 * norm;
-      var geo = new THREE.TubeGeometry(curve, N, radius, 6, false);
-      var mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(colors.route),
-        transparent: true,
-        opacity: opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-      });
-      var mesh = new THREE.Mesh(geo, mat);
+      // полуширина светящейся сердцевины в пикселях экрана — по лог-шкале объёма
+      var half = 0.80 + 1.30 * norm * norm;
+      var opacity = 0.42 + 0.55 * norm;
+      var geo = new THREE.TubeGeometry(curve, N, ARC_BASE, 8, false);
+      var mesh = new THREE.Mesh(geo, arcMaterial(colors.route, half * ARC_HALO, opacity));
       mesh.renderOrder = 3;
       arcGroup.add(mesh);
 
-      // невидимая «толстая» геометрия под палец
-      var hit = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.022, 4, false), hitMat);
-      hit.userData.name = it.name;
-      hitGroup.add(hit);
-
-      var hitDot = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 6), hitMat);
-      hitDot.position.copy(dest.clone().multiplyScalar(1.005));
-      hitDot.userData.name = it.name;
-      hitDot.userData.dot = true;
-      hitGroup.add(hitDot);
-
       var route = {
         name: it.name, value: it.value, norm: norm, iso: it.iso, port: it.port,
-        curve: curve, pts: pts, mesh: mesh, hit: hit, hitDot: hitDot,
-        baseOpacity: opacity, dest: dest, phase: Math.random()
+        curve: curve, pts: pts, mesh: mesh,
+        baseHalf: half, baseOpacity: opacity, dest: dest, phase: Math.random()
       };
       routes.push(route);
       routeByName[it.name] = route;
@@ -1645,8 +1686,8 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 
     // светящиеся точки на концах: два размера — крупные направления заметнее
     var big = routes.slice(0, 8), small = routes.slice(8);
-    endPointsBig = endPoints(big, 0.085, 0.95);
-    endPointsSmall = endPoints(small, 0.05, 0.75);
+    endPointsBig = endPoints(big, PX.endBig, 0.95);
+    endPointsSmall = endPoints(small, PX.endSmall, 0.75);
 
     // бегущие частицы: один Points-объект на все дуги
     if (routes.length) {
@@ -1654,7 +1695,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       g.setAttribute('position',
         new THREE.Float32BufferAttribute(new Float32Array(routes.length * PPA * 3), 3));
       particles = new THREE.Points(g, new THREE.PointsMaterial({
-        size: 0.022, sizeAttenuation: true, map: TEX_GOLD,
+        size: PX.particle, sizeAttenuation: false, map: TEX_GOLD,
         color: 0xFFD9A0, transparent: true, opacity: 0.9,
         blending: THREE.AdditiveBlending, depthWrite: false
       }));
@@ -1704,19 +1745,25 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 
   /* ------------------------ выделение и фокус ------------------------ */
 
+  var SEL_HALF = 3.0;                   // полуширина выбранной дуги, пиксели
+
   function setSelected(name) {
     selected = name && routeByName[name] ? name : null;
     routes.forEach(function (r) {
+      var u = r.mesh.material.uniforms;
       var isSel = r.name === selected;
       if (!selected) {
-        r.mesh.material.color.set(colors.route);
-        r.mesh.material.opacity = r.baseOpacity;
+        u.uColor.value.set(colors.route);
+        u.uOpacity.value = r.baseOpacity;
+        u.uHalf.value = r.baseHalf * ARC_HALO;
       } else if (isSel) {
-        r.mesh.material.color.set(colors.routeActive);
-        r.mesh.material.opacity = Math.min(1, r.baseOpacity + 0.35);
+        u.uColor.value.set(colors.routeActive);
+        u.uOpacity.value = 1.0;
+        u.uHalf.value = SEL_HALF * ARC_HALO;
       } else {
-        r.mesh.material.color.set(colors.route);
-        r.mesh.material.opacity = r.baseOpacity * 0.15;   // остальные приглушены
+        u.uColor.value.set(colors.route);
+        u.uOpacity.value = r.baseOpacity * 0.15;   // остальные приглушены
+        u.uHalf.value = r.baseHalf * ARC_HALO;
       }
     });
     var dim = selected ? 0.18 : 1;
@@ -1858,31 +1905,82 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
-  var raycaster = new THREE.Raycaster();
-  var ndc = new THREE.Vector2();
+  /*
+   * Попадание пальцем считается в экранных координатах: узлы дуг проецируются
+   * на холст и сравниваются с точкой касания по расстоянию в пикселях. Допуск
+   * не зависит от приближения — на общем плане в тонкую дугу попасть так же
+   * легко, как раньше по толстой невидимой трубке, а вблизи соседние маршруты
+   * не перехватывают касание. Заодно из сцены ушли 226 служебных объектов.
+   */
+  var HIT_ARC_PX = 14;                  // допуск по дуге
+  var HIT_DOT_PX = 22;                  // допуск по маркеру страны
+  var hitM = new THREE.Matrix4();
+  var hv = new THREE.Vector3(), hd = new THREE.Vector3(), hc = new THREE.Vector3();
+  var hpx = [], hpy = [], hvis = [];
+
+  /** Точка мира видна, если отрезок «камера → точка» не протыкает планету. */
+  function frontOf(p) {
+    hd.copy(p).sub(camera.position);
+    var dd = hd.lengthSq();
+    var t = dd > 1e-9 ? -camera.position.dot(hd) / dd : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    hc.copy(camera.position).addScaledVector(hd, t);
+    return hc.lengthSq() > 0.995 * 0.995;
+  }
+
+  /** Квадрат расстояния от точки до отрезка на экране. */
+  function segDist2(px, py, ax, ay, bx, by) {
+    var dx = bx - ax, dy = by - ay;
+    var dd = dx * dx + dy * dy;
+    var t = dd > 1e-6 ? ((px - ax) * dx + (py - ay) * dy) / dd : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    var qx = ax + dx * t - px, qy = ay + dy * t - py;
+    return qx * qx + qy * qy;
+  }
 
   function pick(clientX, clientY) {
     if (!routes.length) return null;
     var rect = canvas.getBoundingClientRect();
-    ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(ndc, camera);
+    var W = canvas.clientWidth || 1920;
+    var H = canvas.clientHeight || 1080;
+    var px = (clientX - rect.left) / rect.width * W;
+    var py = (clientY - rect.top) / rect.height * H;
 
     scene.updateMatrixWorld(true);
-    var hits = raycaster.intersectObjects(hitGroup.children, false);
-    if (!hits.length) return null;
+    camera.updateMatrixWorld();
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    hitM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+      .multiply(world.matrixWorld);
 
-    // отсекаем попадания на обратной стороне планеты
-    var globeHit = raycaster.intersectObject(earth, false);
-    var limit = globeHit.length ? globeHit[0].distance + 0.06 : Infinity;
-    // сперва маркеры стран (по ним целиться проще), потом дуги
-    var arc = null;
-    for (var i = 0; i < hits.length; i++) {
-      if (hits[i].distance > limit) continue;
-      if (hits[i].object.userData.dot) return hits[i].object.userData.name;
-      if (!arc) arc = hits[i].object.userData.name;
+    var dotBest = null, dotD2 = HIT_DOT_PX * HIT_DOT_PX;
+    var arcBest = null, arcD2 = HIT_ARC_PX * HIT_ARC_PX;
+
+    for (var i = 0; i < routes.length; i++) {
+      var r = routes[i], pts = r.pts, n = pts.length;
+
+      // маркер страны — по нему целиться проще, поэтому он в приоритете
+      hv.copy(r.dest).multiplyScalar(1.005).applyMatrix4(world.matrixWorld);
+      if (frontOf(hv)) {
+        hv.copy(r.dest).multiplyScalar(1.005).applyMatrix4(hitM);
+        var dx = (hv.x * 0.5 + 0.5) * W - px, dy = (-hv.y * 0.5 + 0.5) * H - py;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < dotD2) { dotD2 = d2; dotBest = r.name; }
+      }
+
+      for (var k = 0; k < n; k++) {
+        hv.copy(pts[k]).applyMatrix4(world.matrixWorld);
+        hvis[k] = frontOf(hv);
+        hv.copy(pts[k]).applyMatrix4(hitM);
+        hpx[k] = (hv.x * 0.5 + 0.5) * W;
+        hpy[k] = (-hv.y * 0.5 + 0.5) * H;
+      }
+      for (var s = 0; s < n - 1; s++) {
+        if (!hvis[s] && !hvis[s + 1]) continue;
+        var sd = segDist2(px, py, hpx[s], hpy[s], hpx[s + 1], hpy[s + 1]);
+        if (sd < arcD2) { arcD2 = sd; arcBest = r.name; }
+      }
     }
-    return arc;
+    return dotBest || arcBest;
   }
 
   /* ------------------------------ цикл ------------------------------ */
@@ -1948,6 +2046,27 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     setLayout: setLayout,
     setAutoRotate: function (v) { autoRotate = v; },
     resize: resize,
+    /**
+     * Отладочный/демонстрационный вид: точка на глобусе и расстояние камеры.
+     * Вызывается из app.js по параметрам адресной строки (см. README).
+     * zoom подменяет цель уже запущенного перелёта, поэтому его можно
+     * сочетать с focus() — камера долетит до маршрута и остановится ближе.
+     */
+    setDebugView: function (o) {
+      if (o.lat != null && o.lon != null) {
+        target = null;
+        autoRotate = false;
+        var a = faceAngles(o.lat, o.lon);
+        view.phi = U.clamp(a.phi, -1.35, 1.35);
+        view.theta = a.theta;
+      }
+      if (o.zoom != null) {
+        var z = U.clamp(o.zoom, 1.15, gcfg.maxZoom);   // ближе minZoom — только для отладки
+        if (target) target.to.zoom = z; else view.zoom = z;
+      }
+      if (o.rotate === false) autoRotate = false;
+      applyViewOffset();
+    },
     // для отладки: попадание по экранным координатам
     _pick: function (x, y) { return pick(x, y); },
     _project: function (lat, lon) {
@@ -1963,9 +2082,28 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
         front: front
       };
     },
-    _showHits: function (on) { hitGroup.visible = !!on; },
+    // для отладки: экранные координаты узлов дуги
+    _arcScreen: function (name) {
+      var r = routeByName[name];
+      if (!r) return null;
+      scene.updateMatrixWorld(true);
+      var rect = canvas.getBoundingClientRect();
+      var out = [];
+      for (var i = 0; i < r.pts.length; i++) {
+        var v = r.pts[i].clone().applyMatrix4(world.matrixWorld).project(camera);
+        out.push([rect.left + (v.x * 0.5 + 0.5) * rect.width,
+          rect.top + (-v.y * 0.5 + 0.5) * rect.height]);
+      }
+      return out;
+    },
     _stats: function () {
-      return { routes: routes.length, hits: hitGroup.children.length, calls: renderer.info.render.calls };
+      return {
+        routes: routes.length,
+        calls: renderer.info.render.calls,
+        tris: renderer.info.render.triangles,
+        zoom: +view.zoom.toFixed(3),
+        pxK: uPxK.value
+      };
     }
   };
 })(window);
@@ -2498,8 +2636,11 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
 
   /* --------------------------- аттрактор --------------------------- */
 
+  var idleOff = false;                 // отключается параметром ?idle=0
+
   function resetIdle() {
     if (idleTimer) clearTimeout(idleTimer);
+    if (idleOff) { idleTimer = null; return; }
     var sec = (CFG.attractorTimeoutSec || 90) * 1000;
     idleTimer = setTimeout(toAttractor, sec);
   }
@@ -2561,6 +2702,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       UI.setState('A');
       UI.hideLoading();
       resetIdle();
+      applyUrlParams();
 
       ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(function (ev) {
         document.addEventListener(ev, resetIdle, { passive: true });
@@ -2572,6 +2714,36 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       box.style.color = '#c0392b';
       global.console && console.error(err);
     });
+  }
+
+  /* ---------------- параметры адресной строки (отладка) ---------------- */
+
+  /**
+   * Позволяет открыть приложение сразу в нужном состоянии — для снимков
+   * экрана, показа заказчику и автотестов. Все параметры необязательные,
+   * список — в README, раздел «Параметры адресной строки».
+   */
+  function applyUrlParams() {
+    var q = {};
+    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('=');
+      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
+      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
+    });
+    if (!Object.keys(q).length) return;
+
+    if (q.year && DATA.years.indexOf(+q.year) >= 0 && +q.year !== year) setYear(+q.year, false);
+    if (q.country) goToCountry(q.country);
+    if (q.select) Globe.setSelected(q.select);
+
+    var v = {};
+    if (q.lat && q.lon) { v.lat = +q.lat; v.lon = +q.lon; }
+    if (q.zoom) v.zoom = +q.zoom;
+    if (q.rotate === '0') v.rotate = false;
+    if (Object.keys(v).length) Globe.setDebugView(v);
+
+    if (q.idle === '0') { idleOff = true; resetIdle(); }
   }
 
   function applyColors(c) {
