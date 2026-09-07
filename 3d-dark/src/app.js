@@ -99,8 +99,11 @@
 
   /* --------------------------- аттрактор --------------------------- */
 
+  var idleOff = false;                 // отключается параметром ?idle=0
+
   function resetIdle() {
     if (idleTimer) clearTimeout(idleTimer);
+    if (idleOff) { idleTimer = null; return; }
     var sec = (CFG.attractorTimeoutSec || 90) * 1000;
     idleTimer = setTimeout(toAttractor, sec);
   }
@@ -162,6 +165,7 @@
       UI.setState('A');
       UI.hideLoading();
       resetIdle();
+      applyUrlParams();
 
       ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(function (ev) {
         document.addEventListener(ev, resetIdle, { passive: true });
@@ -173,6 +177,36 @@
       box.style.color = '#c0392b';
       global.console && console.error(err);
     });
+  }
+
+  /* ---------------- параметры адресной строки (отладка) ---------------- */
+
+  /**
+   * Позволяет открыть приложение сразу в нужном состоянии — для снимков
+   * экрана, показа заказчику и автотестов. Все параметры необязательные,
+   * список — в README, раздел «Параметры адресной строки».
+   */
+  function applyUrlParams() {
+    var q = {};
+    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('=');
+      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
+      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
+    });
+    if (!Object.keys(q).length) return;
+
+    if (q.year && DATA.years.indexOf(+q.year) >= 0 && +q.year !== year) setYear(+q.year, false);
+    if (q.country) goToCountry(q.country);
+    if (q.select) Globe.setSelected(q.select);
+
+    var v = {};
+    if (q.lat && q.lon) { v.lat = +q.lat; v.lon = +q.lon; }
+    if (q.zoom) v.zoom = +q.zoom;
+    if (q.rotate === '0') v.rotate = false;
+    if (Object.keys(v).length) Globe.setDebugView(v);
+
+    if (q.idle === '0') { idleOff = true; resetIdle(); }
   }
 
   function applyColors(c) {

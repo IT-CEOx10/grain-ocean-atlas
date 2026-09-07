@@ -10,21 +10,32 @@
   var DEG = Math.PI / 180;
   var R = 1;
 
-  // текстуры из снимков NASA, готовит tools/make_earth_textures.py
-  var TEX_LIGHTS = 'assets/textures/earth_night_4096.jpg';   // огни городов
-  var TEX_ATMOS = 'assets/textures/earth_land_2048.jpg';     // подложка суши
+  /*
+   * Текстуры из снимков NASA, их готовит tools/make_earth_textures.py.
+   * Вариантов по два: основной и запасной вдвое меньше — какой грузить,
+   * решает pickTexture() по renderer.capabilities.maxTextureSize.
+   */
+  var TEX_LIGHTS = [                    // огни городов
+    { size: 8192, path: 'assets/textures/earth_night_8192.jpg' },
+    { size: 4096, path: 'assets/textures/earth_night_4096.jpg' }
+  ];
+  var TEX_ATMOS = [                     // подложка суши
+    { size: 4096, path: 'assets/textures/earth_land_4096.jpg' },
+    { size: 2048, path: 'assets/textures/earth_land_2048.jpg' }
+  ];
 
   var cfg, colors, gcfg;
   var renderer, scene, camera, canvas;
   var pivotTilt, pivotSpin, world;      // tilt(rot.x) > spin(rot.y) > world
   var earth, borders, highlight, atmo, halo;
-  var arcGroup, hitGroup, shipDot, originDot;
+  var arcGroup, shipDot, originDot;
   var endPointsBig = null, endPointsSmall = null, particles = null;
 
   var topoFeatures = null;              // контуры стран для подсветки
   var highlightCtx = null, highlightTex = null, highlightIso = null;
+  var highlightLine = null, highlightGlow = null;
 
-  var routes = [];                      // [{name, curve, mesh, hit, value, norm}]
+  var routes = [];                      // [{name, curve, pts, mesh, value, norm, baseHalf}]
   var routeByName = {};
   var selected = null;
 
@@ -73,10 +84,11 @@
     };
   }
 
-  /* --------------------------- контуры стран --------------------------- */
+  /* ---------------- страна на холсте: заливка подсветки ---------------- */
 
   /**
-   * Рисует контур страны на холсте текстуры (равнопрямоугольная проекция).
+   * Обводит страну на холсте текстуры (равнопрямоугольная проекция) —
+   * нужен только для заливки, сам контур рисуется линиями в 3D.
    * Кольца, пересекающие 180-й меридиан (Россия, Фиджи), разворачиваются
    * в непрерывную последовательность долгот и рисуются трижды — со сдвигом
    * на -W, 0 и +W; лишнее обрезает холст.
@@ -109,40 +121,174 @@
     }
   }
 
-  /** Едва заметная сетка границ поверх ночной Земли. */
-  function buildBordersTexture(topo) {
-    var W = 4096, H = 2048;
-    var cv = document.createElement('canvas');
-    cv.width = W; cv.height = H;
-    var ctx = cv.getContext('2d');
+  /* ------------------ линии на сфере: ширина в пикселях ------------------ */
 
-    topoFeatures = topojson.feature(topo, topo.objects.countries).features;
+  /*
+   * Контуры стран нарисованы не на текстуре, а геометрией. Каждый отрезок
+   * границы превращается в четырёхугольник, который вершинный шейдер
+   * растягивает поперёк линии уже в координатах экрана: толщина задана
+   * в пикселях и не зависит от приближения. Край гасится по alpha, поэтому
+   * линия остаётся тонкой и гладкой даже вплотную к планете — на холсте
+   * 2048×1024 она в этот момент разваливалась на ступеньки.
+   *
+   * Точки колец уплотняются дугами (LINE_STEP): в topojson длинные прямые
+   * границы заданы двумя точками, и хорда между ними ушла бы под поверхность.
+   */
+  var uRes = { value: new THREE.Vector2(1920, 1080) };
+  var LINE_STEP = 1.2 * DEG;            // максимальный шаг вдоль границы
 
-    ctx.lineJoin = 'round';
-    ctx.lineWidth = 1.6;
-    ctx.strokeStyle = colors.border;
-    for (var i = 0; i < topoFeatures.length; i++) {
-      tracePath(ctx, topoFeatures[i], W, H);
-      ctx.stroke();
-    }
+  var LINE_VERT =
+    'attribute vec3 aEnd; attribute vec2 aSideT;' +
+    'uniform vec2 uRes; uniform float uHalf;' +
+    'varying float vSide;' +
+    'void main(){' +
+    '  vec4 ca = projectionMatrix * modelViewMatrix * vec4(position, 1.0);' +
+    '  vec4 cb = projectionMatrix * modelViewMatrix * vec4(aEnd, 1.0);' +
+    '  vec2 d = (cb.xy / cb.w - ca.xy / ca.w) * uRes;' +
+    '  float l = length(d);' +
+    '  vec2 n = l > 1e-6 ? vec2(-d.y, d.x) / l : vec2(0.0);' +
+    '  vec4 c = mix(ca, cb, aSideT.y);' +
+    '  c.xy += n * (aSideT.x * uHalf * 2.0 * c.w) / uRes;' +
+    '  vSide = aSideT.x;' +
+    '  gl_Position = c; }';
 
-    var tex = new THREE.CanvasTexture(cv);
-    if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
-    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    return tex;
+  var LINE_FRAG =
+    'uniform vec3 uColor; uniform float uOpacity;' +
+    'varying float vSide;' +
+    'void main(){' +
+    '  float a = 1.0 - smoothstep(0.30, 1.0, abs(vSide));' +
+    '  gl_FragColor = vec4(uColor, a * uOpacity); }';
+
+  /** 'rgba(r,g,b,a)' -> прозрачность; у других записей цвета — 1. */
+  function alphaOf(str) {
+    var m = /rgba\(([^)]+)\)/.exec(str || '');
+    if (!m) return 1;
+    var p = m[1].split(',');
+    return p.length > 3 ? parseFloat(p[3]) : 1;
   }
 
-  /** Отдельный слой: тёплый контур выбранной страны. */
+  /*
+   * Цвет берётся как есть, без пересчёта в линейное пространство: шейдер
+   * пишет его прямо в кадр, поэтому контур выглядит ровно тем цветом,
+   * что записан в config.json, — как раньше на холсте.
+   */
+  function rawColor(str) {
+    var c = new THREE.Color();
+    if (THREE.LinearSRGBColorSpace) c.setStyle(str, THREE.LinearSRGBColorSpace);
+    else c.setStyle(str);
+    return c;
+  }
+
+  function lineMaterial(color, halfPx, opacity, additive) {
+    return new THREE.ShaderMaterial({
+      transparent: true, depthWrite: false,
+      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
+      uniforms: {
+        uRes: uRes,
+        uHalf: { value: halfPx },
+        uColor: { value: rawColor(color) },
+        uOpacity: { value: opacity }
+      },
+      vertexShader: LINE_VERT,
+      fragmentShader: LINE_FRAG
+    });
+  }
+
+  /** Кольцо [[lon,lat],...] -> точки на сфере радиуса r, уплотнённые дугами. */
+  function ringToPoints(ring, r) {
+    var pts = [];
+    for (var i = 0; i < ring.length; i++) {
+      var v = toVec3(ring[i][1], ring[i][0], r);
+      if (pts.length) {
+        var prev = pts[pts.length - 1];
+        var cos = Math.max(-1, Math.min(1, prev.dot(v) / (r * r)));
+        var n = Math.ceil(Math.acos(cos) / LINE_STEP);
+        for (var k = 1; k < n; k++) pts.push(slerp(prev, v, k / n));
+      }
+      pts.push(v);
+    }
+    return pts;
+  }
+
+  /** Геометрия GeoJSON (линии или полигоны) -> массив полилиний. */
+  function geoToLines(geom, r, out) {
+    var t = geom.type, c = geom.coordinates, i, j;
+    if (t === 'LineString') {
+      out.push(ringToPoints(c, r));
+    } else if (t === 'MultiLineString' || t === 'Polygon') {
+      for (i = 0; i < c.length; i++) out.push(ringToPoints(c[i], r));
+    } else if (t === 'MultiPolygon') {
+      for (i = 0; i < c.length; i++)
+        for (j = 0; j < c[i].length; j++) out.push(ringToPoints(c[i][j], r));
+    }
+    return out;
+  }
+
+  var LINE_SIDE = [-1, -1, 1, -1, 1, 1];    // два треугольника на отрезок
+  var LINE_T = [0, 1, 1, 0, 1, 0];
+
+  function buildLineGeometry(lines) {
+    var segs = 0, i, j, k;
+    for (i = 0; i < lines.length; i++) segs += Math.max(0, lines[i].length - 1);
+    var pa = new Float32Array(segs * 18);
+    var pb = new Float32Array(segs * 18);
+    var st = new Float32Array(segs * 12);
+    var o3 = 0, o2 = 0;
+    for (i = 0; i < lines.length; i++) {
+      var pts = lines[i];
+      for (j = 0; j + 1 < pts.length; j++) {
+        var a = pts[j], b = pts[j + 1];
+        for (k = 0; k < 6; k++) {
+          pa[o3] = a.x; pa[o3 + 1] = a.y; pa[o3 + 2] = a.z;
+          pb[o3] = b.x; pb[o3 + 1] = b.y; pb[o3 + 2] = b.z;
+          o3 += 3;
+          st[o2] = LINE_SIDE[k]; st[o2 + 1] = LINE_T[k];
+          o2 += 2;
+        }
+      }
+    }
+    var g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pa, 3));
+    g.setAttribute('aEnd', new THREE.BufferAttribute(pb, 3));
+    g.setAttribute('aSideT', new THREE.BufferAttribute(st, 2));
+    // вершины расходятся уже на экране, поэтому сфера отсечения задана вручную
+    g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1.2);
+    return g;
+  }
+
+  /* --------------------------- контуры стран --------------------------- */
+
+  /** Едва заметная сетка границ: общие участки topojson рисует один раз. */
+  function buildBorders(topo) {
+    topoFeatures = topojson.feature(topo, topo.objects.countries).features;
+    var net = topojson.mesh(topo, topo.objects.countries);
+    var geo = buildLineGeometry(geoToLines(net, R * 1.0018, []));
+    var mesh = new THREE.Mesh(geo, lineMaterial(colors.border, 0.6,
+      alphaOf(colors.border) * 0.55));
+    mesh.renderOrder = 1;
+    return mesh;
+  }
+
+  /** Мягкая заливка выбранной страны (сам контур — линиями, см. ниже). */
   function buildHighlightTexture() {
     var W = 2048, H = 1024;
     var cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     highlightCtx = cv.getContext('2d');
-    highlightCtx.lineJoin = 'round';
     highlightTex = new THREE.CanvasTexture(cv);
     if (THREE.SRGBColorSpace) highlightTex.colorSpace = THREE.SRGBColorSpace;
     highlightTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return highlightTex;
+  }
+
+  function disposeHighlightLine() {
+    if (!highlightLine) return;
+    world.remove(highlightLine);
+    world.remove(highlightGlow);
+    highlightLine.geometry.dispose();
+    highlightLine.material.dispose();
+    highlightGlow.material.dispose();
+    highlightLine = highlightGlow = null;
   }
 
   function drawHighlight(iso) {
@@ -150,40 +296,105 @@
     highlightIso = iso;
     var W = 2048, H = 1024;
     highlightCtx.clearRect(0, 0, W, H);
+    disposeHighlightLine();
+
+    var feat = null;
     if (iso && topoFeatures) {
       for (var i = 0; i < topoFeatures.length; i++) {
-        if (String(topoFeatures[i].id) !== String(iso)) continue;
-        tracePath(highlightCtx, topoFeatures[i], W, H);
-        highlightCtx.fillStyle = colors.highlightFill;
-        highlightCtx.fill('evenodd');
-        highlightCtx.lineWidth = 2.2;
-        highlightCtx.strokeStyle = colors.highlight;
-        highlightCtx.stroke();
-        break;
+        if (String(topoFeatures[i].id) === String(iso)) { feat = topoFeatures[i]; break; }
       }
     }
+    if (feat) {
+      // заливка размыта: её край всё равно ступенчатый, а так он читается
+      // как мягкое свечение внутри страны, границу держит контур-линия
+      highlightCtx.filter = 'blur(4px)';
+      tracePath(highlightCtx, feat, W, H);
+      highlightCtx.fillStyle = colors.highlightFill;
+      highlightCtx.fill('evenodd');
+      highlightCtx.filter = 'none';
+
+      // контур: тонкая сердцевина плюс широкая полупрозрачная копия
+      var geo = buildLineGeometry(geoToLines(feat.geometry, R * 1.0034, []));
+      var a = alphaOf(colors.highlight);
+      // сердцевина по обычному смешиванию — иначе поверх светлой суши
+      // золото складывается с фоном и выцветает в белое; ореол сложением
+      highlightGlow = new THREE.Mesh(geo, lineMaterial(colors.highlight, 3.4, a * 0.22, true));
+      highlightLine = new THREE.Mesh(geo, lineMaterial(colors.highlight, 0.95, Math.min(1, a * 1.25)));
+      highlightGlow.renderOrder = 6;
+      highlightLine.renderOrder = 7;
+      world.add(highlightGlow);
+      world.add(highlightLine);
+    }
     highlightTex.needsUpdate = true;
-    highlight.visible = !!iso;
+    highlight.visible = !!feat;
   }
 
-  /** Круглое мягкое свечение — общая текстура точек и спрайтов. */
-  function glowTexture(rgb) {
-    var s = 64;
+  /*
+   * Текстуры точек рисуются в 128 px и показываются без мипмапов: спрайты
+   * и точки занимают на ретине 40–80 физических пикселей, то есть текстура
+   * идёт с небольшим уменьшением — так она остаётся резкой.
+   */
+  function pointTexture(rgb, draw) {
+    var s = 128;
     var cv = document.createElement('canvas');
     cv.width = cv.height = s;
-    var ctx = cv.getContext('2d');
-    var gr = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-    gr.addColorStop(0, 'rgba(' + rgb + ',1)');
-    gr.addColorStop(0.25, 'rgba(' + rgb + ',.55)');
-    gr.addColorStop(1, 'rgba(' + rgb + ',0)');
-    ctx.fillStyle = gr;
-    ctx.fillRect(0, 0, s, s);
+    draw(cv.getContext('2d'), s, s / 2);
     var t = new THREE.CanvasTexture(cv);
     if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
+    t.generateMipmaps = false;
+    t.minFilter = THREE.LinearFilter;
+    t.magFilter = THREE.LinearFilter;
     return t;
   }
 
-  var TEX_GOLD = null, TEX_WHITE = null;
+  /** Круглое мягкое свечение — маркеры стран и порт отправления. */
+  function glowTexture(rgb) {
+    return pointTexture(rgb, function (ctx, s, c) {
+      var gr = ctx.createRadialGradient(c, c, 0, c, c, c);
+      gr.addColorStop(0, 'rgba(' + rgb + ',1)');
+      gr.addColorStop(0.25, 'rgba(' + rgb + ',.55)');
+      gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+      ctx.fillStyle = gr;
+      ctx.fillRect(0, 0, s, s);
+    });
+  }
+
+  /**
+   * Точка с чёткой сердцевиной и мягким ореолом вокруг — «корабль».
+   * core — доля радиуса под ядро: при размере спрайта 20 px и core = 0.35
+   * ядро занимает 7 px, остальное уходит в свечение.
+   */
+  function dotTexture(rgb, core) {
+    return pointTexture(rgb, function (ctx, s, c) {
+      var halo = ctx.createRadialGradient(c, c, 0, c, c, c);
+      halo.addColorStop(0, 'rgba(' + rgb + ',.55)');
+      halo.addColorStop(core, 'rgba(' + rgb + ',.34)');
+      halo.addColorStop(0.6, 'rgba(' + rgb + ',.10)');
+      halo.addColorStop(1, 'rgba(' + rgb + ',0)');
+      ctx.fillStyle = halo;
+      ctx.fillRect(0, 0, s, s);
+
+      var cr = c * core;
+      var dot = ctx.createRadialGradient(c, c, 0, c, c, cr);
+      dot.addColorStop(0, 'rgba(255,255,255,1)');
+      dot.addColorStop(0.70, 'rgba(255,255,255,1)');
+      dot.addColorStop(0.88, 'rgba(' + rgb + ',.92)');
+      dot.addColorStop(1, 'rgba(' + rgb + ',0)');
+      ctx.fillStyle = dot;
+      ctx.fillRect(0, 0, s, s);
+    });
+  }
+
+  var TEX_GOLD = null, TEX_WHITE = null, TEX_SHIP = null;
+
+  /** Самый большой вариант текстуры, который тянет видеокарта. */
+  function pickTexture(list) {
+    var max = renderer.capabilities.maxTextureSize;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].size <= max) return list[i].path;
+    }
+    return list[list.length - 1].path;
+  }
 
   /**
    * Общая подготовка снимков Земли: sRGB (иначе тёмные полутона уезжают),
@@ -228,6 +439,60 @@
     });
   }
 
+  /* --------------------- дуги: ширина в пикселях --------------------- */
+
+  /*
+   * Трубка дуги строится один раз с фиксированным радиусом ARC_BASE, а её
+   * настоящая толщина считается в вершинном шейдере: вершина возвращается
+   * на ось (position − normal·ARC_BASE) и отодвигается обратно на радиус,
+   * который даёт нужную ширину в пикселях на этой глубине. Поэтому дуга
+   * выглядит одинаково и на общем плане, и при сильном приближении —
+   * геометрию перестраивать не нужно, меняются только два uniform-а.
+   *
+   * Фрагментный шейдер гасит яркость к краю трубки: у обращённой к камере
+   * стороны dot(нормаль, взгляд) равен единице, у силуэта — нулю. Резкая
+   * степень даёт светящуюся сердцевину, пологая — ореол вокруг неё.
+   */
+  var ARC_BASE = 0.01;                  // радиус, с которым построена трубка
+  var ARC_HALO = 3.0;                   // во сколько раз ореол шире сердцевины
+  var uPxK = { value: 0.00064 };        // 2·tan(fov/2)/высота холста, общий uniform
+
+  var ARC_VERT =
+    'uniform float uBase; uniform float uHalf; uniform float uPxK;' +
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){' +
+    '  vec3 n = normalize(normal);' +
+    '  vec4 mv = modelViewMatrix * vec4(position - n * uBase, 1.0);' +
+    '  vec3 nv = normalize(normalMatrix * n);' +
+    '  mv.xyz += nv * (uHalf * max(-mv.z, 0.05) * uPxK);' +
+    '  vN = nv; vP = mv.xyz;' +
+    '  gl_Position = projectionMatrix * mv; }';
+
+  var ARC_FRAG =
+    'uniform vec3 uColor; uniform float uOpacity;' +
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){' +
+    '  float d = clamp(dot(normalize(vN), normalize(-vP)), 0.0, 1.0);' +
+    '  float core = pow(d, 12.0);' +
+    '  float halo = pow(d, 1.3);' +
+    '  vec3 c = uColor + vec3(0.28) * core;' +   // сердцевина горячее и белее
+    '  gl_FragColor = vec4(c, (core + halo * 0.38) * uOpacity); }';
+
+  function arcMaterial(color, half, opacity) {
+    return new THREE.ShaderMaterial({
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
+      uniforms: {
+        uBase: { value: ARC_BASE },
+        uHalf: { value: half },
+        uPxK: uPxK,                     // общий объект: обновляется при resize
+        uColor: { value: new THREE.Color(color) },
+        uOpacity: { value: opacity }
+      },
+      vertexShader: ARC_VERT,
+      fragmentShader: ARC_FRAG
+    });
+  }
+
   /* ------------------------------ сцена ------------------------------ */
 
   function init(opts) {
@@ -262,6 +527,7 @@
 
     TEX_GOLD = glowTexture('255,205,120');
     TEX_WHITE = glowTexture('255,240,214');
+    TEX_SHIP = dotTexture('255,244,224', 0.35);
 
     // ночная Земля: холодная серо-голубая суша (карта)
     // + тёпло-белые огни городов с ореолом (emissive)
@@ -273,27 +539,21 @@
       emissiveIntensity: gcfg.lightsIntensity || 1.35
     });
     var loader = new THREE.TextureLoader();
-    loader.load(U.asset(TEX_ATMOS), function (t) {
+    loader.load(U.asset(pickTexture(TEX_ATMOS)), function (t) {
       earthMat.map = prepTexture(t); earthMat.needsUpdate = true;
     });
-    loader.load(U.asset(TEX_LIGHTS), function (t) {
+    loader.load(U.asset(pickTexture(TEX_LIGHTS)), function (t) {
       earthMat.emissiveMap = prepTexture(t); earthMat.needsUpdate = true;
     });
-    earth = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), earthMat);
+    // сегментов много: вблизи на гранёном шаре виден многоугольный край диска
+    earth = new THREE.Mesh(new THREE.SphereGeometry(R, 160, 96), earthMat);
     world.add(earth);
 
     // едва заметные границы стран
-    borders = new THREE.Mesh(
-      new THREE.SphereGeometry(R * 1.0012, 96, 64),
-      new THREE.MeshBasicMaterial({
-        map: buildBordersTexture(opts.topo),
-        transparent: true, opacity: 0.28, depthWrite: false
-      })
-    );
-    borders.renderOrder = 1;
+    borders = buildBorders(opts.topo);
     world.add(borders);
 
-    // тёплый контур выбранной страны
+    // мягкая заливка выбранной страны (контур добавляется отдельно, линиями)
     highlight = new THREE.Mesh(
       new THREE.SphereGeometry(R * 1.0024, 96, 64),
       new THREE.MeshBasicMaterial({
@@ -314,27 +574,24 @@
     world.add(halo);
 
     arcGroup = new THREE.Group();
-    hitGroup = new THREE.Group();
-    hitGroup.visible = false;           // не рисуем, но лучами проверяем
     world.add(arcGroup);
-    world.add(hitGroup);
 
+    // Спрайты с sizeAttenuation:false меряют scale не в мировых единицах,
+    // а как долю экрана, поэтому размер задаётся в пикселях (см. setPxSizes).
     // точка отправления
     var o = cfg.origin;
     originDot = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: TEX_WHITE, transparent: true,
+      map: TEX_WHITE, transparent: true, sizeAttenuation: false,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     originDot.position.copy(toVec3(o.lat, o.lon, R * 1.004));
-    originDot.scale.setScalar(0.062);
     world.add(originDot);
 
     // «корабль» — светящаяся точка, бегущая по выбранному маршруту
     shipDot = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: TEX_WHITE, transparent: true,
+      map: TEX_SHIP, transparent: true, sizeAttenuation: false,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
-    shipDot.scale.setScalar(0.06);
     shipDot.visible = false;
     world.add(shipDot);
 
@@ -350,7 +607,19 @@
     var h = canvas.clientHeight || 1080;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
+    uRes.value.set(w, h);
+    setPxSizes(h);
     applyViewOffset();
+  }
+
+  /** Размеры в пикселях: спрайты и точки — CSS-пиксели, дуги — через uniform. */
+  var PX = { origin: 28, ship: 20, endBig: 38, endSmall: 22, particle: 10 };
+
+  function setPxSizes(h) {
+    // мировая длина, дающая один пиксель по вертикали на расстоянии 1 от камеры
+    uPxK.value = 2 * Math.tan(camera.fov * DEG / 2) / h;
+    if (originDot) originDot.scale.setScalar(PX.origin * uPxK.value);
+    if (shipDot) shipDot.scale.setScalar(PX.ship * uPxK.value);
   }
 
   function applyViewOffset() {
@@ -503,9 +772,6 @@
       arcGroup.remove(r.mesh);
       r.mesh.geometry.dispose();
       r.mesh.material.dispose();
-      hitGroup.remove(r.hit);
-      r.hit.geometry.dispose();
-      if (r.hitDot) { hitGroup.remove(r.hitDot); r.hitDot.geometry.dispose(); }
     });
     routes = [];
     routeByName = {};
@@ -518,8 +784,6 @@
     endPointsBig = endPointsSmall = particles = null;
   }
 
-  var hitMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-
   function endPoints(list, size, opacity) {
     if (!list.length) return null;
     var pos = [];
@@ -529,8 +793,9 @@
     }
     var g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    // sizeAttenuation:false — size прямо в CSS-пикселях, зум на него не влияет
     var p = new THREE.Points(g, new THREE.PointsMaterial({
-      size: size, sizeAttenuation: true, map: TEX_GOLD,
+      size: size, sizeAttenuation: false, map: TEX_GOLD,
       color: 0xFFD9A0, transparent: true, opacity: opacity,
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
@@ -579,35 +844,18 @@
       }
       var curve = new THREE.CatmullRomCurve3(pts);
 
-      var radius = 0.0019 + 0.0072 * norm * norm;   // толщина по лог-шкале объёма
-      var opacity = 0.26 + 0.42 * norm;
-      var geo = new THREE.TubeGeometry(curve, N, radius, 6, false);
-      var mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(colors.route),
-        transparent: true,
-        opacity: opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false
-      });
-      var mesh = new THREE.Mesh(geo, mat);
+      // полуширина светящейся сердцевины в пикселях экрана — по лог-шкале объёма
+      var half = 0.80 + 1.30 * norm * norm;
+      var opacity = 0.42 + 0.55 * norm;
+      var geo = new THREE.TubeGeometry(curve, N, ARC_BASE, 8, false);
+      var mesh = new THREE.Mesh(geo, arcMaterial(colors.route, half * ARC_HALO, opacity));
       mesh.renderOrder = 3;
       arcGroup.add(mesh);
 
-      // невидимая «толстая» геометрия под палец
-      var hit = new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.022, 4, false), hitMat);
-      hit.userData.name = it.name;
-      hitGroup.add(hit);
-
-      var hitDot = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 6), hitMat);
-      hitDot.position.copy(dest.clone().multiplyScalar(1.005));
-      hitDot.userData.name = it.name;
-      hitDot.userData.dot = true;
-      hitGroup.add(hitDot);
-
       var route = {
         name: it.name, value: it.value, norm: norm, iso: it.iso, port: it.port,
-        curve: curve, pts: pts, mesh: mesh, hit: hit, hitDot: hitDot,
-        baseOpacity: opacity, dest: dest, phase: Math.random()
+        curve: curve, pts: pts, mesh: mesh,
+        baseHalf: half, baseOpacity: opacity, dest: dest, phase: Math.random()
       };
       routes.push(route);
       routeByName[it.name] = route;
@@ -615,8 +863,8 @@
 
     // светящиеся точки на концах: два размера — крупные направления заметнее
     var big = routes.slice(0, 8), small = routes.slice(8);
-    endPointsBig = endPoints(big, 0.085, 0.95);
-    endPointsSmall = endPoints(small, 0.05, 0.75);
+    endPointsBig = endPoints(big, PX.endBig, 0.95);
+    endPointsSmall = endPoints(small, PX.endSmall, 0.75);
 
     // бегущие частицы: один Points-объект на все дуги
     if (routes.length) {
@@ -624,7 +872,7 @@
       g.setAttribute('position',
         new THREE.Float32BufferAttribute(new Float32Array(routes.length * PPA * 3), 3));
       particles = new THREE.Points(g, new THREE.PointsMaterial({
-        size: 0.022, sizeAttenuation: true, map: TEX_GOLD,
+        size: PX.particle, sizeAttenuation: false, map: TEX_GOLD,
         color: 0xFFD9A0, transparent: true, opacity: 0.9,
         blending: THREE.AdditiveBlending, depthWrite: false
       }));
@@ -674,19 +922,25 @@
 
   /* ------------------------ выделение и фокус ------------------------ */
 
+  var SEL_HALF = 3.0;                   // полуширина выбранной дуги, пиксели
+
   function setSelected(name) {
     selected = name && routeByName[name] ? name : null;
     routes.forEach(function (r) {
+      var u = r.mesh.material.uniforms;
       var isSel = r.name === selected;
       if (!selected) {
-        r.mesh.material.color.set(colors.route);
-        r.mesh.material.opacity = r.baseOpacity;
+        u.uColor.value.set(colors.route);
+        u.uOpacity.value = r.baseOpacity;
+        u.uHalf.value = r.baseHalf * ARC_HALO;
       } else if (isSel) {
-        r.mesh.material.color.set(colors.routeActive);
-        r.mesh.material.opacity = Math.min(1, r.baseOpacity + 0.35);
+        u.uColor.value.set(colors.routeActive);
+        u.uOpacity.value = 1.0;
+        u.uHalf.value = SEL_HALF * ARC_HALO;
       } else {
-        r.mesh.material.color.set(colors.route);
-        r.mesh.material.opacity = r.baseOpacity * 0.15;   // остальные приглушены
+        u.uColor.value.set(colors.route);
+        u.uOpacity.value = r.baseOpacity * 0.15;   // остальные приглушены
+        u.uHalf.value = r.baseHalf * ARC_HALO;
       }
     });
     var dim = selected ? 0.18 : 1;
@@ -828,31 +1082,82 @@
     return Math.hypot(a.x - b.x, a.y - b.y);
   }
 
-  var raycaster = new THREE.Raycaster();
-  var ndc = new THREE.Vector2();
+  /*
+   * Попадание пальцем считается в экранных координатах: узлы дуг проецируются
+   * на холст и сравниваются с точкой касания по расстоянию в пикселях. Допуск
+   * не зависит от приближения — на общем плане в тонкую дугу попасть так же
+   * легко, как раньше по толстой невидимой трубке, а вблизи соседние маршруты
+   * не перехватывают касание. Заодно из сцены ушли 226 служебных объектов.
+   */
+  var HIT_ARC_PX = 14;                  // допуск по дуге
+  var HIT_DOT_PX = 22;                  // допуск по маркеру страны
+  var hitM = new THREE.Matrix4();
+  var hv = new THREE.Vector3(), hd = new THREE.Vector3(), hc = new THREE.Vector3();
+  var hpx = [], hpy = [], hvis = [];
+
+  /** Точка мира видна, если отрезок «камера → точка» не протыкает планету. */
+  function frontOf(p) {
+    hd.copy(p).sub(camera.position);
+    var dd = hd.lengthSq();
+    var t = dd > 1e-9 ? -camera.position.dot(hd) / dd : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    hc.copy(camera.position).addScaledVector(hd, t);
+    return hc.lengthSq() > 0.995 * 0.995;
+  }
+
+  /** Квадрат расстояния от точки до отрезка на экране. */
+  function segDist2(px, py, ax, ay, bx, by) {
+    var dx = bx - ax, dy = by - ay;
+    var dd = dx * dx + dy * dy;
+    var t = dd > 1e-6 ? ((px - ax) * dx + (py - ay) * dy) / dd : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    var qx = ax + dx * t - px, qy = ay + dy * t - py;
+    return qx * qx + qy * qy;
+  }
 
   function pick(clientX, clientY) {
     if (!routes.length) return null;
     var rect = canvas.getBoundingClientRect();
-    ndc.x = ((clientX - rect.left) / rect.width) * 2 - 1;
-    ndc.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-    raycaster.setFromCamera(ndc, camera);
+    var W = canvas.clientWidth || 1920;
+    var H = canvas.clientHeight || 1080;
+    var px = (clientX - rect.left) / rect.width * W;
+    var py = (clientY - rect.top) / rect.height * H;
 
     scene.updateMatrixWorld(true);
-    var hits = raycaster.intersectObjects(hitGroup.children, false);
-    if (!hits.length) return null;
+    camera.updateMatrixWorld();
+    camera.matrixWorldInverse.copy(camera.matrixWorld).invert();
+    hitM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+      .multiply(world.matrixWorld);
 
-    // отсекаем попадания на обратной стороне планеты
-    var globeHit = raycaster.intersectObject(earth, false);
-    var limit = globeHit.length ? globeHit[0].distance + 0.06 : Infinity;
-    // сперва маркеры стран (по ним целиться проще), потом дуги
-    var arc = null;
-    for (var i = 0; i < hits.length; i++) {
-      if (hits[i].distance > limit) continue;
-      if (hits[i].object.userData.dot) return hits[i].object.userData.name;
-      if (!arc) arc = hits[i].object.userData.name;
+    var dotBest = null, dotD2 = HIT_DOT_PX * HIT_DOT_PX;
+    var arcBest = null, arcD2 = HIT_ARC_PX * HIT_ARC_PX;
+
+    for (var i = 0; i < routes.length; i++) {
+      var r = routes[i], pts = r.pts, n = pts.length;
+
+      // маркер страны — по нему целиться проще, поэтому он в приоритете
+      hv.copy(r.dest).multiplyScalar(1.005).applyMatrix4(world.matrixWorld);
+      if (frontOf(hv)) {
+        hv.copy(r.dest).multiplyScalar(1.005).applyMatrix4(hitM);
+        var dx = (hv.x * 0.5 + 0.5) * W - px, dy = (-hv.y * 0.5 + 0.5) * H - py;
+        var d2 = dx * dx + dy * dy;
+        if (d2 < dotD2) { dotD2 = d2; dotBest = r.name; }
+      }
+
+      for (var k = 0; k < n; k++) {
+        hv.copy(pts[k]).applyMatrix4(world.matrixWorld);
+        hvis[k] = frontOf(hv);
+        hv.copy(pts[k]).applyMatrix4(hitM);
+        hpx[k] = (hv.x * 0.5 + 0.5) * W;
+        hpy[k] = (-hv.y * 0.5 + 0.5) * H;
+      }
+      for (var s = 0; s < n - 1; s++) {
+        if (!hvis[s] && !hvis[s + 1]) continue;
+        var sd = segDist2(px, py, hpx[s], hpy[s], hpx[s + 1], hpy[s + 1]);
+        if (sd < arcD2) { arcD2 = sd; arcBest = r.name; }
+      }
     }
-    return arc;
+    return dotBest || arcBest;
   }
 
   /* ------------------------------ цикл ------------------------------ */
@@ -918,6 +1223,27 @@
     setLayout: setLayout,
     setAutoRotate: function (v) { autoRotate = v; },
     resize: resize,
+    /**
+     * Отладочный/демонстрационный вид: точка на глобусе и расстояние камеры.
+     * Вызывается из app.js по параметрам адресной строки (см. README).
+     * zoom подменяет цель уже запущенного перелёта, поэтому его можно
+     * сочетать с focus() — камера долетит до маршрута и остановится ближе.
+     */
+    setDebugView: function (o) {
+      if (o.lat != null && o.lon != null) {
+        target = null;
+        autoRotate = false;
+        var a = faceAngles(o.lat, o.lon);
+        view.phi = U.clamp(a.phi, -1.35, 1.35);
+        view.theta = a.theta;
+      }
+      if (o.zoom != null) {
+        var z = U.clamp(o.zoom, 1.15, gcfg.maxZoom);   // ближе minZoom — только для отладки
+        if (target) target.to.zoom = z; else view.zoom = z;
+      }
+      if (o.rotate === false) autoRotate = false;
+      applyViewOffset();
+    },
     // для отладки: попадание по экранным координатам
     _pick: function (x, y) { return pick(x, y); },
     _project: function (lat, lon) {
@@ -933,9 +1259,39 @@
         front: front
       };
     },
-    _showHits: function (on) { hitGroup.visible = !!on; },
+    // для отладки: экранные координаты узлов дуги
+    _arcScreen: function (name) {
+      var r = routeByName[name];
+      if (!r) return null;
+      scene.updateMatrixWorld(true);
+      var rect = canvas.getBoundingClientRect();
+      var out = [];
+      for (var i = 0; i < r.pts.length; i++) {
+        var v = r.pts[i].clone().applyMatrix4(world.matrixWorld).project(camera);
+        out.push([rect.left + (v.x * 0.5 + 0.5) * rect.width,
+          rect.top + (-v.y * 0.5 + 0.5) * rect.height]);
+      }
+      return out;
+    },
     _stats: function () {
-      return { routes: routes.length, hits: hitGroup.children.length, calls: renderer.info.render.calls };
+      return {
+        routes: routes.length,
+        calls: renderer.info.render.calls,
+        tris: renderer.info.render.triangles,
+        zoom: +view.zoom.toFixed(3),
+        pxK: uPxK.value,
+        maxTex: renderer.capabilities.maxTextureSize,
+        lights: earth.material.emissiveMap && earth.material.emissiveMap.image
+          ? earth.material.emissiveMap.image.width : 0,
+        land: earth.material.map && earth.material.map.image
+          ? earth.material.map.image.width : 0,
+        borderSegs: borders.geometry.attributes.position.count / 6,
+        ship: shipDot.visible ? (function () {
+          var v = shipDot.position.clone().applyMatrix4(world.matrixWorld).project(camera);
+          return [Math.round((v.x * 0.5 + 0.5) * (canvas.clientWidth || 1920)),
+            Math.round((-v.y * 0.5 + 0.5) * (canvas.clientHeight || 1080))];
+        })() : null
+      };
     }
   };
 })(window);

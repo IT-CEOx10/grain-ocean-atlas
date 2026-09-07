@@ -29,7 +29,7 @@
     "autoRotateSpeed": 0.020,
     "defaultZoom": 4.3,
     "focusZoom": 2.9,
-    "minZoom": 2.2,
+    "minZoom": 2.0,
     "maxZoom": 7.5,
     "arcSegments": 56,
     "lightsIntensity": 1.5

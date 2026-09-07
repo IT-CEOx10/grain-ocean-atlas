@@ -3,21 +3,31 @@
 
 Оригиналы NASA лежат рядом и не меняются:
 
-  assets/textures/nasa_black_marble_4096.jpg  — Black Marble 2016, ночные огни
-  assets/textures/nasa_blue_marble_2048.jpg   — Blue Marble Next Generation, день
+  assets/textures/nasa_black_marble_8192.jpg  — Black Marble 2016, ночные огни
+  assets/textures/nasa_black_marble_4096.jpg  — то же, вдвое меньше
+  assets/textures/nasa_blue_marble_4096.jpg   — Blue Marble Next Generation, день
+  assets/textures/nasa_blue_marble_2048.jpg   — то же, вдвое меньше
 
-Скрипт делает из них две рабочие текстуры:
+Скрипт делает из них рабочие текстуры — по две на каждый слой: основную
+и уменьшенную запасную (её берёт `src/globe.js`, если видеокарта не тянет
+текстуру нужного размера, см. README, раздел «Текстуры Земли»):
 
-  assets/textures/earth_night_4096.jpg  — огни городов для emissive:
-      синеватая ночная дымка гасится плавной кривой (не по порогу), цвет огней
-      уводится к тёплому белому, поверх резкой картинки подмешиваются две
-      размытые копии — от них у огней появляется ореол и агломерации
-      сливаются в светящиеся области; света прижимаются мягкой кривой,
-      поэтому в рендере они не уходят в жёлтый клиппинг;
-  assets/textures/earth_land_2048.jpg   — подложка суши для diffuse:
-      дневной снимок разделяется по маске «вода/суша». Суша становится
-      светлой холодно-серой с сохранённым рельефом, океан — тёмно-синим.
-      Общую яркость и оттенок задаёт `colors.land` из config.json.
+  assets/textures/earth_night_8192.jpg  — огни городов для emissive:
+  assets/textures/earth_night_4096.jpg      синеватая ночная дымка гасится
+      плавной кривой (не по порогу), цвет огней уводится к тёплому белому,
+      поверх резкой картинки подмешиваются две размытые копии — от них
+      у огней появляется ореол и агломерации сливаются в светящиеся области;
+      света прижимаются мягкой кривой, поэтому в рендере они не уходят
+      в жёлтый клиппинг;
+  assets/textures/earth_land_4096.jpg   — подложка суши для diffuse:
+  assets/textures/earth_land_2048.jpg       дневной снимок разделяется по маске
+      «вода/суша». Суша становится светлой холодно-серой с сохранённым
+      рельефом, океан — тёмно-синим. Общую яркость и оттенок задаёт
+      `colors.land` из config.json.
+
+Радиусы размытия заданы в пикселях для ширины 4096 и пересчитываются
+пропорционально размеру снимка, поэтому текстуры разного разрешения
+выглядят на общем плане одинаково.
 
 Запуск:  python3 tools/make_earth_textures.py
 """
@@ -31,12 +41,17 @@ from PIL import Image, ImageChops, ImageFilter
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEX = os.path.join(ROOT, "assets", "textures")
 
-SRC_NIGHT = os.path.join(TEX, "nasa_black_marble_4096.jpg")
-OUT_NIGHT = os.path.join(TEX, "earth_night_4096.jpg")
-SRC_LAND = os.path.join(TEX, "nasa_blue_marble_2048.jpg")
-OUT_LAND = os.path.join(TEX, "earth_land_2048.jpg")
+REF_W = 4096.0        # ширина, для которой заданы радиусы размытия
 
-JPEG_QUALITY = 92
+# (исходник, результат, качество JPEG)
+NIGHT_JOBS = [
+    ("nasa_black_marble_8192.jpg", "earth_night_8192.jpg", 93),
+    ("nasa_black_marble_4096.jpg", "earth_night_4096.jpg", 93),
+]
+LAND_JOBS = [
+    ("nasa_blue_marble_4096.jpg", "earth_land_4096.jpg", 90),
+    ("nasa_blue_marble_2048.jpg", "earth_land_2048.jpg", 92),
+]
 
 # --- ночные огни ---------------------------------------------------------
 DEBLUE = 0.90         # сколько холодного оттенка снять с ночной дымки (0..1)
@@ -55,6 +70,7 @@ NIGHT_CEIL = 0.93     # потолок мягкой кривой: пики не 
 # --- подложка суши -------------------------------------------------------
 SEA_LO = 6            # (синий - красный): ниже — точно суша
 SEA_HI = 26           # выше — точно вода
+SEA_BLUR_R = 0.7      # сглаживание маски берега, px по 4096
 LAND_SAT = 0.16       # сколько цвета оставить суше: 0 — серая
 LAND_GAMMA = 0.85     # <1 — светлее, сильнее всего в полутонах
 LAND_KNEE = 0.45      # с какой яркости поджимаются света (снег, пустыни)
@@ -67,10 +83,12 @@ OCEAN_SPAN = 0.080    # насколько мелководье светлее �
 OCEAN_TINT = (0.62, 0.80, 1.18)    # тёмно-синий
 
 
-def save(img, path):
-    img.save(path, quality=JPEG_QUALITY, optimize=True, progressive=True)
-    print("Готово: %s (%.0f КБ)"
-          % (os.path.relpath(path, ROOT), os.path.getsize(path) / 1024.0))
+def save(img, name, quality):
+    path = os.path.join(TEX, name)
+    img.save(path, quality=quality, optimize=True, progressive=True)
+    print("Готово: %s  %dx%d, %.0f КБ, качество %d"
+          % (name, img.size[0], img.size[1],
+             os.path.getsize(path) / 1024.0, quality))
 
 
 def smoothstep(x, lo, hi):
@@ -107,8 +125,9 @@ def night_lut():
     return lut
 
 
-def make_night():
-    img = Image.open(SRC_NIGHT).convert("RGB")
+def make_night(src_name, out_name, quality):
+    img = Image.open(os.path.join(TEX, src_name)).convert("RGB")
+    k = img.size[0] / REF_W          # радиусы размытия — пропорционально ширине
     r, g, b = img.split()
 
     # 1. холодная дымка: у огней синевы нет, у дымки она вся
@@ -117,16 +136,16 @@ def make_night():
     img = Image.merge("RGB", (r, g, b))
 
     # 2. гасим дымку плавной кривой, города оставляем как есть
-    k = img.convert("L").point(haze_lut())
-    img = Image.merge("RGB", tuple(ImageChops.multiply(c, k) for c in img.split()))
+    mul = img.convert("L").point(haze_lut())
+    img = Image.merge("RGB", tuple(ImageChops.multiply(c, mul) for c in img.split()))
 
     # 3. цвет огней — к тёплому белому
     grey = img.convert("L").convert("RGB")
     img = Image.blend(grey, img, LIGHT_SAT)
 
     # 4. ореол: резкая картинка + две размытые копии
-    near = img.filter(ImageFilter.GaussianBlur(GLOW_NEAR_R))
-    wide = img.filter(ImageFilter.GaussianBlur(GLOW_WIDE_R))
+    near = img.filter(ImageFilter.GaussianBlur(GLOW_NEAR_R * k))
+    wide = img.filter(ImageFilter.GaussianBlur(GLOW_WIDE_R * k))
     parts = []
     for i in range(3):
         s = scale_channel(img.split()[i], SHARP_W)
@@ -137,7 +156,7 @@ def make_night():
 
     # 5. усиление и мягкое сжатие пиков вместо клиппинга
     img = img.point(night_lut() * 3)
-    save(img, OUT_NIGHT)
+    save(img, out_name, quality)
 
 
 # --------------------------- подложка суши -------------------------------
@@ -167,29 +186,33 @@ def tint(img, factors):
                                for ch, f in zip(img.split(), factors)])
 
 
-def make_land():
-    img = Image.open(SRC_LAND).convert("RGB")
+def make_land(src_name, out_name, quality):
+    img = Image.open(os.path.join(TEX, src_name)).convert("RGB")
+    k = img.size[0] / REF_W
     r, g, b = img.split()
     grey = img.convert("L")
 
     # вода отличается от суши тем, что синего в ней заметно больше красного
     mask = ImageChops.subtract(b, r).point(sea_mask_lut())
-    mask = mask.filter(ImageFilter.GaussianBlur(0.7))
+    mask = mask.filter(ImageFilter.GaussianBlur(SEA_BLUR_R * k))
 
     land = Image.blend(grey.convert("RGB"), img, LAND_SAT)
     land = tint(land.point(land_lut() * 3), LAND_TINT)
 
     ocean = tint(grey.point(ocean_lut()).convert("RGB"), OCEAN_TINT)
 
-    save(Image.composite(ocean, land, mask), OUT_LAND)
+    save(Image.composite(ocean, land, mask), out_name, quality)
 
 
 def main():
-    for src in (SRC_NIGHT, SRC_LAND):
-        if not os.path.exists(src):
-            raise SystemExit("нет файла %s" % os.path.relpath(src, ROOT))
-    make_night()
-    make_land()
+    Image.MAX_IMAGE_PIXELS = None
+    for src, _, _ in NIGHT_JOBS + LAND_JOBS:
+        if not os.path.exists(os.path.join(TEX, src)):
+            raise SystemExit("нет файла assets/textures/%s" % src)
+    for src, out, q in NIGHT_JOBS:
+        make_night(src, out, q)
+    for src, out, q in LAND_JOBS:
+        make_land(src, out, q)
 
 
 if __name__ == "__main__":
