@@ -16,9 +16,9 @@
     "textMuted": "#8E98AC",
     "route": "#F2B84B",
     "routeActive": "#FFD37A",
-    "land": "#4A5E88",
+    "land": "#E3EAF7",
     "ocean": "#0B1220",
-    "cityLights": "#FFC98A",
+    "cityLights": "#FFE9CC",
     "atmosphere": "#3D7BFF",
     "halo": "#2E61E6",
     "border": "rgba(150,180,230,.22)",
@@ -31,6 +31,7 @@
     "focusZoom": 2.9,
     "minZoom": 2.2,
     "maxZoom": 7.5,
-    "arcSegments": 56
+    "arcSegments": 56,
+    "lightsIntensity": 1.5
   }
 }

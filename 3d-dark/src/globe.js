@@ -185,6 +185,22 @@
 
   var TEX_GOLD = null, TEX_WHITE = null;
 
+  /**
+   * Общая подготовка снимков Земли: sRGB (иначе тёмные полутона уезжают),
+   * мипмапы и максимальная анизотропия — без них огни на краю диска
+   * рассыпаются в зернистую россыпь точек.
+   */
+  function prepTexture(t) {
+    if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    t.generateMipmaps = true;
+    t.minFilter = THREE.LinearMipmapLinearFilter;
+    t.magFilter = THREE.LinearFilter;
+    t.wrapS = THREE.RepeatWrapping;
+    t.needsUpdate = true;
+    return t;
+  }
+
   /* ----------------------- ободок и свечение ----------------------- */
 
   var RIM_VERT =
@@ -247,24 +263,21 @@
     TEX_GOLD = glowTexture('255,205,120');
     TEX_WHITE = glowTexture('255,240,214');
 
-    // ночная Земля: очень тёмная суша (карта) + тёплые огни городов (emissive)
+    // ночная Земля: холодная серо-голубая суша (карта)
+    // + тёпло-белые огни городов с ореолом (emissive)
     var earthMat = new THREE.MeshPhongMaterial({
       color: new THREE.Color(colors.land),
       specular: new THREE.Color(colors.ocean),
       shininess: 6,
       emissive: new THREE.Color(colors.cityLights),
-      emissiveIntensity: 2.0
+      emissiveIntensity: gcfg.lightsIntensity || 1.35
     });
     var loader = new THREE.TextureLoader();
     loader.load(U.asset(TEX_ATMOS), function (t) {
-      if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      earthMat.map = t; earthMat.needsUpdate = true;
+      earthMat.map = prepTexture(t); earthMat.needsUpdate = true;
     });
     loader.load(U.asset(TEX_LIGHTS), function (t) {
-      if (THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
-      t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      earthMat.emissiveMap = t; earthMat.needsUpdate = true;
+      earthMat.emissiveMap = prepTexture(t); earthMat.needsUpdate = true;
     });
     earth = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 64), earthMat);
     world.add(earth);
