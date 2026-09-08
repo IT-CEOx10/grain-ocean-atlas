@@ -51,7 +51,10 @@
   var routeByName = {};
   var selected = null;
 
-  // домашний ракурс: Россия, Чёрное море, Ближний Восток, Африка, Индия
+  // Домашний ракурс: Россия, Чёрное море, Ближний Восток, Африка, Индия.
+  // fx/fy — где на экране стоит центр планеты (доли ширины и высоты).
+  // Тема может сдвинуть его полями homeX/homeY в config.json (themes.<имя>.globe):
+  // в зелёной теме правая колонка шире, поэтому глобус уезжает левее и выше.
   var HOME = { phi: 0.33, theta: -2.36, fx: 0.52, fy: 0.52 };
 
   var view = { phi: HOME.phi, theta: HOME.theta, zoom: 4.3, fx: HOME.fx, fy: HOME.fy };
@@ -514,6 +517,10 @@
     gcfg = cfg.globe;
     onPick = opts.onPick || onPick;
     onInteract = opts.onInteract || onInteract;
+    if (gcfg.homeX != null) HOME.fx = gcfg.homeX;
+    if (gcfg.homeY != null) HOME.fy = gcfg.homeY;
+    view.fx = HOME.fx;
+    view.fy = HOME.fy;
     view.zoom = gcfg.defaultZoom;
 
     renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
@@ -979,8 +986,11 @@
     var ll = vecToLatLon(mid);
     var a = faceAngles(ll.lat, ll.lon);
     var angle = Math.acos(Math.max(-1, Math.min(1, origin.dot(r.dest.clone().normalize()))));
-    // чем длиннее маршрут, тем дальше камера — чтобы дуга влезла целиком
-    var zoom = U.clamp(gcfg.focusZoom + angle * 0.55, gcfg.focusZoom, gcfg.defaultZoom);
+    // чем длиннее маршрут, тем дальше камера — чтобы дуга влезла целиком.
+    // Верхняя граница своя (focusMaxZoom), а не defaultZoom: в зелёной теме
+    // глобус на «Карте» крупнее, но экран «Путь» от этого меняться не должен.
+    var far = gcfg.focusMaxZoom != null ? gcfg.focusMaxZoom : gcfg.defaultZoom;
+    var zoom = U.clamp(gcfg.focusZoom + angle * 0.55, gcfg.focusZoom, far);
     animateTo({ phi: U.clamp(a.phi, -1.2, 1.2), theta: a.theta, zoom: zoom, fx: 0.55, fy: 0.51 }, 1000);
     autoRotate = false;
   }

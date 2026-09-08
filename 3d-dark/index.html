@@ -34,23 +34,29 @@
 
     <!-- ========== состояние A: сводка ========== -->
     <section id="panel-summary" class="panel box">
-      <button id="summary-head" class="box-head" type="button">
-        <span id="summary-title">Экспорт зерна</span>
-        <svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><polyline points="4,6 8,10 12,6"></polyline></svg>
-      </button>
+      <!-- Две обёртки нужны зелёной теме: там это две отдельные карточки.
+           В синей теме они без оформления и вёрстку не меняют. -->
+      <div class="sum-main">
+        <button id="summary-head" class="box-head" type="button">
+          <span id="summary-title">Экспорт зерна</span>
+          <svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><polyline points="4,6 8,10 12,6"></polyline></svg>
+        </button>
 
-      <div id="summary-body" class="box-body">
-        <div class="metric">
-          <span id="sum-total" class="metric-value">—</span>
-          <span class="metric-unit">тыс. т</span>
+        <div id="summary-body" class="box-body">
+          <div class="metric">
+            <span id="sum-total" class="metric-value">—</span>
+            <span class="metric-unit">тыс. т</span>
+          </div>
+          <div class="metric-caption">поставлено на экспорт</div>
+
+          <div class="stat-row">
+            <div class="stat"><b id="sum-countries">—</b><span>стран-получателей</span></div>
+            <div class="stat"><b id="sum-groups">—</b><span>групп продукции</span></div>
+          </div>
         </div>
-        <div class="metric-caption">поставлено на экспорт</div>
+      </div>
 
-        <div class="stat-row">
-          <div class="stat"><b id="sum-countries">—</b><span>стран-получателей</span></div>
-          <div class="stat"><b id="sum-groups">—</b><span>групп продукции</span></div>
-        </div>
-
+      <div class="sum-top-box">
         <div class="section-title">Топ-3 направлений</div>
         <div id="sum-top" class="top-list"></div>
       </div>

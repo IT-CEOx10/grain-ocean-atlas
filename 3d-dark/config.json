@@ -59,7 +59,10 @@
       },
       "globe": {
         "rimStrength": 0.42,
-        "haloStrength": 0.13
+        "haloStrength": 0.13,
+        "defaultZoom": 3.70,
+        "homeX": 0.466,
+        "homeY": 0.45
       }
     }
   },
@@ -67,6 +70,7 @@
     "autoRotateSpeed": 0.020,
     "defaultZoom": 4.3,
     "focusZoom": 2.9,
+    "focusMaxZoom": 4.3,
     "minZoom": 2.0,
     "maxZoom": 7.5,
     "arcSegments": 56,

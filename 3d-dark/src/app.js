@@ -98,6 +98,24 @@
     Globe.resetView();
   }
 
+  /* --------------------------- подсказка --------------------------- */
+
+  /*
+   * «Коснитесь страны или маршрута, чтобы узнать больше».
+   * В синей теме подсказка стоит постоянно под списком стран (#left-hint),
+   * в зелёной место под глобусом, поэтому она всплывает на пять секунд —
+   * при запуске и при возврате в аттрактор.
+   */
+  var hintTimer = null;
+
+  function flashHint() {
+    var el = document.getElementById('touch-hint');
+    if (!el) return;
+    if (hintTimer) clearTimeout(hintTimer);
+    el.classList.add('is-on');
+    hintTimer = setTimeout(function () { el.classList.remove('is-on'); }, 5000);
+  }
+
   /* --------------------------- аттрактор --------------------------- */
 
   var idleOff = false;                 // отключается параметром ?idle=0
@@ -119,6 +137,7 @@
     setYear(start, true);
     Globe.resetView();
     resetIdle();
+    flashHint();
   }
 
   /* ------------------------------ старт ------------------------------ */
@@ -168,6 +187,7 @@
       UI.setState('A');
       UI.hideLoading();
       resetIdle();
+      flashHint();
       applyUrlParams();
 
       ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(function (ev) {

@@ -10,8 +10,14 @@
   var handlers = {};
   var listState = { items: [], filter: '', expanded: null };
 
+  // Зелёная тема иначе собирает экран «Карта»: карточка видео стоит
+  // в правой колонке уже на карте, а не только на экране «Путь».
+  // Класс на <html> вешает src/app.js (applyTheme) до вызова UI.init.
+  var isGreen = false;
+
   function init(h) {
     handlers = h;
+    isGreen = document.documentElement.classList.contains('theme-green');
     els = {
       search: $('search'),
       list: $('country-list'),
@@ -57,6 +63,14 @@
     els.summaryHead.addEventListener('click', function () {
       els.summary.classList.toggle('is-collapsed');
       handlers.onInteract();
+    });
+
+    // На карте в зелёной теме карточка видео работает как кнопка:
+    // открывает «Путь» в страну №1 за выбранный год.
+    els.video.addEventListener('click', function () {
+      if (document.body.classList.contains('state-b')) return;
+      var top = listState.items[0];
+      if (top) handlers.onStart(top.name);
     });
 
     $('reset-view').addEventListener('click', function () { handlers.onResetView(); });
@@ -227,17 +241,21 @@
 
     var max = s.top.length ? s.top[0].value : 1;
     els.sumTop.innerHTML = '';
-    s.top.forEach(function (t) {
+    s.top.forEach(function (t, i) {
       var row = U.el('div', 'top-row');
+      // номер направления: виден только в зелёной теме (в синей скрыт стилями)
+      row.appendChild(U.el('i', 'rk', String(i + 1)));
+      var body = U.el('div', 'tr-body');
       var ln = U.el('div', 'ln');
       ln.appendChild(U.el('b', 'nm', t.name));
       ln.appendChild(U.el('span', 'vl', U.fmtVolume(t.value)));
-      row.appendChild(ln);
+      body.appendChild(ln);
       var bar = U.el('div', 'bar');
       var fill = U.el('i');
       fill.style.width = (100 * t.value / max).toFixed(1) + '%';
       bar.appendChild(fill);
-      row.appendChild(bar);
+      body.appendChild(bar);
+      row.appendChild(body);
       row.addEventListener('click', function () { handlers.onStart(t.name); });
       els.sumTop.appendChild(row);
     });
@@ -307,92 +325,124 @@
     }
   }
 
-  /** Процедурная заглушка: ночное море, лунная дорожка и силуэт судна. */
-  function startWaves() {
+  /* Палитра заглушки. Синяя тема — ночное море под луной, зелёная — то же,
+     но в цветах экрана: тёмно-бирюзовая вода и золотая лунная дорожка. */
+  var SEA = {
+    navy: {
+      sky: ['#050912', '#0B1526', '#16233A'],
+      moon: '255,236,200', disc: 'rgba(255,244,222,.95)',
+      sea: ['#0B1526', '#03060C'],
+      wave: '120,160,220', path: '255,228,180',
+      hull: '#0A1019', hullLine: 'rgba(150,180,230,.14)', deck: '#1A2333'
+    },
+    green: {
+      sky: ['#04100E', '#072019', '#0D3129'],
+      moon: '255,226,166', disc: 'rgba(255,240,206,.95)',
+      sea: ['#0B2A26', '#03100E'],
+      wave: '110,205,182', path: '255,206,120',
+      hull: '#05201C', hullLine: 'rgba(140,215,195,.16)', deck: '#123830'
+    }
+  };
+
+  /** Один кадр процедурной заглушки: ночное море, лунная дорожка, судно. */
+  function drawWave(t) {
     var cv = els.videoCanvas;
     if (!cv) return;
-    var W = cv.width = 1200, H = cv.height = 784;
+    var W = cv.width, H = cv.height;
     var ctx = cv.getContext('2d');
+    var P = isGreen ? SEA.green : SEA.navy;
 
-    function ship(x, y, s) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.scale(s, s);
-      ctx.fillStyle = '#0A1019';
-      ctx.strokeStyle = 'rgba(150,180,230,.14)';
-      ctx.lineWidth = 1.2;
+    var sky = ctx.createLinearGradient(0, 0, 0, H * 0.55);
+    sky.addColorStop(0, P.sky[0]);
+    sky.addColorStop(0.65, P.sky[1]);
+    sky.addColorStop(1, P.sky[2]);
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H * 0.56);
+
+    var moon = ctx.createRadialGradient(W * 0.72, H * 0.18, 0, W * 0.72, H * 0.18, 180);
+    moon.addColorStop(0, 'rgba(' + P.moon + ',.55)');
+    moon.addColorStop(1, 'rgba(' + P.moon + ',0)');
+    ctx.fillStyle = moon;
+    ctx.fillRect(0, 0, W, H * 0.56);
+    ctx.fillStyle = P.disc;
+    ctx.beginPath(); ctx.arc(W * 0.72, H * 0.18, 17, 0, 6.283); ctx.fill();
+
+    var sea = ctx.createLinearGradient(0, H * 0.5, 0, H);
+    sea.addColorStop(0, P.sea[0]);
+    sea.addColorStop(1, P.sea[1]);
+    ctx.fillStyle = sea;
+    ctx.fillRect(0, H * 0.55, W, H * 0.45);
+
+    for (var i = 0; i < 38; i++) {
+      var yy = H * 0.575 + i * 8.8;
+      var amp = 1 + i * 0.7, sp = 0.5 + i * 0.05;
+      ctx.strokeStyle = 'rgba(' + P.wave + ',' + (0.012 + i * 0.0021).toFixed(3) + ')';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(-150, 0); ctx.lineTo(150, 0); ctx.lineTo(126, 34); ctx.lineTo(-124, 34);
-      ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.fillRect(-150, -16, 210, 16); ctx.strokeRect(-150, -16, 210, 16);
-      ctx.fillRect(56, -62, 62, 62); ctx.strokeRect(56, -62, 62, 62);
-      ctx.fillStyle = '#1A2333';
-      for (var i = 0; i < 6; i++) ctx.fillRect(-140 + i * 34, -13, 24, 10);
-      ctx.fillStyle = 'rgba(255,206,140,.85)';
-      ctx.fillRect(66, -52, 9, 7); ctx.fillRect(84, -52, 9, 7); ctx.fillRect(102, -52, 9, 7);
-      ctx.fillRect(66, -36, 9, 7); ctx.fillRect(84, -36, 9, 7);
-      ctx.fillStyle = 'rgba(255,220,170,.9)';
-      ctx.fillRect(112, -74, 4, 14);
-      ctx.restore();
+      for (var x = 0; x <= W; x += 8) {
+        var yv = yy + Math.sin(x * 0.012 + t * sp + i) * amp;
+        if (x === 0) ctx.moveTo(x, yv); else ctx.lineTo(x, yv);
+      }
+      ctx.stroke();
     }
 
-    function frame(now) {
-      waveRAF = requestAnimationFrame(frame);
-      var t = now / 1000;
-
-      var sky = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-      sky.addColorStop(0, '#050912');
-      sky.addColorStop(0.65, '#0B1526');
-      sky.addColorStop(1, '#16233A');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, W, H * 0.56);
-
-      var moon = ctx.createRadialGradient(W * 0.72, H * 0.18, 0, W * 0.72, H * 0.18, 180);
-      moon.addColorStop(0, 'rgba(255,236,200,.55)');
-      moon.addColorStop(1, 'rgba(255,236,200,0)');
-      ctx.fillStyle = moon;
-      ctx.fillRect(0, 0, W, H * 0.56);
-      ctx.fillStyle = 'rgba(255,244,222,.95)';
-      ctx.beginPath(); ctx.arc(W * 0.72, H * 0.18, 17, 0, 6.283); ctx.fill();
-
-      var sea = ctx.createLinearGradient(0, H * 0.5, 0, H);
-      sea.addColorStop(0, '#0B1526');
-      sea.addColorStop(1, '#03060C');
-      ctx.fillStyle = sea;
-      ctx.fillRect(0, H * 0.55, W, H * 0.45);
-
-      for (var i = 0; i < 38; i++) {
-        var yy = H * 0.575 + i * 8.8;
-        var amp = 1 + i * 0.7, sp = 0.5 + i * 0.05;
-        ctx.strokeStyle = 'rgba(120,160,220,' + (0.012 + i * 0.0021).toFixed(3) + ')';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (var x = 0; x <= W; x += 8) {
-          var yv = yy + Math.sin(x * 0.012 + t * sp + i) * amp;
-          if (x === 0) ctx.moveTo(x, yv); else ctx.lineTo(x, yv);
-        }
-        ctx.stroke();
-      }
-
-      // лунная дорожка
-      for (var j = 0; j < 84; j++) {
-        var yy2 = H * 0.575 + j * 3.9;
-        var w = (16 + j * 3.4) * (0.55 + 0.45 * Math.abs(Math.sin(t * 0.7 + j * 0.9)));
-        var xx = W * 0.72 + Math.sin(t * 0.8 + j * 0.5) * (3 + j * 0.35);
-        ctx.fillStyle = 'rgba(255,228,180,' + (0.10 * (1 - j / 84)).toFixed(3) + ')';
-        ctx.fillRect(xx - w / 2, yy2, w, 1.8);
-      }
-
-      ship(W * 0.42, H * 0.72 + Math.sin(t * 0.9) * 5, 1.9);
+    // лунная дорожка
+    for (var j = 0; j < 84; j++) {
+      var yy2 = H * 0.575 + j * 3.9;
+      var w = (16 + j * 3.4) * (0.55 + 0.45 * Math.abs(Math.sin(t * 0.7 + j * 0.9)));
+      var xx = W * 0.72 + Math.sin(t * 0.8 + j * 0.5) * (3 + j * 0.35);
+      ctx.fillStyle = 'rgba(' + P.path + ',' + (0.10 * (1 - j / 84)).toFixed(3) + ')';
+      ctx.fillRect(xx - w / 2, yy2, w, 1.8);
     }
 
+    // судно
+    ctx.save();
+    ctx.translate(W * 0.42, H * 0.72 + Math.sin(t * 0.9) * 5);
+    ctx.scale(1.9, 1.9);
+    ctx.fillStyle = P.hull;
+    ctx.strokeStyle = P.hullLine;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(-150, 0); ctx.lineTo(150, 0); ctx.lineTo(126, 34); ctx.lineTo(-124, 34);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillRect(-150, -16, 210, 16); ctx.strokeRect(-150, -16, 210, 16);
+    ctx.fillRect(56, -62, 62, 62); ctx.strokeRect(56, -62, 62, 62);
+    ctx.fillStyle = P.deck;
+    for (var k = 0; k < 6; k++) ctx.fillRect(-140 + k * 34, -13, 24, 10);
+    ctx.fillStyle = 'rgba(255,206,140,.85)';
+    ctx.fillRect(66, -52, 9, 7); ctx.fillRect(84, -52, 9, 7); ctx.fillRect(102, -52, 9, 7);
+    ctx.fillRect(66, -36, 9, 7); ctx.fillRect(84, -36, 9, 7);
+    ctx.fillStyle = 'rgba(255,220,170,.9)';
+    ctx.fillRect(112, -74, 4, 14);
+    ctx.restore();
+  }
+
+  function sizeCanvas() {
+    var cv = els.videoCanvas;
+    if (cv && cv.width !== 1200) { cv.width = 1200; cv.height = 784; }
+  }
+
+  /** Анимация заглушки — только на экране «Путь». */
+  function startWaves() {
+    if (!els.videoCanvas) return;
+    sizeCanvas();
     stopWaves();
-    waveRAF = requestAnimationFrame(frame);
+    waveRAF = requestAnimationFrame(function frame(now) {
+      waveRAF = requestAnimationFrame(frame);
+      drawWave(now / 1000);
+    });
   }
 
   function stopWaves() {
     if (waveRAF) cancelAnimationFrame(waveRAF);
     waveRAF = null;
+  }
+
+  /** Неподвижное превью для карточки видео на «Карте» (зелёная тема). */
+  function stillWave() {
+    if (!els.videoCanvas) return;
+    sizeCanvas();
+    drawWave(0);
   }
 
   /* ------------------------------ состояния ------------------------------ */
@@ -401,10 +451,13 @@
     var b = state === 'B';
     document.body.className = b ? 'state-b' : '';
     els.countryPanel.classList.toggle('hidden', !b);
-    els.video.classList.toggle('hidden', !b);
+    // в зелёной теме карточка видео есть и на «Карте» — там она стоит
+    // третьей в правой колонке и показывает неподвижное превью
+    els.video.classList.toggle('hidden', !b && !isGreen);
     els.facts.classList.toggle('hidden', !b);
     els.bottomB.classList.toggle('hidden', !b);
     playVideo(b);
+    if (!b && isGreen) stillWave();
   }
 
   function hideLoading() {

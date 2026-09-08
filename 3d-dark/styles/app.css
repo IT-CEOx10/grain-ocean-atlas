@@ -475,7 +475,8 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   transition: transform .22s ease;
 }
 .box.is-collapsed .chevron { transform: rotate(-90deg); }
-.box.is-collapsed .box-body { display: none; }
+.box.is-collapsed .box-body,
+.box.is-collapsed .sum-top-box { display: none; }
 
 .metric { display: flex; align-items: baseline; gap: 8px; margin-top: 16px; }
 .metric-value {
@@ -520,6 +521,8 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 
 .top-list { margin-top: 0; }
 .top-row { margin-top: 12px; }
+/* номер направления (1, 2, 3) — только для зелёной темы */
+.top-row .rk { display: none; }
 .top-row .ln {
   display: flex;
   align-items: baseline;
@@ -923,4 +926,277 @@ html.theme-green {
 
 html.theme-green .screen-title { text-transform: uppercase; letter-spacing: 0; }
 html.theme-green #left-hint { display: none; }
-html.theme-green #touch-hint { display: block; }
+
+/* --------------------- «Карта» в зелёной теме ---------------------
+   Композиция по референсу заказчика и отличается от синей темы:
+
+   слева   — заголовок, поиск-пилюля и список стран отдельными плашками,
+             общей панели под ними нет;
+   справа  — колонка 530 px из трёх карточек: сводка, топ-3, видео;
+   внизу   — таймлайн с крупными годами-пилюлями, кнопка-глобус справа
+             от него, мини-столбики объёма убраны;
+   глобус  — крупнее и левее, чтобы попасть между колонками
+             (defaultZoom / homeX / homeY в config.json, themes.green.globe).
+
+   Разметка та же, что в синей теме: всё разложено этими правилами. */
+
+/* ---- левая колонка ---- */
+
+html.theme-green #panel-left {
+  left: 60px;
+  top: 40px;
+  width: 380px;
+  height: 1000px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html.theme-green .search { height: 72px; margin-top: 20px; }
+html.theme-green .search input {
+  height: 72px;
+  border-radius: 999px;
+  padding: 0 26px 0 62px;
+  font-size: 17px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
+}
+/* z-index обязателен: у поля backdrop-filter, а он поднимает input
+   на слой позиционированных элементов и без него закрывает лупу */
+html.theme-green .search-icon {
+  left: 28px;
+  top: 26px;
+  z-index: 2;
+  width: 20px;
+  height: 20px;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+}
+
+/* высота кратна шагу строки (44 + 6), поэтому список обрывается
+   ровно по границе плашки, а не посередине названия */
+html.theme-green .country-list {
+  left: 0;
+  right: 0;
+  top: 236px;
+  bottom: 14px;
+  padding-right: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #D9B36A rgba(217, 179, 106, .12);
+}
+/* тонкая золотисто-зелёная полоса справа от списка */
+html.theme-green .country-list::-webkit-scrollbar { width: 6px; }
+html.theme-green .country-list::-webkit-scrollbar-track {
+  background: rgba(217, 179, 106, .12);
+  border-radius: 3px;
+}
+html.theme-green .country-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #E4C27A, #7FB9A4);
+  border-radius: 3px;
+}
+
+/* строка списка — отдельная плашка; backdrop-filter здесь не ставим:
+   строк больше сотни, размытие под каждой заметно роняет кадр */
+html.theme-green .country-row {
+  align-items: center;
+  height: 44px;
+  margin-bottom: 6px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(20, 56, 48, .52);
+}
+html.theme-green .country-row .nm { font-size: 16px; color: var(--text); }
+html.theme-green .country-row .vl { display: none; }
+
+/* выбранная страна: та же плашка, растянутая в карточку */
+html.theme-green .country-card {
+  margin: 0 0 6px;
+  padding: 14px 16px 16px;
+  border-radius: 14px;
+}
+html.theme-green .country-card .cc-name { font-size: 21px; }
+html.theme-green .btn-primary { margin-top: 12px; height: 44px; border-radius: 999px; }
+
+/* ---- правая колонка: три карточки ---- */
+
+html.theme-green #panel-summary {
+  right: 40px;
+  top: 40px;
+  width: 530px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html.theme-green .sum-main,
+html.theme-green .sum-top-box {
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 var(--inset-hi), 0 24px 60px rgba(0, 0, 0, .35);
+}
+html.theme-green .sum-main { height: 244px; padding: 26px 28px; }
+html.theme-green .sum-top-box { height: 258px; margin-top: 16px; padding: 22px 26px; }
+
+/* сводка: крупный светлый заголовок без шеврона, огромное число */
+html.theme-green #summary-head {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: var(--text);
+  pointer-events: none;              /* карточка не сворачивается */
+}
+html.theme-green #summary-head .chevron { display: none; }
+
+html.theme-green .sum-main .metric { margin-top: 18px; gap: 10px; }
+html.theme-green .sum-main .metric-value { font-size: 76px; }
+html.theme-green .sum-main .metric-unit { font-size: 20px; }
+html.theme-green .metric-caption { margin-top: 8px; font-size: 15px; }
+
+/* «113 стран-получателей · 5 групп продукции» одной мелкой строкой */
+html.theme-green .stat-row { margin-top: 14px; gap: 24px; align-items: baseline; }
+html.theme-green .stat {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+html.theme-green .stat b { display: inline; font-size: 17px; color: var(--accent); }
+html.theme-green .stat span { display: inline; margin: 0; font-size: 13px; }
+
+/* топ-3: номер в плашке слева, плашка с названием и объёмом справа */
+html.theme-green .section-title {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+}
+html.theme-green .top-list { margin-top: 12px; }
+html.theme-green .top-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 11px;
+}
+html.theme-green .top-row:first-child { margin-top: 0; }
+html.theme-green .top-row .rk {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(217, 179, 106, .16);
+  border: 1px solid var(--pick-line);
+  font-family: var(--mono);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--accent);
+}
+html.theme-green .top-row .tr-body {
+  flex: 1;
+  min-width: 0;
+  height: 50px;
+  padding: 9px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .045);
+  border: 1px solid var(--line);
+}
+html.theme-green .top-row .ln { font-size: 15px; }
+html.theme-green .top-row .bar { margin-top: 7px; height: 4px; border-radius: 2px; }
+
+/* карточка видео: на «Карте» она третья в правой колонке */
+html.theme-green #panel-video {
+  left: auto;
+  right: 40px;
+  top: 574px;
+  width: 530px;
+  height: 360px;
+  padding: 20px;
+  z-index: 4;
+}
+html.theme-green #panel-video .video-box { width: 490px; height: 320px; border-radius: 14px; }
+html.theme-green #panel-video #video-canvas { width: 490px; height: 320px; }
+html.theme-green .video-cap { display: none; }
+
+/* на экране «Путь» карточка возвращается на прежнее место слева */
+html.theme-green body.state-b #panel-video {
+  left: 40px;
+  right: auto;
+  top: 240px;
+  width: 640px;
+  height: 500px;
+  z-index: 5;
+}
+html.theme-green body.state-b #panel-video .video-box { width: 600px; height: 392px; border-radius: 12px; }
+html.theme-green body.state-b #panel-video #video-canvas { width: 600px; height: 392px; }
+html.theme-green body.state-b .video-cap { display: flex; }
+
+/* ---- таймлайн и кнопка сброса вида ---- */
+
+html.theme-green #timeline {
+  left: 430px;
+  right: 406px;
+  bottom: 34px;
+  height: 96px;
+  padding: 12px 22px 0;
+  border-radius: 26px;
+}
+html.theme-green #timeline::before { left: 22px; right: 22px; top: 75px; }
+
+html.theme-green .year-pill { width: 78px; justify-content: flex-start; }
+html.theme-green .year-pill .mb { display: none; }   /* мини-столбики объёма */
+html.theme-green .year-pill .yr {
+  order: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 48px;
+  padding: 0;
+  border-radius: 999px;
+  font-size: 17px;
+  color: var(--text);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid var(--line);
+}
+html.theme-green .year-pill .dot { order: 2; margin: 12px 0 0; }
+html.theme-green .year-pill.is-active .yr {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--year-fg-on);
+  font-weight: 700;
+}
+
+html.theme-green #reset-view { left: auto; right: 334px; bottom: 54px; }
+
+/* ---- подсказка ----
+   На «Карте» её место занял глобус, поэтому она всплывает на пять секунд
+   при запуске и при возврате в аттрактор (src/app.js, flashHint). */
+html.theme-green #touch-hint {
+  display: block;
+  bottom: 146px;
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+html.theme-green #touch-hint.is-on { opacity: 1; }
