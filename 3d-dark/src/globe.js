@@ -619,12 +619,21 @@
 
     // Ободок атмосферы и мягкое внешнее свечение. Цвет, сила, ширина полосы
     // (степень Френеля: меньше — шире) и радиус оболочки берутся из темы.
-    atmo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.rimRadius, 1.012), 64, 48),
-      rimMaterial(colors.atmosphere, num(gcfg.rimPower, 6.5), num(gcfg.rimStrength, 0.50)));
-    world.add(atmo);
-    halo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.haloRadius, 1.13), 48, 32),
-      rimMaterial(colors.halo, num(gcfg.haloPower, 4.5), num(gcfg.haloStrength, 0.15)));
-    world.add(halo);
+    // Нулевая сила — оболочки в сцене нет совсем: в зелёной теме заказчик
+    // просил убрать и кольцо, и внешнее свечение, остался только блик
+    // по кромке. Лишний прозрачный меш в таком случае не создаётся.
+    var rimStr = num(gcfg.rimStrength, 0.50);
+    if (rimStr > 0) {
+      atmo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.rimRadius, 1.012), 64, 48),
+        rimMaterial(colors.atmosphere, num(gcfg.rimPower, 6.5), rimStr));
+      world.add(atmo);
+    }
+    var haloStr = num(gcfg.haloStrength, 0.15);
+    if (haloStr > 0) {
+      halo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.haloRadius, 1.13), 48, 32),
+        rimMaterial(colors.halo, num(gcfg.haloPower, 4.5), haloStr));
+      world.add(halo);
+    }
     // Блик по кромке: светится сам край диска, а не кольцо снаружи.
     // Есть только у тем, где задан edgeStrength, — в синей теме
     // этого объекта в сцене нет и картинка не меняется.

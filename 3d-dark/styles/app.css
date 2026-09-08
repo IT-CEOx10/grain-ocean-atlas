@@ -857,17 +857,27 @@ body.state-b #touch-hint { display: none !important; }
    Маршруты и огни городов общие с синей темой и здесь не переопределяются. */
 
 /* Фон в зелёной теме живёт на странице целиком, а сцена 1920x1080 прозрачная:
-   при окне не 16:9 нет ни полос, ни шва по краям сцены. Виньетка тоже здесь. */
+   при окне не 16:9 нет ни полос, ни шва по краям сцены. Виньетка тоже здесь.
+
+   Нижний слой — фактура из assets/textures/bg_green.jpg: тёмно-зелёный
+   «мрамор» с прожилками и зерном (рисует tools/make_background.py, картинка
+   бесшовная). Плитка 1024 px: на 1920x1080 она укладывается неполных два
+   раза, поэтому фактура читается пятнами, а не мелкой сеткой. Выше лежат
+   мягкие световые пятна и виньетка — они гасят фактуру к краям кадра.
+   Списки размеров, повторов и позиций идут в том же порядке, что слои. */
 html.theme-green,
 html.theme-green body {
   background-color: #0A1A18;
   background-image:
     radial-gradient(120% 90% at 50% 45%,
-      rgba(0, 0, 0, 0) 40%, rgba(4, 18, 16, .50) 78%, rgba(4, 18, 16, .88) 100%),
+      rgba(0, 0, 0, 0) 42%, rgba(4, 18, 16, .34) 78%, rgba(4, 18, 16, .68) 100%),
     radial-gradient(72% 58% at 20% 10%, rgba(63, 217, 198, .10), rgba(63, 217, 198, 0) 62%),
     radial-gradient(60% 52% at 86% 84%, rgba(217, 179, 106, .07), rgba(217, 179, 106, 0) 64%),
-    radial-gradient(96% 86% at 50% 46%, rgba(23, 74, 64, .60), rgba(10, 26, 24, 0) 72%),
-    linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
+    radial-gradient(96% 86% at 50% 46%, rgba(23, 74, 64, .34), rgba(10, 26, 24, 0) 72%),
+    url(../assets/textures/bg_green.jpg);
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-size: auto, auto, auto, auto, 1024px 1024px;
+  background-position: center, center, center, center, center;
 }
 html.theme-green #card { background: none; }
 html.theme-green #vignette { display: none; }
@@ -875,15 +885,16 @@ html.theme-green #vignette { display: none; }
 html.theme-green {
   --page-bg: #0A1A18;
   --card-bg: #0A1A18;
-  /* мягкие светлые пятна поверх зелёно-бирюзового фона */
-  --card-image:
-    radial-gradient(72% 58% at 20% 10%, rgba(63, 217, 198, .10), rgba(63, 217, 198, 0) 62%),
-    radial-gradient(60% 52% at 86% 84%, rgba(217, 179, 106, .07), rgba(217, 179, 106, 0) 64%),
-    radial-gradient(96% 86% at 50% 46%, rgba(23, 74, 64, .60), rgba(10, 26, 24, 0) 72%),
-    linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
-  --panel: rgba(18, 52, 44, .62);
-  --line: rgba(217, 179, 106, .22);
-  --inset-hi: rgba(255, 255, 255, .05);
+  /* --card-image здесь не нужен: #card в зелёной теме прозрачный,
+     весь фон рисует правило html.theme-green выше */
+
+  /* Плашки по референсу заказчика: без контуров и заметно прозрачнее,
+     чем в синей теме. Все рамки на экране собраны в переменных ниже,
+     поэтому они выключены одним местом — прозрачным цветом, а не
+     нулевой толщиной: разметка и отступы остаются прежними. */
+  --panel: rgba(18, 52, 44, .40);
+  --line: transparent;
+  --inset-hi: transparent;
   --vignette: radial-gradient(120% 90% at 50% 45%,
     rgba(0, 0, 0, 0) 40%, rgba(4, 18, 16, .50) 78%, rgba(4, 18, 16, .88) 100%);
 
@@ -905,16 +916,16 @@ html.theme-green {
 
   --field-bg: rgba(255, 255, 255, .05);
   --field-bg-focus: rgba(255, 255, 255, .08);
-  --field-line: rgba(217, 179, 106, .18);
-  --field-line-focus: rgba(217, 179, 106, .45);
+  --field-line: transparent;
+  --field-line-focus: transparent;
   --field-ph: #7E968D;
 
-  --hairline: rgba(217, 179, 106, .13);
+  --hairline: transparent;
   --divider: rgba(217, 179, 106, .18);
   --scroll-thumb: rgba(217, 179, 106, .28);
   --row-press: rgba(217, 179, 106, .10);
-  --tile-bg: rgba(255, 255, 255, .04);
-  --tile-line: rgba(217, 179, 106, .16);
+  --tile-bg: rgba(255, 255, 255, .05);
+  --tile-line: transparent;
   --bar-track: rgba(255, 255, 255, .07);
   --bar-fill: linear-gradient(90deg, rgba(217, 179, 106, .55), #E4C27A);
   --bar-glow: 0 0 12px rgba(217, 179, 106, .45);
@@ -925,7 +936,7 @@ html.theme-green {
   --btn-shadow: 0 8px 24px rgba(217, 179, 106, .22), inset 0 1px 0 rgba(255, 255, 255, .28);
 
   --pick-bg: linear-gradient(180deg, rgba(217, 179, 106, .13), rgba(217, 179, 106, .04));
-  --pick-line: rgba(217, 179, 106, .34);
+  --pick-line: transparent;
   --pick-name: #F4E7C8;
   --pick-value: #D9B36A;
 
@@ -937,8 +948,31 @@ html.theme-green {
 
   --video-bg: #07100E;
   --play-bg: rgba(12, 32, 28, .55);
-  --play-line: rgba(217, 179, 106, .40);
+  --play-line: rgba(217, 179, 106, .40);   /* кружок Play — это кнопка, её оставляем */
 }
+
+/* Текст лежит прямо на фоне и на глобусе, а заливка плашек стала прозрачнее,
+   поэтому контраст держит мягкая тень, а не более плотная подложка. */
+html.theme-green .country-row .nm,
+html.theme-green .search input,
+html.theme-green #summary-head,
+html.theme-green .section-title,
+html.theme-green .sum-main .metric-value,
+html.theme-green .sum-main .metric-unit,
+html.theme-green .metric-caption,
+html.theme-green .stat b,
+html.theme-green .stat span,
+html.theme-green .top-row .rk,
+html.theme-green .top-row .ln,
+html.theme-green .year-pill .yr,
+html.theme-green .country-card .cc-name,
+html.theme-green .rank-row span,
+html.theme-green .product-item {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .55), 0 0 12px rgba(0, 0, 0, .35);
+}
+/* на золотой заливке тень только пачкает буквы */
+html.theme-green .year-pill.is-active .yr,
+html.theme-green .btn-primary { text-shadow: none; }
 
 html.theme-green .screen-title { text-transform: uppercase; letter-spacing: 0; }
 html.theme-green #left-hint { display: none; }
@@ -1026,7 +1060,7 @@ html.theme-green .country-row {
   padding: 0 18px;
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: rgba(20, 56, 48, .52);
+  background: rgba(255, 255, 255, .05);
 }
 html.theme-green .country-row .nm { font-size: 16px; color: var(--text); }
 html.theme-green .country-row .vl { display: none; }
