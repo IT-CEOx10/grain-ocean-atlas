@@ -72,9 +72,9 @@
         "edgeRadius": 1.003,
         "borderWidth": 0.75,
         "borderOpacity": 0.85,
-        "defaultZoom": 3.70,
+        "defaultZoom": 3.85,
         "homeX": 0.466,
-        "homeY": 0.45
+        "homeY": 0.5
       }
     }
   },

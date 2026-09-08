@@ -856,13 +856,21 @@ body.state-b #touch-hint { display: none !important; }
    Тёмный зелёно-бирюзовый фон, стекло панелей в тот же тон, золотая графика.
    Маршруты и огни городов общие с синей темой и здесь не переопределяются. */
 
-/* Фон страницы за пределами сцены 1920x1080 (окно не 16:9) — тот же градиент,
-   что и у сцены, чтобы не было тёмных полос сверху/снизу */
+/* Фон в зелёной теме живёт на странице целиком, а сцена 1920x1080 прозрачная:
+   при окне не 16:9 нет ни полос, ни шва по краям сцены. Виньетка тоже здесь. */
 html.theme-green,
 html.theme-green body {
   background-color: #0A1A18;
-  background-image: linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
+  background-image:
+    radial-gradient(120% 90% at 50% 45%,
+      rgba(0, 0, 0, 0) 40%, rgba(4, 18, 16, .50) 78%, rgba(4, 18, 16, .88) 100%),
+    radial-gradient(72% 58% at 20% 10%, rgba(63, 217, 198, .10), rgba(63, 217, 198, 0) 62%),
+    radial-gradient(60% 52% at 86% 84%, rgba(217, 179, 106, .07), rgba(217, 179, 106, 0) 64%),
+    radial-gradient(96% 86% at 50% 46%, rgba(23, 74, 64, .60), rgba(10, 26, 24, 0) 72%),
+    linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
 }
+html.theme-green #card { background: none; }
+html.theme-green #vignette { display: none; }
 
 html.theme-green {
   --page-bg: #0A1A18;
