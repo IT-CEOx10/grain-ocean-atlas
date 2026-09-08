@@ -12,16 +12,27 @@
 
   /*
    * Текстуры из снимков NASA, их готовит tools/make_earth_textures.py.
-   * Вариантов по два: основной и запасной вдвое меньше — какой грузить,
-   * решает pickTexture() по renderer.capabilities.maxTextureSize.
+   * Наборы разложены по темам, внутри темы — от большего к меньшему:
+   * какой вариант грузить, решает pickTexture() по значению
+   * renderer.capabilities.maxTextureSize.
+   *
+   * Огни городов. У синей темы два варианта (8192 и запасной 4096),
+   * у зелёной свой файл: там ореол шире и цвет теплее, поэтому 8192
+   * не нужен — мягкое свечение и на 4096 выглядит так же, а вес сборки
+   * растёт вдвое медленнее (см. NIGHT_THEMES в make_earth_textures.py).
    */
-  var TEX_LIGHTS = [                    // огни городов
-    { size: 8192, path: 'assets/textures/earth_night_8192.jpg' },
-    { size: 4096, path: 'assets/textures/earth_night_4096.jpg' }
-  ];
+  var TEX_LIGHTS = {
+    navy: [
+      { size: 8192, path: 'assets/textures/earth_night_8192.jpg' },
+      { size: 4096, path: 'assets/textures/earth_night_4096.jpg' }
+    ],
+    green: [
+      { size: 4096, path: 'assets/textures/earth_night_4096_green.jpg' }
+    ]
+  };
   /*
-   * Подложка суши своя у каждой темы: ночные огни общие, а суша и океан
-   * покрашены прямо в текстуре (см. LAND_THEMES в make_earth_textures.py).
+   * Подложка суши тоже своя у каждой темы: суша и океан покрашены прямо
+   * в текстуре (см. LAND_THEMES в make_earth_textures.py).
    * Пути записаны здесь буквально, а не собираются из имени темы, — иначе
    * tools/build_dist.py не найдёт их в коде и не вошьёт в один файл.
    */
@@ -39,7 +50,7 @@
   var cfg, colors, gcfg;
   var renderer, scene, camera, canvas;
   var pivotTilt, pivotSpin, world;      // tilt(rot.x) > spin(rot.y) > world
-  var earth, borders, highlight, atmo, halo;
+  var earth, borders, highlight, atmo, halo, edge;
   var arcGroup, shipDot, originDot;
   var endPointsBig = null, endPointsSmall = null, particles = null;
 
@@ -278,8 +289,11 @@
     topoFeatures = topojson.feature(topo, topo.objects.countries).features;
     var net = topojson.mesh(topo, topo.objects.countries);
     var geo = buildLineGeometry(geoToLines(net, R * 1.0018, []));
-    var mesh = new THREE.Mesh(geo, lineMaterial(colors.border, 0.6,
-      alphaOf(colors.border) * 0.55));
+    // толщина и сила линии — из темы: на светлой зелёной суше золотая
+    // сетка при синих настройках почти пропадает
+    var mesh = new THREE.Mesh(geo, lineMaterial(colors.border,
+      gcfg.borderWidth != null ? gcfg.borderWidth : 0.6,
+      alphaOf(colors.border) * (gcfg.borderOpacity != null ? gcfg.borderOpacity : 0.55)));
     mesh.renderOrder = 1;
     return mesh;
   }
@@ -429,16 +443,31 @@
 
   /* ----------------------- ободок и свечение ----------------------- */
 
+  /** Значение из настроек темы или значение по умолчанию. */
+  function num(v, def) {
+    return v != null ? v : def;
+  }
+
   var RIM_VERT =
     'varying vec3 vN; varying vec3 vP;' +
     'void main(){ vN = normalize(normalMatrix * normal);' +
     'vec4 mv = modelViewMatrix * vec4(position,1.0); vP = mv.xyz;' +
     'gl_Position = projectionMatrix * mv; }';
 
-  function rimMaterial(color, power, strength) {
+  /*
+   * Ободок и свечение — сфера чуть больше планеты, у которой видна только
+   * изнанка: сама планета непрозрачна, поэтому на экране от такой оболочки
+   * остаётся кольцо между краем диска и её силуэтом. Яркость считается
+   * по Френелю, степень uPow задаёт ширину полосы.
+   *
+   * Блик по кромке устроен наоборот — side: FrontSide: оболочка лежит поверх
+   * планеты и светится только у самого силуэта, где взгляд идёт по касательной.
+   * От этого край выглядит стеклянным, а не обведённым кольцом.
+   */
+  function rimMaterial(color, power, strength, front) {
     return new THREE.ShaderMaterial({
       transparent: true, blending: THREE.AdditiveBlending,
-      side: THREE.BackSide, depthWrite: false,
+      side: front ? THREE.FrontSide : THREE.BackSide, depthWrite: false,
       uniforms: {
         uColor: { value: new THREE.Color(color) },
         uPow: { value: power },
@@ -539,8 +568,10 @@
     pivotSpin.add(world);
     scene.add(pivotTilt);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    var dir = new THREE.DirectionalLight(new THREE.Color(colors.sunLight || '#9FC0FF'), 0.45);
+    // общий множитель света: тема может сделать планету ярче, не трогая соседнюю
+    var lk = gcfg.lightScale != null ? gcfg.lightScale : 1;
+    scene.add(new THREE.AmbientLight(0xffffff, 0.85 * lk));
+    var dir = new THREE.DirectionalLight(new THREE.Color(colors.sunLight || '#9FC0FF'), 0.45 * lk);
     dir.position.set(-2, 1.4, 2.2);
     scene.add(dir);
 
@@ -562,7 +593,8 @@
     loader.load(U.asset(pickTexture(landSet)), function (t) {
       earthMat.map = prepTexture(t); earthMat.needsUpdate = true;
     });
-    loader.load(U.asset(pickTexture(TEX_LIGHTS)), function (t) {
+    var lightSet = TEX_LIGHTS[cfg.theme] || TEX_LIGHTS.navy;
+    loader.load(U.asset(pickTexture(lightSet)), function (t) {
       earthMat.emissiveMap = prepTexture(t); earthMat.needsUpdate = true;
     });
     // сегментов много: вблизи на гранёном шаре виден многоугольный край диска
@@ -585,13 +617,24 @@
     highlight.visible = false;
     world.add(highlight);
 
-    // тонкий ободок атмосферы и мягкое внешнее свечение (цвет и сила — из темы)
-    atmo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.012, 64, 48),
-      rimMaterial(colors.atmosphere, 6.5, gcfg.rimStrength != null ? gcfg.rimStrength : 0.50));
+    // Ободок атмосферы и мягкое внешнее свечение. Цвет, сила, ширина полосы
+    // (степень Френеля: меньше — шире) и радиус оболочки берутся из темы.
+    atmo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.rimRadius, 1.012), 64, 48),
+      rimMaterial(colors.atmosphere, num(gcfg.rimPower, 6.5), num(gcfg.rimStrength, 0.50)));
     world.add(atmo);
-    halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.13, 48, 32),
-      rimMaterial(colors.halo, 4.5, gcfg.haloStrength != null ? gcfg.haloStrength : 0.15));
+    halo = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.haloRadius, 1.13), 48, 32),
+      rimMaterial(colors.halo, num(gcfg.haloPower, 4.5), num(gcfg.haloStrength, 0.15)));
     world.add(halo);
+    // Блик по кромке: светится сам край диска, а не кольцо снаружи.
+    // Есть только у тем, где задан edgeStrength, — в синей теме
+    // этого объекта в сцене нет и картинка не меняется.
+    if (gcfg.edgeStrength) {
+      edge = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.edgeRadius, 1.003), 96, 64),
+        rimMaterial(colors.edge || colors.atmosphere,
+          num(gcfg.edgePower, 6), gcfg.edgeStrength, true));
+      edge.renderOrder = 8;
+      world.add(edge);
+    }
 
     arcGroup = new THREE.Group();
     world.add(arcGroup);

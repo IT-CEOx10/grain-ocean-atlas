@@ -19,15 +19,21 @@
       у огней появляется ореол и агломерации сливаются в светящиеся области;
       света прижимаются мягкой кривой, поэтому в рендере они не уходят
       в жёлтый клиппинг;
+  assets/textures/earth_night_4096_green.jpg — огни для зелёной темы:
+      тот же снимок, но ореол вдвое шире, цвет теплее (золото вместо
+      бело-жёлтого) и усиление больше — агломерации сливаются в светящиеся
+      пятна. Размер только 4096: ореол всё равно мягкий, а 8192 добавил бы
+      к сборке лишние два мегабайта. См. словарь NIGHT_THEMES ниже;
   assets/textures/earth_land_4096.jpg   — подложка суши для diffuse:
   assets/textures/earth_land_2048.jpg       дневной снимок разделяется по маске
       «вода/суша». Суша становится светлой холодно-серой с сохранённым
       рельефом, океан — тёмно-синим. Общую яркость и оттенок задаёт
       `colors.land` из config.json;
   assets/textures/earth_land_4096_green.jpg — то же для зелёной темы:
-  assets/textures/earth_land_2048_green.jpg     тёмно-зелёная суша с рельефом
-      и бирюзовый океан. Обработка та же, различаются только множители
-      по каналам — см. словарь LAND_THEMES ниже.
+  assets/textures/earth_land_2048_green.jpg     сочная зелёная суша: тёмные
+      места (леса, хребты) уходят в зелень, светлые (степи, пустыни) —
+      в оливково-жёлтый, океан бирюзовый с заметно более светлым
+      мелководьем. См. словарь LAND_THEMES ниже.
 
 Радиусы размытия заданы в пикселях для ширины 4096 и пересчитываются
 пропорционально размеру снимка, поэтому текстуры разного разрешения
@@ -47,11 +53,6 @@ TEX = os.path.join(ROOT, "assets", "textures")
 
 REF_W = 4096.0        # ширина, для которой заданы радиусы размытия
 
-# (исходник, результат, качество JPEG)
-NIGHT_JOBS = [
-    ("nasa_black_marble_8192.jpg", "earth_night_8192.jpg", 93),
-    ("nasa_black_marble_4096.jpg", "earth_night_4096.jpg", 93),
-]
 # (исходник, размер в имени результата, качество JPEG)
 LAND_JOBS = [
     ("nasa_blue_marble_4096.jpg", 4096, 90),
@@ -71,6 +72,31 @@ GLOW_WIDE_R = 17.0    # радиус дальнего свечения, px по 
 GLOW_WIDE_W = 0.22
 NIGHT_GAIN = 2.9      # общее усиление перед сжатием светов
 NIGHT_CEIL = 0.93     # потолок мягкой кривой: пики не доходят до 255
+
+# Огни по темам. Значения выше — общие, тема перебивает только то, что ей нужно.
+# jobs: (исходник, размер в имени результата, качество JPEG);
+# имя результата — earth_night_<размер><суффикс>.jpg, у navy суффикса нет.
+NIGHT_THEMES = {
+    "navy": {
+        "suffix": "",
+        "jobs": [("nasa_black_marble_8192.jpg", 8192, 93),
+                 ("nasa_black_marble_4096.jpg", 4096, 93)],
+    },
+    "green": {
+        "suffix": "_green",
+        # только 4096: ореол тут заведомо мягкий, а 8192 добавил бы к каждой
+        # сборке около 2,7 МБ вшитого base64 без видимой пользы
+        "jobs": [("nasa_black_marble_4096.jpg", 4096, 85)],
+        "light_sat": 0.72,      # огни остаются тёплым золотом, а не белеют
+        "sharp_w": 0.34,        # резкой картинки меньше — точки крупнее
+        "glow_near_r": 8.0,     # ближний ореол вдвое шире
+        "glow_near_w": 0.36,
+        "glow_wide_r": 26.0,    # дальний тоже: агломерации сливаются в пятна
+        "glow_wide_w": 0.30,
+        "gain": 3.9,            # ярче
+        "ceil": 0.86,           # но потолок ниже — пики не уходят в белое
+    },
+}
 
 # --- подложка суши -------------------------------------------------------
 SEA_LO = 6            # (синий - красный): ниже — точно суша
@@ -95,15 +121,29 @@ LAND_THEMES = {
         "land_tint": (0.64, 0.74, 1.23),    # лёгкий холодный уклон суши
         "ocean_tint": (0.62, 0.80, 1.18),   # тёмно-синий океан
     },
+    # Зелёная тема: заказчик просил «ярче и сочнее». Суша поднята гаммой
+    # и диапазоном, а вместо одного оттенка у неё два — по яркости снимка:
+    # тёмное (леса, хребты) уходит в зелень, светлое (степи, пустыни) —
+    # в оливково-жёлтый. Океан бирюзовый, мелководье заметно светлее.
     "green": {
         "suffix": "_green",
-        "land_sat": 0.26,                   # больше исходного цвета: оливковые равнины
-        "land_tint": (0.50, 1.00, 0.74),    # тёмно-зелёная суша, светлее по хребтам
-        "land_floor": 0.16,                 # зелень темнее синевы, диапазон шире
-        "land_ceil": 0.78,
-        "ocean_tint": (0.26, 0.78, 0.75),   # тёмная бирюза
-        "ocean_floor": 0.42,                # светлее синего: в рендере вода
-        "ocean_span": 0.14,                 # иначе уходит в чёрное
+        "land_sat": 0.30,                   # больше исходного цвета
+        "land_gamma": 0.50,                 # сильный подъём полутонов
+        "land_knee": 0.66,                  # света поджимаются позже
+        "land_knee_slope": 0.34,
+        "land_floor": 0.34,                 # тени не проваливаются в чёрное
+        "land_ceil": 1.00,
+        "land_tint": (0.52, 1.00, 0.54),    # тёмные места: сочная зелень
+        "land_tint_hi": (0.86, 0.92, 0.44),  # светлые: оливково-жёлтый
+        "tone_lo": 0.26,                    # яркость снимка, с которой
+        "tone_hi": 0.70,                    # начинается и заканчивается переход
+        "ocean_tint": (0.34, 0.96, 0.94),   # бирюза
+        "ocean_gamma": 0.70,                 # растягивает батиметрию:
+        "ocean_floor": 0.36,                 # глубины тёмные,
+        "ocean_span": 0.44,                  # шельф у берегов заметно светлее
+        # своё качество JPEG: светлая суша жмётся хуже тёмной, а лишний вес
+        # вдвойне дорог — текстура вшивается в dist как base64
+        "quality": {4096: 80, 2048: 85},
     },
 }
 
@@ -141,16 +181,18 @@ def haze_lut():
             for i in range(256)]
 
 
-def night_lut():
+def night_lut(theme):
     """Усиление + мягкое сжатие светов (экспоненциальная кривая)."""
+    gain = theme.get("gain", NIGHT_GAIN)
+    ceil = theme.get("ceil", NIGHT_CEIL)
     lut = []
     for i in range(256):
-        x = (i / 255.0) * NIGHT_GAIN
-        lut.append(clamp8(255 * NIGHT_CEIL * (1.0 - math.exp(-x / NIGHT_CEIL))))
+        x = (i / 255.0) * gain
+        lut.append(clamp8(255 * ceil * (1.0 - math.exp(-x / ceil))))
     return lut
 
 
-def make_night(src_name, out_name, quality):
+def make_night(src_name, out_name, quality, theme):
     img = Image.open(os.path.join(TEX, src_name)).convert("RGB")
     k = img.size[0] / REF_W          # радиусы размытия — пропорционально ширине
     r, g, b = img.split()
@@ -164,23 +206,23 @@ def make_night(src_name, out_name, quality):
     mul = img.convert("L").point(haze_lut())
     img = Image.merge("RGB", tuple(ImageChops.multiply(c, mul) for c in img.split()))
 
-    # 3. цвет огней — к тёплому белому
+    # 3. цвет огней — к тёплому белому (в зелёной теме теплее: золото)
     grey = img.convert("L").convert("RGB")
-    img = Image.blend(grey, img, LIGHT_SAT)
+    img = Image.blend(grey, img, theme.get("light_sat", LIGHT_SAT))
 
     # 4. ореол: резкая картинка + две размытые копии
-    near = img.filter(ImageFilter.GaussianBlur(GLOW_NEAR_R * k))
-    wide = img.filter(ImageFilter.GaussianBlur(GLOW_WIDE_R * k))
+    near = img.filter(ImageFilter.GaussianBlur(theme.get("glow_near_r", GLOW_NEAR_R) * k))
+    wide = img.filter(ImageFilter.GaussianBlur(theme.get("glow_wide_r", GLOW_WIDE_R) * k))
     parts = []
     for i in range(3):
-        s = scale_channel(img.split()[i], SHARP_W)
-        s = ImageChops.add(s, scale_channel(near.split()[i], GLOW_NEAR_W))
-        s = ImageChops.add(s, scale_channel(wide.split()[i], GLOW_WIDE_W))
+        s = scale_channel(img.split()[i], theme.get("sharp_w", SHARP_W))
+        s = ImageChops.add(s, scale_channel(near.split()[i], theme.get("glow_near_w", GLOW_NEAR_W)))
+        s = ImageChops.add(s, scale_channel(wide.split()[i], theme.get("glow_wide_w", GLOW_WIDE_W)))
         parts.append(s)
     img = Image.merge("RGB", parts)
 
     # 5. усиление и мягкое сжатие пиков вместо клиппинга
-    img = img.point(night_lut() * 3)
+    img = img.point(night_lut(theme) * 3)
     save(img, out_name, quality)
 
 
@@ -193,20 +235,31 @@ def sea_mask_lut():
 def land_lut(theme):
     floor = theme.get("land_floor", LAND_FLOOR)
     ceil = theme.get("land_ceil", LAND_CEIL)
+    gamma = theme.get("land_gamma", LAND_GAMMA)
+    knee = theme.get("land_knee", LAND_KNEE)
+    slope = theme.get("land_knee_slope", LAND_KNEE_SLOPE)
     lut = []
     for i in range(256):
-        v = (i / 255.0) ** LAND_GAMMA
-        if v > LAND_KNEE:
-            v = LAND_KNEE + (v - LAND_KNEE) * LAND_KNEE_SLOPE
+        v = (i / 255.0) ** gamma
+        if v > knee:
+            v = knee + (v - knee) * slope
         v = floor + (ceil - floor) * min(1.0, v)
         lut.append(clamp8(255 * v))
     return lut
 
 
+def tone_lut(theme):
+    """Яркость снимка -> насколько это «светлая равнина», а не «тёмный лес»."""
+    lo = theme.get("tone_lo", 0.30) * 255.0
+    hi = theme.get("tone_hi", 0.70) * 255.0
+    return [clamp8(255 * smoothstep(i, lo, hi)) for i in range(256)]
+
+
 def ocean_lut(theme):
     floor = theme.get("ocean_floor", OCEAN_FLOOR)
     span = theme.get("ocean_span", OCEAN_SPAN)
-    return [clamp8(255 * (floor + span * (i / 255.0) ** 1.4))
+    gamma = theme.get("ocean_gamma", 1.4)
+    return [clamp8(255 * (floor + span * (i / 255.0) ** gamma))
             for i in range(256)]
 
 
@@ -226,26 +279,38 @@ def make_land(src_name, size, quality, theme):
     mask = mask.filter(ImageFilter.GaussianBlur(SEA_BLUR_R * k))
 
     land = Image.blend(grey.convert("RGB"), img, theme["land_sat"])
-    land = tint(land.point(land_lut(theme) * 3), theme["land_tint"])
+    land = land.point(land_lut(theme) * 3)
+    if theme.get("land_tint_hi"):
+        # два оттенка по яркости снимка: тёмное — зелёное, светлое — оливковое
+        land = Image.composite(tint(land, theme["land_tint_hi"]),
+                               tint(land, theme["land_tint"]),
+                               grey.point(tone_lut(theme)))
+    else:
+        land = tint(land, theme["land_tint"])
 
     ocean = tint(grey.point(ocean_lut(theme)).convert("RGB"), theme["ocean_tint"])
 
     out_name = "earth_land_%d%s.jpg" % (size, theme["suffix"])
+    quality = theme.get("quality", {}).get(size, quality)
     save(Image.composite(ocean, land, mask), out_name, quality)
 
 
 def main():
     Image.MAX_IMAGE_PIXELS = None
-    srcs = [j[0] for j in NIGHT_JOBS] + [j[0] for j in LAND_JOBS]
+    srcs = [j[0] for t in NIGHT_THEMES.values() for j in t["jobs"]]
+    srcs += [j[0] for j in LAND_JOBS]
     for src in srcs:
         if not os.path.exists(os.path.join(TEX, src)):
             raise SystemExit("нет файла assets/textures/%s" % src)
-    for src, out, q in NIGHT_JOBS:
-        make_night(src, out, q)
-    for name, theme in sorted(LAND_THEMES.items()):
-        print("Тема %s:" % name)
+    for name in sorted(NIGHT_THEMES):
+        theme = NIGHT_THEMES[name]
+        print("Огни, тема %s:" % name)
+        for src, size, q in theme["jobs"]:
+            make_night(src, "earth_night_%d%s.jpg" % (size, theme["suffix"]), q, theme)
+    for name in sorted(LAND_THEMES):
+        print("Суша, тема %s:" % name)
         for src, size, q in LAND_JOBS:
-            make_land(src, size, q, theme)
+            make_land(src, size, q, LAND_THEMES[name])
 
 
 if __name__ == "__main__":
