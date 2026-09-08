@@ -863,6 +863,14 @@ body.state-b #touch-hint { display: none !important; }
    Тёмный зелёно-бирюзовый фон, стекло панелей в тот же тон, золотая графика.
    Маршруты и огни городов общие с синей темой и здесь не переопределяются. */
 
+/* Фон страницы за пределами сцены 1920x1080 (окно не 16:9) — тот же градиент,
+   что и у сцены, чтобы не было тёмных полос сверху/снизу */
+html.theme-green,
+html.theme-green body {
+  background-color: #0A1A18;
+  background-image: linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
+}
+
 html.theme-green {
   --page-bg: #0A1A18;
   --card-bg: #0A1A18;
