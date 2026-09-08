@@ -6,6 +6,7 @@
   'use strict';
 
   var CFG = null;
+  var THEME = 'navy';
   var DATA = null;
   var byName = {};
   var year = null;
@@ -134,9 +135,11 @@
 
       DATA.countries.forEach(function (c) { byName[c.name] = c; });
 
+      applyTheme();
       applyColors(CFG.colors);
 
       UI.init({
+        colors: CFG.colors,
         onYear: function (y) { resetIdle(); if (y !== year) setYear(y, true); },
         onListSelect: function (name) { resetIdle(); Globe.setSelected(name); },
         onListCancel: function () { resetIdle(); Globe.setSelected(null); },
@@ -181,12 +184,8 @@
 
   /* ---------------- параметры адресной строки (отладка) ---------------- */
 
-  /**
-   * Позволяет открыть приложение сразу в нужном состоянии — для снимков
-   * экрана, показа заказчику и автотестов. Все параметры необязательные,
-   * список — в README, раздел «Параметры адресной строки».
-   */
-  function applyUrlParams() {
+  /** Разбор ?a=1&b=2 в обычный объект. */
+  function parseQuery() {
     var q = {};
     (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
       if (!kv) return;
@@ -194,6 +193,16 @@
       var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
       q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
     });
+    return q;
+  }
+
+  /**
+   * Позволяет открыть приложение сразу в нужном состоянии — для снимков
+   * экрана, показа заказчику и автотестов. Все параметры необязательные,
+   * список — в README, раздел «Параметры адресной строки».
+   */
+  function applyUrlParams() {
+    var q = parseQuery();
     if (!Object.keys(q).length) return;
 
     if (q.year && DATA.years.indexOf(+q.year) >= 0 && +q.year !== year) setYear(+q.year, false);
@@ -207,6 +216,28 @@
     if (Object.keys(v).length) Globe.setDebugView(v);
 
     if (q.idle === '0') { idleOff = true; resetIdle(); }
+  }
+
+  /**
+   * Выбор темы: поле `theme` в config.json, поверх — параметр ?theme=green.
+   * Тема добавляет классу <html> имя `theme-<ключ>` (по нему работает CSS)
+   * и подменяет CFG.colors и часть CFG.globe, откуда их берёт globe.js.
+   * Темы описаны в config.json в блоке `themes`, см. README, раздел «Темы».
+   */
+  function applyTheme() {
+    var themes = CFG.themes || {};
+    var want = parseQuery().theme || CFG.theme;
+    var name = themes[want] ? want : (themes[CFG.theme] ? CFG.theme : Object.keys(themes)[0]);
+    if (!name) return;                 // конфиг без тем — всё как в CSS по умолчанию
+
+    THEME = name;
+    CFG.theme = name;
+    var th = themes[name];
+    if (th.colors) CFG.colors = th.colors;
+    if (th.globe) {
+      Object.keys(th.globe).forEach(function (k) { CFG.globe[k] = th.globe[k]; });
+    }
+    document.documentElement.classList.add('theme-' + name);
   }
 
   function applyColors(c) {

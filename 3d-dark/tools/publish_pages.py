@@ -2,17 +2,31 @@
 """Кладёт готовые страницы подпроекта в ../dist/3d-dark, откуда их публикует GitHub Pages.
 
   index.html        — тёмный макет (docs/mockup/preview.html, обёрнутый в html/head/body)
-  proto/index.html  — рабочий прототип одним файлом (результат build_dist.py)
+  proto/index.html  — рабочий прототип одним файлом, синяя тема (navy)
+  ../green/index.html  — тот же прототип в зелёной теме (адрес сайта /green/)
+
+Обе темы лежат в каждом из двух файлов, отличается только стартовая:
+любую страницу можно переключить параметром адреса ?theme=navy / ?theme=green.
 """
 import pathlib, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]      # 3d-dark/
 OUT = ROOT.parent / "dist" / "3d-dark"
+GREEN_OUT = ROOT.parent / "dist" / "green"
+BUILD = ROOT / "tools" / "build_dist.py"
 
-subprocess.run([sys.executable, str(ROOT / "tools" / "build_dist.py")], check=True)
+# синяя сборка кладётся в dist/index.html — это обычный результат build_dist.py,
+# зелёная собирается отдельным файлом рядом и в репозиторий не попадает
+proto_src = ROOT / "dist" / "index.html"
+green_src = ROOT / "dist" / "index-green.html"
+
+subprocess.run([sys.executable, str(BUILD)], check=True)
+subprocess.run([sys.executable, str(BUILD), "--theme", "green",
+                "--out", str(green_src)], check=True)
 
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / "proto").mkdir(exist_ok=True)
+GREEN_OUT.mkdir(parents=True, exist_ok=True)
 
 mock = (ROOT / "docs" / "mockup" / "preview.html").read_text(encoding="utf-8")
 wrapped = ('<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n'
@@ -20,6 +34,11 @@ wrapped = ('<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n'
            '</head>\n<body style="margin:0;background:#05070C">\n' + mock + '\n</body>\n</html>\n')
 (OUT / "index.html").write_text(wrapped, encoding="utf-8")
 
-proto = (ROOT / "dist" / "index.html").read_bytes()
+proto = proto_src.read_bytes()
 (OUT / "proto" / "index.html").write_bytes(proto)
-print("ok:", OUT / "index.html", len(wrapped) // 1024, "KB;", OUT / "proto/index.html", len(proto) // 1024, "KB")
+green = green_src.read_bytes()
+(GREEN_OUT / "index.html").write_bytes(green)
+
+print("ok:", OUT / "index.html", len(wrapped) // 1024, "KB;",
+      OUT / "proto/index.html", len(proto) // 1024, "KB;",
+      GREEN_OUT / "index.html", len(green) // 1024, "KB")

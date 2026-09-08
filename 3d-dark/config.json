@@ -7,23 +7,61 @@
     "lon": 37.77
   },
   "shipVideo": "assets/video/ship.mp4",
-  "colors": {
-    "pageBg": "#05070C",
-    "cardBg": "#070B14",
-    "panelBg": "rgba(13,19,33,.72)",
-    "accent": "#F2B84B",
-    "text": "#E9EEF7",
-    "textMuted": "#8E98AC",
-    "route": "#F2B84B",
-    "routeActive": "#FFD37A",
-    "land": "#E3EAF7",
-    "ocean": "#0B1220",
-    "cityLights": "#FFE9CC",
-    "atmosphere": "#3D7BFF",
-    "halo": "#2E61E6",
-    "border": "rgba(150,180,230,.22)",
-    "highlight": "rgba(255,199,110,.75)",
-    "highlightFill": "rgba(242,184,75,.08)"
+  "theme": "navy",
+  "themes": {
+    "navy": {
+      "title": "Синяя (ночная Земля)",
+      "colors": {
+        "pageBg": "#05070C",
+        "cardBg": "#070B14",
+        "panelBg": "rgba(13,19,33,.72)",
+        "accent": "#F2B84B",
+        "text": "#E9EEF7",
+        "textMuted": "#8E98AC",
+        "route": "#F2B84B",
+        "routeActive": "#FFD37A",
+        "land": "#E3EAF7",
+        "ocean": "#0B1220",
+        "cityLights": "#FFE9CC",
+        "sunLight": "#9FC0FF",
+        "atmosphere": "#3D7BFF",
+        "halo": "#2E61E6",
+        "border": "rgba(150,180,230,.22)",
+        "highlight": "rgba(255,199,110,.75)",
+        "highlightFill": "rgba(242,184,75,.08)",
+        "stars": "190,208,240",
+        "starGlow": "180,205,255"
+      },
+      "globe": {}
+    },
+    "green": {
+      "title": "Зелёная (изумруд и золото)",
+      "colors": {
+        "pageBg": "#0A1A18",
+        "cardBg": "#0A1A18",
+        "panelBg": "rgba(18,52,44,.62)",
+        "accent": "#D9B36A",
+        "text": "#E9F1EC",
+        "textMuted": "#9FB8AE",
+        "route": "#F2B84B",
+        "routeActive": "#FFD37A",
+        "land": "#E8F3EC",
+        "ocean": "#0E2A28",
+        "cityLights": "#FFE9CC",
+        "sunLight": "#A9E4D6",
+        "atmosphere": "#3FD9C6",
+        "halo": "#2FBBAA",
+        "border": "rgba(217,179,106,.60)",
+        "highlight": "rgba(255,214,140,.85)",
+        "highlightFill": "rgba(217,179,106,.10)",
+        "stars": "150,205,190",
+        "starGlow": "130,215,195"
+      },
+      "globe": {
+        "rimStrength": 0.42,
+        "haloStrength": 0.13
+      }
+    }
   },
   "globe": {
     "autoRotateSpeed": 0.020,
@@ -32,6 +70,8 @@
     "minZoom": 2.0,
     "maxZoom": 7.5,
     "arcSegments": 56,
-    "lightsIntensity": 1.5
+    "lightsIntensity": 1.5,
+    "rimStrength": 0.50,
+    "haloStrength": 0.15
   }
 }

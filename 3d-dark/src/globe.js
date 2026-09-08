@@ -19,10 +19,22 @@
     { size: 8192, path: 'assets/textures/earth_night_8192.jpg' },
     { size: 4096, path: 'assets/textures/earth_night_4096.jpg' }
   ];
-  var TEX_ATMOS = [                     // подложка суши
-    { size: 4096, path: 'assets/textures/earth_land_4096.jpg' },
-    { size: 2048, path: 'assets/textures/earth_land_2048.jpg' }
-  ];
+  /*
+   * Подложка суши своя у каждой темы: ночные огни общие, а суша и океан
+   * покрашены прямо в текстуре (см. LAND_THEMES в make_earth_textures.py).
+   * Пути записаны здесь буквально, а не собираются из имени темы, — иначе
+   * tools/build_dist.py не найдёт их в коде и не вошьёт в один файл.
+   */
+  var TEX_LAND = {
+    navy: [
+      { size: 4096, path: 'assets/textures/earth_land_4096.jpg' },
+      { size: 2048, path: 'assets/textures/earth_land_2048.jpg' }
+    ],
+    green: [
+      { size: 4096, path: 'assets/textures/earth_land_4096_green.jpg' },
+      { size: 2048, path: 'assets/textures/earth_land_2048_green.jpg' }
+    ]
+  };
 
   var cfg, colors, gcfg;
   var renderer, scene, camera, canvas;
@@ -521,7 +533,7 @@
     scene.add(pivotTilt);
 
     scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    var dir = new THREE.DirectionalLight(0x9fc0ff, 0.45);
+    var dir = new THREE.DirectionalLight(new THREE.Color(colors.sunLight || '#9FC0FF'), 0.45);
     dir.position.set(-2, 1.4, 2.2);
     scene.add(dir);
 
@@ -539,7 +551,8 @@
       emissiveIntensity: gcfg.lightsIntensity || 1.35
     });
     var loader = new THREE.TextureLoader();
-    loader.load(U.asset(pickTexture(TEX_ATMOS)), function (t) {
+    var landSet = TEX_LAND[cfg.theme] || TEX_LAND.navy;
+    loader.load(U.asset(pickTexture(landSet)), function (t) {
       earthMat.map = prepTexture(t); earthMat.needsUpdate = true;
     });
     loader.load(U.asset(pickTexture(TEX_LIGHTS)), function (t) {
@@ -565,12 +578,12 @@
     highlight.visible = false;
     world.add(highlight);
 
-    // синий ободок атмосферы и мягкое внешнее свечение
+    // тонкий ободок атмосферы и мягкое внешнее свечение (цвет и сила — из темы)
     atmo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.012, 64, 48),
-      rimMaterial(colors.atmosphere, 6.5, 0.50));
+      rimMaterial(colors.atmosphere, 6.5, gcfg.rimStrength != null ? gcfg.rimStrength : 0.50));
     world.add(atmo);
     halo = new THREE.Mesh(new THREE.SphereGeometry(R * 1.13, 48, 32),
-      rimMaterial(colors.halo, 4.5, 0.15));
+      rimMaterial(colors.halo, 4.5, gcfg.haloStrength != null ? gcfg.haloStrength : 0.15));
     world.add(halo);
 
     arcGroup = new THREE.Group();

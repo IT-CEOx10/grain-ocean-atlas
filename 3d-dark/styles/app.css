@@ -47,17 +47,89 @@
     U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* ------------------------------ темы ------------------------------
+   Все цвета экрана заданы переменными. :root — синяя тема (navy),
+   она же по умолчанию; зелёная лежит ниже в блоке html.theme-green.
+   Класс theme-<имя> вешает на <html> src/app.js по полю `theme`
+   в config.json или по параметру адреса ?theme=green.
+   Цвета глобуса живут не здесь, а в config.json (themes.<имя>.colors).
+   Как добавить третью тему — см. README, раздел «Темы». */
+
 :root {
+  /* фон и панели */
   --page-bg: #05070C;
   --card-bg: #070B14;
+  --card-image: none;
   --panel: rgba(13, 19, 33, .72);
   --line: rgba(255, 255, 255, .09);
+  --inset-hi: rgba(255, 255, 255, .06);
+  --vignette: radial-gradient(120% 90% at 50% 45%,
+    rgba(0, 0, 0, 0) 40%, rgba(3, 5, 10, .55) 78%, rgba(3, 5, 10, .92) 100%);
+
+  /* текст */
   --text: #E9EEF7;
   --muted: #8E98AC;
+  --strong: #DDE4F0;
+  --hint: #5D6679;
+  --brand: #4E576B;
+  --glabel: #EFE3CB;
+  --num: #FFFFFF;
+  --num2: #EFF3FA;
+  --icon: #C3CBDA;
+
+  /* акцент */
   --accent: #F2B84B;
   --accent-soft: rgba(242, 184, 75, .12);
+  --accent-press: rgba(242, 184, 75, .16);
   --route: #F2B84B;
   --gold2: #FFD37A;
+
+  /* заголовок экрана */
+  --title: var(--text);
+  --title-size: 40px;
+
+  /* поле поиска */
+  --field-bg: rgba(255, 255, 255, .045);
+  --field-bg-focus: rgba(255, 255, 255, .07);
+  --field-line: rgba(255, 255, 255, .08);
+  --field-line-focus: rgba(242, 184, 75, .35);
+  --field-ph: #6E7789;
+
+  /* линии, плитки, полоски */
+  --hairline: rgba(255, 255, 255, .06);
+  --divider: rgba(255, 255, 255, .08);
+  --scroll-thumb: rgba(255, 255, 255, .12);
+  --row-press: rgba(255, 255, 255, .045);
+  --tile-bg: rgba(255, 255, 255, .035);
+  --tile-line: rgba(255, 255, 255, .07);
+  --bar-track: rgba(255, 255, 255, .07);
+  --bar-fill: linear-gradient(90deg, rgba(242, 184, 75, .55), #F2B84B);
+  --bar-glow: 0 0 12px rgba(242, 184, 75, .55);
+
+  /* кнопка «Начать путь» */
+  --btn-bg: linear-gradient(180deg, #F7C766, #EDAE3C);
+  --btn-bg-press: linear-gradient(180deg, #EDAE3C, #DC9E2E);
+  --btn-fg: #14100A;
+  --btn-shadow: 0 8px 24px rgba(242, 184, 75, .28), inset 0 1px 0 rgba(255, 255, 255, .4);
+
+  /* раскрытая строка списка */
+  --pick-bg: linear-gradient(180deg, rgba(242, 184, 75, .10), rgba(242, 184, 75, .03));
+  --pick-line: rgba(242, 184, 75, .28);
+  --pick-name: #FFF3DD;
+  --pick-value: #D9B978;
+
+  /* таймлайн */
+  --year-dot: #39415A;
+  --year-bar: linear-gradient(180deg, rgba(242, 184, 75, .45), rgba(242, 184, 75, .10));
+  --year-bar-on: linear-gradient(180deg, #FFD37A, rgba(242, 184, 75, .35));
+  --year-fg-on: #12161F;
+  --tl-line: rgba(255, 255, 255, .10);
+
+  /* видео */
+  --video-bg: #04060B;
+  --play-bg: rgba(11, 16, 27, .55);
+  --play-line: rgba(255, 255, 255, .35);
+
   --mono: 'Manrope', 'Segoe UI', system-ui, sans-serif;
   --body: 'Golos Text', 'Segoe UI', system-ui, sans-serif;
 }
@@ -97,7 +169,8 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
 #card {
   position: absolute;
   inset: 0;
-  background: var(--card-bg);
+  background-color: var(--card-bg);
+  background-image: var(--card-image);
   overflow: hidden;
 }
 
@@ -125,8 +198,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  background: radial-gradient(120% 90% at 50% 45%,
-    rgba(0, 0, 0, 0) 40%, rgba(3, 5, 10, .55) 78%, rgba(3, 5, 10, .92) 100%);
+  background: var(--vignette);
 }
 
 /* подписи стран поверх глобуса (позиции считает src/globe.js) */
@@ -138,7 +210,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   font-family: var(--body);
   font-size: 15px;
   font-weight: 500;
-  color: #EFE3CB;
+  color: var(--glabel);
   text-shadow: 0 0 6px rgba(0, 0, 0, .95), 0 0 14px rgba(0, 0, 0, .9),
     0 0 26px rgba(0, 0, 0, .8), 0 1px 3px rgba(0, 0, 0, 1);
   white-space: nowrap;
@@ -167,7 +239,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   backdrop-filter: blur(18px);
   border: 1px solid var(--line);
   border-radius: 18px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 60px rgba(0, 0, 0, .45);
+  box-shadow: inset 0 1px 0 var(--inset-hi), 0 24px 60px rgba(0, 0, 0, .45);
 }
 
 .hidden { display: none !important; }
@@ -201,7 +273,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   font-size: 11px;
   letter-spacing: .08em;
   text-transform: uppercase;
-  color: #4E576B;
+  color: var(--brand);
 }
 body.state-b #brand { right: 520px; bottom: 44px; }
 
@@ -218,10 +290,11 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 .screen-title {
   margin: 0 0 10px;
   font-family: var(--mono);
-  font-size: 40px;
+  font-size: var(--title-size);
   line-height: 1.05;
   font-weight: 700;
   letter-spacing: -.01em;
+  color: var(--title);
 }
 
 .search {
@@ -233,18 +306,18 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 .search input {
   width: 100%;
   height: 46px;
-  border: 1px solid rgba(255, 255, 255, .08);
+  border: 1px solid var(--field-line);
   border-radius: 12px;
-  background: rgba(255, 255, 255, .045);
+  background: var(--field-bg);
   padding: 0 16px 0 40px;
   font-size: 14px;
   color: var(--text);
   outline: none;
 }
-.search input::placeholder { color: #6E7789; }
+.search input::placeholder { color: var(--field-ph); }
 .search input:focus {
-  border-color: rgba(242, 184, 75, .35);
-  background: rgba(255, 255, 255, .07);
+  border-color: var(--field-line-focus);
+  background: var(--field-bg-focus);
 }
 .search input::-webkit-search-cancel-button { display: none; }
 
@@ -274,7 +347,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 }
 .country-list::-webkit-scrollbar { width: 5px; }
 .country-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .12);
+  background: var(--scroll-thumb);
   border-radius: 3px;
 }
 
@@ -284,9 +357,9 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   justify-content: space-between;
   gap: 12px;
   padding: 12px 4px;
-  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  border-bottom: 1px solid var(--hairline);
 }
-.country-row .nm { font-size: 15px; font-weight: 400; color: #DDE4F0; }
+.country-row .nm { font-size: 15px; font-weight: 400; color: var(--strong); }
 .country-row .vl {
   font-family: var(--mono);
   font-weight: 500;
@@ -295,14 +368,14 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   white-space: nowrap;
   flex: none;
 }
-.country-row:active { background: rgba(255, 255, 255, .045); }
+.country-row:active { background: var(--row-press); }
 
 .country-card {
   margin: 10px 0 12px;
   padding: 16px;
   border-radius: 14px;
-  background: linear-gradient(180deg, rgba(242, 184, 75, .10), rgba(242, 184, 75, .03));
-  border: 1px solid rgba(242, 184, 75, .28);
+  background: var(--pick-bg);
+  border: 1px solid var(--pick-line);
   box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .08);
 }
 .country-card .cc-head {
@@ -316,13 +389,13 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   font-weight: 700;
   font-size: 22px;
   line-height: 1.15;
-  color: #FFF3DD;
+  color: var(--pick-name);
 }
 .country-card .cc-value {
   font-family: var(--mono);
   font-weight: 500;
   font-size: 14px;
-  color: #D9B978;
+  color: var(--pick-value);
   margin-top: 3px;
 }
 .country-card .cc-close {
@@ -348,16 +421,16 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   margin-top: 14px;
   height: 44px;
   border-radius: 11px;
-  background: linear-gradient(180deg, #F7C766, #EDAE3C);
-  color: #14100A;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
   font-family: var(--body);
   font-size: 15px;
   font-weight: 600;
-  box-shadow: 0 8px 24px rgba(242, 184, 75, .28), inset 0 1px 0 rgba(255, 255, 255, .4);
+  box-shadow: var(--btn-shadow);
 }
-.btn-primary svg { width: 16px; height: 12px; fill: none; stroke: #14100A; stroke-width: 1.6;
+.btn-primary svg { width: 16px; height: 12px; fill: none; stroke: var(--btn-fg); stroke-width: 1.6;
   stroke-linecap: round; stroke-linejoin: round; }
-.btn-primary:active { background: linear-gradient(180deg, #EDAE3C, #DC9E2E); }
+.btn-primary:active { background: var(--btn-bg-press); }
 
 .list-hint {
   position: absolute;
@@ -365,7 +438,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   right: 24px;
   bottom: 22px;
   font-size: 12px;
-  color: #5D6679;
+  color: var(--hint);
   line-height: 1.4;
 }
 .country-list .list-hint { position: static; margin-top: 18px; }
@@ -388,7 +461,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   font-family: var(--mono);
   font-weight: 600;
   font-size: 15px;
-  color: #DDE4F0;
+  color: var(--strong);
 }
 .chevron {
   flex: none;
@@ -411,7 +484,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   font-size: 58px;
   line-height: 1;
   letter-spacing: -.02em;
-  color: #FFFFFF;
+  color: var(--num);
   font-variant-numeric: tabular-nums;
 }
 .metric-unit { font-family: var(--mono); font-weight: 600; font-size: 17px; color: var(--accent); }
@@ -422,15 +495,15 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   flex: 1;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, .035);
-  border: 1px solid rgba(255, 255, 255, .07);
+  background: var(--tile-bg);
+  border: 1px solid var(--tile-line);
 }
 .stat b {
   display: block;
   font-family: var(--mono);
   font-weight: 700;
   font-size: 26px;
-  color: #EFF3FA;
+  color: var(--num2);
   font-variant-numeric: tabular-nums;
 }
 .stat span { display: block; margin-top: 3px; font-size: 11.5px; color: var(--muted); line-height: 1.25; }
@@ -454,7 +527,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   gap: 12px;
   font-size: 14px;
 }
-.top-row .nm { color: #DDE4F0; }
+.top-row .nm { color: var(--strong); }
 .top-row .vl {
   font-family: var(--mono);
   font-weight: 600;
@@ -467,15 +540,15 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   margin-top: 7px;
   height: 3px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, .07);
+  background: var(--bar-track);
   overflow: hidden;
 }
 .top-row .bar i {
   display: block;
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, rgba(242, 184, 75, .55), #F2B84B);
-  box-shadow: 0 0 12px rgba(242, 184, 75, .55);
+  background: var(--bar-fill);
+  box-shadow: var(--bar-glow);
 }
 .top-row:active .ln .nm { color: var(--gold2); }
 
@@ -509,12 +582,12 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   padding: 7px 14px;
   border-radius: 10px;
   background: var(--accent-soft);
-  border: 1px solid rgba(242, 184, 75, .28);
+  border: 1px solid var(--pick-line);
   white-space: nowrap;
 }
 .rank-row span { font-size: 12.5px; color: var(--muted); line-height: 1.3; max-width: 190px; }
 
-.divider { height: 1px; background: rgba(255, 255, 255, .08); margin: 26px 0 18px; }
+.divider { height: 1px; background: var(--divider); margin: 26px 0 18px; }
 
 .product-grid { margin-top: 16px; columns: 2; column-gap: 26px; }
 .product-item {
@@ -523,9 +596,9 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   justify-content: space-between;
   gap: 10px;
   padding: 9px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .055);
+  border-bottom: 1px solid var(--hairline);
 }
-.product-item .pn { font-size: 13.5px; color: #DDE4F0; }
+.product-item .pn { font-size: 13.5px; color: var(--strong); }
 .product-item .pv {
   font-family: var(--mono);
   font-weight: 500;
@@ -534,7 +607,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.product-more { margin-top: 12px; font-size: 12px; color: #5D6679; }
+.product-more { margin-top: 12px; font-size: 12px; color: var(--hint); }
 .card-foot { position: absolute; left: 26px; bottom: 26px; }
 
 /* ----------------------------- видео ----------------------------- */
@@ -553,8 +626,8 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   height: 392px;
   border-radius: 12px;
   overflow: hidden;
-  background: #04060B;
-  border: 1px solid rgba(255, 255, 255, .07);
+  background: var(--video-bg);
+  border: 1px solid var(--tile-line);
 }
 #ship-video {
   position: absolute;
@@ -577,8 +650,8 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   width: 82px;
   height: 82px;
   border-radius: 50%;
-  background: rgba(11, 16, 27, .55);
-  border: 1px solid rgba(255, 255, 255, .35);
+  background: var(--play-bg);
+  border: 1px solid var(--play-line);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -620,7 +693,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
 }
 .fact .l { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .fact .v {
@@ -651,7 +724,7 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   right: 26px;
   top: 64px;
   height: 1px;
-  background: rgba(255, 255, 255, .10);
+  background: var(--tl-line);
 }
 
 .years {
@@ -673,13 +746,13 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 .year-pill .mb {
   width: 16px;
   border-radius: 3px 3px 0 0;
-  background: linear-gradient(180deg, rgba(242, 184, 75, .45), rgba(242, 184, 75, .10));
+  background: var(--year-bar);
 }
 .year-pill .dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #39415A;
+  background: var(--year-dot);
   margin: 7px 0 8px;
 }
 .year-pill .yr {
@@ -692,13 +765,13 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   font-variant-numeric: tabular-nums;
 }
 .year-pill.is-active .mb {
-  background: linear-gradient(180deg, #FFD37A, rgba(242, 184, 75, .35));
+  background: var(--year-bar-on);
   box-shadow: 0 0 16px rgba(242, 184, 75, .5);
 }
 .year-pill.is-active .dot { background: var(--accent); box-shadow: 0 0 12px rgba(242, 184, 75, .9); }
 .year-pill.is-active .yr {
   background: var(--accent);
-  color: #12161F;
+  color: var(--year-fg-on);
   font-weight: 700;
   box-shadow: 0 6px 18px rgba(242, 184, 75, .35);
 }
@@ -715,13 +788,13 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.round-btn svg { width: 26px; height: 26px; fill: none; stroke: #C3CBDA; stroke-width: 1.4; }
-.round-btn:active { background: rgba(242, 184, 75, .16); }
+.round-btn svg { width: 26px; height: 26px; fill: none; stroke: var(--icon); stroke-width: 1.4; }
+.round-btn:active { background: var(--accent-press); }
 
 #reset-view { left: 462px; bottom: 70px; }
 #reset-view-b { left: 40px; bottom: 38px; }
@@ -738,16 +811,16 @@ body.state-b #brand { right: 520px; bottom: 44px; }
   -webkit-backdrop-filter: blur(18px);
   backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+  box-shadow: inset 0 1px 0 var(--inset-hi);
   display: flex;
   align-items: center;
   gap: 10px;
   font-family: var(--body);
   font-size: 15px;
   font-weight: 500;
-  color: #DDE4F0;
+  color: var(--strong);
 }
-.ghost-btn:active { background: rgba(242, 184, 75, .16); color: var(--gold2); }
+.ghost-btn:active { background: var(--accent-press); color: var(--gold2); }
 
 /* --------------------------- состояния --------------------------- */
 
@@ -755,3 +828,99 @@ body.state-b #panel-left,
 body.state-b #panel-summary,
 body.state-b #timeline,
 body.state-b #reset-view { display: none; }
+
+/* --------------------------- подсказка внизу --------------------------- */
+
+/* «Коснитесь страны или маршрута…» по центру над таймлайном.
+   В синей теме её нет — там подсказка стоит под списком стран (#left-hint). */
+#touch-hint {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 176px;
+  z-index: 4;
+  text-align: center;
+  font-size: 15px;
+  letter-spacing: .01em;
+  color: var(--muted);
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .7);
+}
+body.state-b #touch-hint { display: none !important; }
+
+/* =============================== зелёная тема ===============================
+   Тёмный зелёно-бирюзовый фон, стекло панелей в тот же тон, золотая графика.
+   Маршруты и огни городов общие с синей темой и здесь не переопределяются. */
+
+html.theme-green {
+  --page-bg: #0A1A18;
+  --card-bg: #0A1A18;
+  /* мягкие светлые пятна поверх зелёно-бирюзового фона */
+  --card-image:
+    radial-gradient(72% 58% at 20% 10%, rgba(63, 217, 198, .10), rgba(63, 217, 198, 0) 62%),
+    radial-gradient(60% 52% at 86% 84%, rgba(217, 179, 106, .07), rgba(217, 179, 106, 0) 64%),
+    radial-gradient(96% 86% at 50% 46%, rgba(23, 74, 64, .60), rgba(10, 26, 24, 0) 72%),
+    linear-gradient(155deg, #10302A 0%, #0B201C 58%, #0A1A18 100%);
+  --panel: rgba(18, 52, 44, .62);
+  --line: rgba(217, 179, 106, .22);
+  --inset-hi: rgba(255, 255, 255, .05);
+  --vignette: radial-gradient(120% 90% at 50% 45%,
+    rgba(0, 0, 0, 0) 40%, rgba(4, 18, 16, .50) 78%, rgba(4, 18, 16, .88) 100%);
+
+  --text: #E9F1EC;
+  --muted: #9FB8AE;
+  --strong: #DCEAE3;
+  --hint: #8FA89E;
+  --brand: #5F7C72;
+  --num: #F2F6F3;
+  --num2: #F2F6F3;
+  --icon: #BFD6CC;
+
+  --accent: #D9B36A;
+  --accent-soft: rgba(217, 179, 106, .12);
+  --accent-press: rgba(217, 179, 106, .18);
+
+  --title: #E4C27A;
+  --title-size: 48px;
+
+  --field-bg: rgba(255, 255, 255, .05);
+  --field-bg-focus: rgba(255, 255, 255, .08);
+  --field-line: rgba(217, 179, 106, .18);
+  --field-line-focus: rgba(217, 179, 106, .45);
+  --field-ph: #7E968D;
+
+  --hairline: rgba(217, 179, 106, .13);
+  --divider: rgba(217, 179, 106, .18);
+  --scroll-thumb: rgba(217, 179, 106, .28);
+  --row-press: rgba(217, 179, 106, .10);
+  --tile-bg: rgba(255, 255, 255, .04);
+  --tile-line: rgba(217, 179, 106, .16);
+  --bar-track: rgba(255, 255, 255, .07);
+  --bar-fill: linear-gradient(90deg, rgba(217, 179, 106, .55), #E4C27A);
+  --bar-glow: 0 0 12px rgba(217, 179, 106, .45);
+
+  --btn-bg: #D9B36A;
+  --btn-bg-press: #C29B55;
+  --btn-fg: #10231F;
+  --btn-shadow: 0 8px 24px rgba(217, 179, 106, .22), inset 0 1px 0 rgba(255, 255, 255, .28);
+
+  --pick-bg: linear-gradient(180deg, rgba(217, 179, 106, .13), rgba(217, 179, 106, .04));
+  --pick-line: rgba(217, 179, 106, .34);
+  --pick-name: #F4E7C8;
+  --pick-value: #D9B36A;
+
+  --year-dot: #2C4A42;
+  --year-bar: linear-gradient(180deg, rgba(217, 179, 106, .45), rgba(217, 179, 106, .10));
+  --year-bar-on: linear-gradient(180deg, #E4C27A, rgba(217, 179, 106, .35));
+  --year-fg-on: #10231F;
+  --tl-line: rgba(217, 179, 106, .16);
+
+  --video-bg: #07100E;
+  --play-bg: rgba(12, 32, 28, .55);
+  --play-line: rgba(217, 179, 106, .40);
+}
+
+html.theme-green .screen-title { text-transform: uppercase; letter-spacing: 0; }
+html.theme-green #left-hint { display: none; }
+html.theme-green #touch-hint { display: block; }

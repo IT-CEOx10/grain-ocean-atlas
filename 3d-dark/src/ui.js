@@ -66,22 +66,29 @@
 
   /* --------------------------- звёздное зерно --------------------------- */
 
+  /*
+   * Мелкое зерно по фону и десяток мягких светлых пятен. Цвета берутся
+   * из темы (colors.stars и colors.starGlow — тройки «r,g,b»), поэтому
+   * в синей теме зерно холодное, в зелёной — бирюзовое.
+   */
   function drawStars() {
     var c = els.stars;
     if (!c) return;
+    var dot = (handlers.colors && handlers.colors.stars) || '190,208,240';
+    var glow = (handlers.colors && handlers.colors.starGlow) || '180,205,255';
     c.width = 1920; c.height = 1080;
     var g = c.getContext('2d');
     for (var i = 0; i < 620; i++) {
       var x = Math.random() * 1920, y = Math.random() * 1080;
       var r = Math.random() * 1.1 + 0.2, a = Math.random() * 0.38 + 0.04;
-      g.fillStyle = 'rgba(190,208,240,' + a.toFixed(3) + ')';
+      g.fillStyle = 'rgba(' + dot + ',' + a.toFixed(3) + ')';
       g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
     }
     for (var j = 0; j < 22; j++) {
       var x2 = Math.random() * 1920, y2 = Math.random() * 1080;
       var gr = g.createRadialGradient(x2, y2, 0, x2, y2, 26);
-      gr.addColorStop(0, 'rgba(180,205,255,.16)');
-      gr.addColorStop(1, 'rgba(180,205,255,0)');
+      gr.addColorStop(0, 'rgba(' + glow + ',.16)');
+      gr.addColorStop(1, 'rgba(' + glow + ',0)');
       g.fillStyle = gr;
       g.fillRect(x2 - 26, y2 - 26, 52, 52);
     }

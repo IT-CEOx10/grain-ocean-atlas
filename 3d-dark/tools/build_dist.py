@@ -11,9 +11,16 @@ window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
 
 Запуск:  python3 tools/build_dist.py
 Перед этим — python3 tools/build_data.py, если менялся xlsx.
+
+Ключи:
+  --theme green   тема по умолчанию во вшитом конфиге (сам config.json
+                  не меняется). В сборку всегда попадают обе темы,
+                  вторую видно по адресу ?theme=navy / ?theme=green.
+  --out ПУТЬ      куда положить готовый файл (по умолчанию dist/index.html)
 """
 from __future__ import print_function
 
+import argparse
 import base64
 import json
 import mimetypes
@@ -32,7 +39,9 @@ INLINE_JSON = [
 ]
 
 MAX_VIDEO_MB = 60
-MAX_DIST_MB = 6          # предупреждение, если файл разросся
+# Предупреждение, если файл разросся. 7 МБ, а не 6: с зелёной темой
+# в сборку попадает второй набор текстур суши (+0,6 МБ).
+MAX_DIST_MB = 7
 
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
@@ -69,7 +78,7 @@ def guard(code, what):
     return code
 
 
-def main():
+def main(theme=None, out_path=None):
     html = read(os.path.join(ROOT, "index.html"))
 
     # 1. данные
@@ -83,6 +92,14 @@ def main():
         if el_id == "inline-config":
             cfg = obj
         blocks.append((el_id, obj, rel))
+
+    # 1a. тема по умолчанию: в файле обе, меняется только стартовая
+    if theme:
+        if theme not in (cfg.get("themes") or {}):
+            die("темы «%s» нет в config.json (есть: %s)"
+                % (theme, ", ".join(sorted((cfg.get("themes") or {}).keys()))))
+        cfg["theme"] = theme
+    print("Тема по умолчанию: %s (переключается параметром ?theme=)" % cfg.get("theme"))
 
     # 2. видео: если файл есть — вшиваем, если нет — сразу показываем заглушку
     video_rel = (cfg or {}).get("shipVideo") or ""
@@ -168,9 +185,10 @@ def main():
     if leftovers:
         die("в dist остались внешние ссылки: %s" % ", ".join(sorted(set(leftovers))))
 
-    if not os.path.exists(DIST):
-        os.makedirs(DIST)
-    out = os.path.join(DIST, "index.html")
+    out = os.path.abspath(out_path or os.path.join(DIST, "index.html"))
+    out_dir = os.path.dirname(out)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
 
@@ -182,4 +200,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    ap = argparse.ArgumentParser(description="Сборка одного файла dist/index.html")
+    ap.add_argument("--theme", help="тема по умолчанию во вшитом конфиге (navy, green)")
+    ap.add_argument("--out", help="путь к результату, по умолчанию dist/index.html")
+    args = ap.parse_args()
+    main(theme=args.theme, out_path=args.out)

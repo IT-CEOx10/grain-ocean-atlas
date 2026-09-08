@@ -23,7 +23,11 @@
   assets/textures/earth_land_2048.jpg       дневной снимок разделяется по маске
       «вода/суша». Суша становится светлой холодно-серой с сохранённым
       рельефом, океан — тёмно-синим. Общую яркость и оттенок задаёт
-      `colors.land` из config.json.
+      `colors.land` из config.json;
+  assets/textures/earth_land_4096_green.jpg — то же для зелёной темы:
+  assets/textures/earth_land_2048_green.jpg     тёмно-зелёная суша с рельефом
+      и бирюзовый океан. Обработка та же, различаются только множители
+      по каналам — см. словарь LAND_THEMES ниже.
 
 Радиусы размытия заданы в пикселях для ширины 4096 и пересчитываются
 пропорционально размеру снимка, поэтому текстуры разного разрешения
@@ -48,9 +52,10 @@ NIGHT_JOBS = [
     ("nasa_black_marble_8192.jpg", "earth_night_8192.jpg", 93),
     ("nasa_black_marble_4096.jpg", "earth_night_4096.jpg", 93),
 ]
+# (исходник, размер в имени результата, качество JPEG)
 LAND_JOBS = [
-    ("nasa_blue_marble_4096.jpg", "earth_land_4096.jpg", 90),
-    ("nasa_blue_marble_2048.jpg", "earth_land_2048.jpg", 92),
+    ("nasa_blue_marble_4096.jpg", 4096, 90),
+    ("nasa_blue_marble_2048.jpg", 2048, 92),
 ]
 
 # --- ночные огни ---------------------------------------------------------
@@ -77,10 +82,30 @@ LAND_KNEE = 0.45      # с какой яркости поджимаются св
 LAND_KNEE_SLOPE = 0.18
 LAND_FLOOR = 0.10     # самая тёмная суша не проваливается в чёрное
 LAND_CEIL = 0.62
-LAND_TINT = (0.64, 0.74, 1.23)     # лёгкий холодный уклон суши
 OCEAN_FLOOR = 0.210   # глубокий океан
 OCEAN_SPAN = 0.080    # насколько мелководье светлее глубин
-OCEAN_TINT = (0.62, 0.80, 1.18)    # тёмно-синий
+
+# Темы. Общая обработка одна, различаются только множители по каналам
+# (и насыщенность суши). Имя результата — earth_land_<размер><суффикс>.jpg,
+# то есть у navy суффикса нет и файлы остаются прежними.
+LAND_THEMES = {
+    "navy": {
+        "suffix": "",
+        "land_sat": LAND_SAT,
+        "land_tint": (0.64, 0.74, 1.23),    # лёгкий холодный уклон суши
+        "ocean_tint": (0.62, 0.80, 1.18),   # тёмно-синий океан
+    },
+    "green": {
+        "suffix": "_green",
+        "land_sat": 0.26,                   # больше исходного цвета: оливковые равнины
+        "land_tint": (0.50, 1.00, 0.74),    # тёмно-зелёная суша, светлее по хребтам
+        "land_floor": 0.16,                 # зелень темнее синевы, диапазон шире
+        "land_ceil": 0.78,
+        "ocean_tint": (0.26, 0.78, 0.75),   # тёмная бирюза
+        "ocean_floor": 0.42,                # светлее синего: в рендере вода
+        "ocean_span": 0.14,                 # иначе уходит в чёрное
+    },
+}
 
 
 def save(img, name, quality):
@@ -165,19 +190,23 @@ def sea_mask_lut():
     return [clamp8(255 * smoothstep(i, SEA_LO, SEA_HI)) for i in range(256)]
 
 
-def land_lut():
+def land_lut(theme):
+    floor = theme.get("land_floor", LAND_FLOOR)
+    ceil = theme.get("land_ceil", LAND_CEIL)
     lut = []
     for i in range(256):
         v = (i / 255.0) ** LAND_GAMMA
         if v > LAND_KNEE:
             v = LAND_KNEE + (v - LAND_KNEE) * LAND_KNEE_SLOPE
-        v = LAND_FLOOR + (LAND_CEIL - LAND_FLOOR) * min(1.0, v)
+        v = floor + (ceil - floor) * min(1.0, v)
         lut.append(clamp8(255 * v))
     return lut
 
 
-def ocean_lut():
-    return [clamp8(255 * (OCEAN_FLOOR + OCEAN_SPAN * (i / 255.0) ** 1.4))
+def ocean_lut(theme):
+    floor = theme.get("ocean_floor", OCEAN_FLOOR)
+    span = theme.get("ocean_span", OCEAN_SPAN)
+    return [clamp8(255 * (floor + span * (i / 255.0) ** 1.4))
             for i in range(256)]
 
 
@@ -186,7 +215,7 @@ def tint(img, factors):
                                for ch, f in zip(img.split(), factors)])
 
 
-def make_land(src_name, out_name, quality):
+def make_land(src_name, size, quality, theme):
     img = Image.open(os.path.join(TEX, src_name)).convert("RGB")
     k = img.size[0] / REF_W
     r, g, b = img.split()
@@ -196,23 +225,27 @@ def make_land(src_name, out_name, quality):
     mask = ImageChops.subtract(b, r).point(sea_mask_lut())
     mask = mask.filter(ImageFilter.GaussianBlur(SEA_BLUR_R * k))
 
-    land = Image.blend(grey.convert("RGB"), img, LAND_SAT)
-    land = tint(land.point(land_lut() * 3), LAND_TINT)
+    land = Image.blend(grey.convert("RGB"), img, theme["land_sat"])
+    land = tint(land.point(land_lut(theme) * 3), theme["land_tint"])
 
-    ocean = tint(grey.point(ocean_lut()).convert("RGB"), OCEAN_TINT)
+    ocean = tint(grey.point(ocean_lut(theme)).convert("RGB"), theme["ocean_tint"])
 
+    out_name = "earth_land_%d%s.jpg" % (size, theme["suffix"])
     save(Image.composite(ocean, land, mask), out_name, quality)
 
 
 def main():
     Image.MAX_IMAGE_PIXELS = None
-    for src, _, _ in NIGHT_JOBS + LAND_JOBS:
+    srcs = [j[0] for j in NIGHT_JOBS] + [j[0] for j in LAND_JOBS]
+    for src in srcs:
         if not os.path.exists(os.path.join(TEX, src)):
             raise SystemExit("нет файла assets/textures/%s" % src)
     for src, out, q in NIGHT_JOBS:
         make_night(src, out, q)
-    for src, out, q in LAND_JOBS:
-        make_land(src, out, q)
+    for name, theme in sorted(LAND_THEMES.items()):
+        print("Тема %s:" % name)
+        for src, size, q in LAND_JOBS:
+            make_land(src, size, q, theme)
 
 
 if __name__ == "__main__":
