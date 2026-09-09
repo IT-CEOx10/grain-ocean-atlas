@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!-- «Путь зерна» — сквозная презентация: все экраны разделов 01–08
+     из docs/flow-spec.md в одном приложении.
+     Экран глобуса (index.html) и первый экран Блока 3 (path.html)
+     живут отдельно, их файлы здесь не используются. -->
+<html lang="ru" class="theme-green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Путь зерна — презентация</title>
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/story.css">
+</head>
+<body class="story-screen">
+
+<div id="stage">
+  <div id="card">
+    <canvas id="stars"></canvas>
+    <!-- сюда src/story.js рисует текущий экран -->
+    <div id="view"></div>
+    <div id="loading" class="loading">Загрузка…</div>
+  </div>
+</div>
+
+<script src="src/util.js"></script>
+<script src="src/story-content.js"></script>
+<script src="src/story.js"></script>
+</body>
+</html>
