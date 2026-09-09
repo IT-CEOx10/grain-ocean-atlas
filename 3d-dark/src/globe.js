@@ -483,6 +483,60 @@
     });
   }
 
+  /*
+   * Блик по кромке — «серп». Оболочка чуть больше планеты, side: FrontSide:
+   * она лежит поверх диска и светится только у силуэта, где взгляд идёт
+   * по касательной. От прежнего ровного колечка отличается двумя вещами.
+   *
+   * 1. Яркость модулируется светом: считается косинус между нормалью и
+   *    направлением на источник (uLight, в системе камеры — поэтому серп
+   *    стоит на месте, когда планета вращается). На освещённой стороне
+   *    кромка почти белая, к теневой плавно гаснет до доли uBias.
+   * 2. Часть оболочки, торчащая наружу за край планеты, гасится отдельно
+   *    (uSoft). Без этого свечение обрывалось бы ровным кольцом по силуэту
+   *    оболочки — это и есть та самая «сфера в сфере». uInner — отношение
+   *    радиусов планеты и оболочки, по нему шейдер знает, где проходит
+   *    настоящая кромка диска.
+   */
+  var EDGE_FRAG =
+    'uniform vec3 uColor; uniform vec3 uCore; uniform vec3 uLight;' +
+    'uniform float uPow; uniform float uStr; uniform float uBias;' +
+    'uniform float uSoft; uniform float uInner;' +
+    'varying vec3 vN; varying vec3 vP;' +
+    'void main(){' +
+    '  vec3 n = normalize(vN);' +
+    '  float c = abs(dot(n, normalize(-vP)));' +          // 1 в центре диска, 0 у силуэта
+    '  float band = pow(clamp(1.0 - c, 0.0, 1.0), uPow);' +
+    '  float lit = smoothstep(-0.55, 0.80, dot(n, normalize(uLight)));' +
+    '  float m = clamp(uBias + (1.0 - uBias) * lit, 0.0, 1.0);' +
+    '  float fall = 1.0;' +
+    '  if (uSoft > 0.0) {' +
+    '    float cRim = sqrt(max(1.0 - uInner * uInner, 0.0));' +   // косинус на кромке планеты
+    '    if (cRim > 1e-4 && c < cRim) fall = pow(clamp(c / cRim, 0.0, 1.0), uSoft);' +
+    '  }' +
+    '  float a = band * m * fall * uStr;' +
+    '  vec3 col = mix(uColor, uCore, clamp(a, 0.0, 1.0));' +
+    '  gl_FragColor = vec4(col, clamp(a, 0.0, 1.0)); }';
+
+  function edgeMaterial(color, core, light, o) {
+    return new THREE.ShaderMaterial({
+      transparent: true, blending: THREE.AdditiveBlending,
+      side: THREE.FrontSide, depthWrite: false,
+      uniforms: {
+        uColor: { value: new THREE.Color(color) },
+        uCore: { value: new THREE.Color(core) },
+        uLight: { value: light },
+        uPow: { value: o.power },
+        uStr: { value: o.strength },
+        uBias: { value: o.bias },
+        uSoft: { value: o.softness },
+        uInner: { value: o.inner }
+      },
+      vertexShader: RIM_VERT,
+      fragmentShader: EDGE_FRAG
+    });
+  }
+
   /* --------------------- дуги: ширина в пикселях --------------------- */
 
   /*
@@ -501,26 +555,42 @@
   var ARC_HALO = 3.0;                   // во сколько раз ореол шире сердцевины
   var uPxK = { value: 0.00064 };        // 2·tan(fov/2)/высота холста, общий uniform
 
+  // Гашение дуги у порта отправления и общий множитель толщины дуг.
+  // Значения по умолчанию ничего не меняют: 1 — «как было». Тема перебивает
+  // их полями globe.arcStart, globe.arcStartLen и globe.arcWidth (см. init).
+  var ARC_START = 1;                    // доля яркости в самой точке порта
+  var ARC_START_LEN = 0.02;             // на какой доле пути выходит на полную
+  var ARC_WIDTH = 1;                    // множитель толщины дуг
+
   var ARC_VERT =
     'uniform float uBase; uniform float uHalf; uniform float uPxK;' +
-    'varying vec3 vN; varying vec3 vP;' +
+    'varying vec3 vN; varying vec3 vP; varying float vT;' +
     'void main(){' +
     '  vec3 n = normalize(normal);' +
     '  vec4 mv = modelViewMatrix * vec4(position - n * uBase, 1.0);' +
     '  vec3 nv = normalize(normalMatrix * n);' +
     '  mv.xyz += nv * (uHalf * max(-mv.z, 0.05) * uPxK);' +
-    '  vN = nv; vP = mv.xyz;' +
+    '  vN = nv; vP = mv.xyz; vT = uv.x;' +      // uv.x трубки — доля пути от порта
     '  gl_Position = projectionMatrix * mv; }';
 
+  /*
+   * uStart и uStartLen гасят начало дуги. В порту отправления сходится больше
+   * сотни маршрутов, и при аддитивном смешивании их яркости складывались
+   * в белое пятно. Теперь у самого порта дуга светит на долю uStart и
+   * выходит на полную яркость к uStartLen пути. По умолчанию uStart = 1 —
+   * гашения нет, как было раньше.
+   */
   var ARC_FRAG =
     'uniform vec3 uColor; uniform float uOpacity;' +
-    'varying vec3 vN; varying vec3 vP;' +
+    'uniform float uStart; uniform float uStartLen;' +
+    'varying vec3 vN; varying vec3 vP; varying float vT;' +
     'void main(){' +
     '  float d = clamp(dot(normalize(vN), normalize(-vP)), 0.0, 1.0);' +
     '  float core = pow(d, 12.0);' +
     '  float halo = pow(d, 1.3);' +
+    '  float g = mix(uStart, 1.0, smoothstep(0.0, max(uStartLen, 1e-4), vT));' +
     '  vec3 c = uColor + vec3(0.28) * core;' +   // сердцевина горячее и белее
-    '  gl_FragColor = vec4(c, (core + halo * 0.38) * uOpacity); }';
+    '  gl_FragColor = vec4(c, (core + halo * 0.38) * uOpacity * g); }';
 
   function arcMaterial(color, half, opacity) {
     return new THREE.ShaderMaterial({
@@ -530,7 +600,9 @@
         uHalf: { value: half },
         uPxK: uPxK,                     // общий объект: обновляется при resize
         uColor: { value: new THREE.Color(color) },
-        uOpacity: { value: opacity }
+        uOpacity: { value: opacity },
+        uStart: { value: ARC_START },
+        uStartLen: { value: ARC_START_LEN }
       },
       vertexShader: ARC_VERT,
       fragmentShader: ARC_FRAG
@@ -548,6 +620,9 @@
     onInteract = opts.onInteract || onInteract;
     if (gcfg.homeX != null) HOME.fx = gcfg.homeX;
     if (gcfg.homeY != null) HOME.fy = gcfg.homeY;
+    ARC_START = num(gcfg.arcStart, 1);
+    ARC_START_LEN = num(gcfg.arcStartLen, 0.02);
+    ARC_WIDTH = num(gcfg.arcWidth, 1);
     view.fx = HOME.fx;
     view.fy = HOME.fy;
     view.zoom = gcfg.defaultZoom;
@@ -638,9 +713,21 @@
     // Есть только у тем, где задан edgeStrength, — в синей теме
     // этого объекта в сцене нет и картинка не меняется.
     if (gcfg.edgeStrength) {
-      edge = new THREE.Mesh(new THREE.SphereGeometry(R * num(gcfg.edgeRadius, 1.003), 96, 64),
-        rimMaterial(colors.edge || colors.atmosphere,
-          num(gcfg.edgePower, 6), gcfg.edgeStrength, true));
+      var eRad = num(gcfg.edgeRadius, 1.003);
+      // направление на свет в системе камеры: по умолчанию — туда же,
+      // куда смотрит основной источник сцены (сверху слева)
+      var eLight = gcfg.edgeLight
+        ? new THREE.Vector3(gcfg.edgeLight[0], gcfg.edgeLight[1], gcfg.edgeLight[2]).normalize()
+        : dir.position.clone().normalize();
+      edge = new THREE.Mesh(new THREE.SphereGeometry(R * eRad, 160, 96),
+        edgeMaterial(colors.edge || colors.atmosphere,
+          colors.edgeCore || colors.edge || colors.atmosphere, eLight, {
+            power: num(gcfg.edgePower, 6),
+            strength: gcfg.edgeStrength,
+            bias: num(gcfg.edgeBias, 1),          // 1 — ровное кольцо, как было
+            softness: num(gcfg.edgeSoftness, 0),  // 0 — наружу не гасим, как было
+            inner: 1 / eRad
+          }));
       edge.renderOrder = 8;
       world.add(edge);
     }
@@ -917,7 +1004,7 @@
       var curve = new THREE.CatmullRomCurve3(pts);
 
       // полуширина светящейся сердцевины в пикселях экрана — по лог-шкале объёма
-      var half = 0.80 + 1.30 * norm * norm;
+      var half = (0.80 + 1.30 * norm * norm) * ARC_WIDTH;
       var opacity = 0.42 + 0.55 * norm;
       var geo = new THREE.TubeGeometry(curve, N, ARC_BASE, 8, false);
       var mesh = new THREE.Mesh(geo, arcMaterial(colors.route, half * ARC_HALO, opacity));
@@ -1001,6 +1088,9 @@
     routes.forEach(function (r) {
       var u = r.mesh.material.uniforms;
       var isSel = r.name === selected;
+      // выбранный маршрут светит в полную силу от самого порта: гашение начала
+      // нужно только там, где дуги сходятся пучком, а здесь она одна
+      u.uStart.value = isSel ? 1 : ARC_START;
       if (!selected) {
         u.uColor.value.set(colors.route);
         u.uOpacity.value = r.baseOpacity;
