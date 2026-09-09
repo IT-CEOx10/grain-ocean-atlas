@@ -135,6 +135,10 @@
       <button id="back-map" class="ghost-btn" type="button">&larr;&nbsp; К карте</button>
     </div>
 
+    <!-- возврат в презентацию «Путь зерна»: только в зелёной теме,
+         на выставке это раздел «Маршруты экспорта» одного приложения -->
+    <button id="home-btn" class="ghost-btn" type="button">Главное меню</button>
+
     <!-- подсказка по центру внизу: показывается только в зелёной теме -->
     <div id="touch-hint">Коснитесь страны или маршрута, чтобы узнать больше</div>
 
@@ -142,6 +146,9 @@
     <div id="loading" class="loading">Загрузка данных…</div>
   </div>
 </div>
+
+<!-- штора между разделами: гасит стык двух отдельных страниц -->
+<div id="page-fade" class="is-on"></div>
 
 <script src="vendor/three.min.js"></script>
 <script src="vendor/topojson-client.min.js"></script>

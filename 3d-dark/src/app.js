@@ -181,11 +181,22 @@
         }
       });
 
+      // «Главное меню» — обратно в презентацию, на экран start.
+      // Кнопка видна только в зелёной теме (см. #home-btn в styles/app.css).
+      var home = document.getElementById('home-btn');
+      if (home) {
+        home.addEventListener('click', function () {
+          resetIdle();
+          U.goSection('story', { screen: 'start' });
+        });
+      }
+
       fitStage();
       var start = CFG.startYear || DATA.years[DATA.years.length - 1];
       setYear(start, true);
       UI.setState('A');
       UI.hideLoading();
+      U.revealPage();
       resetIdle();
       flashHint();
       applyUrlParams();
@@ -198,6 +209,7 @@
       var box = document.getElementById('loading');
       box.textContent = 'Ошибка загрузки: ' + err.message;
       box.style.color = '#c0392b';
+      U.revealPage();                  // иначе ошибку не видно из-под шторы
       global.console && console.error(err);
     });
   }

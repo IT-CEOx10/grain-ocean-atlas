@@ -93,7 +93,80 @@
     return n;
   }
 
+  /* ================= переходы между разделами стенда =================
+
+     Разделы — три отдельные страницы: презентация «Путь зерна»
+     (story.html), глобус «Маршруты экспорта» (index.html) и старый
+     экран схемы (path.html). Слить их в один файл нельзя: глобус
+     с текстурами весит около 7 МБ, и вместе получилось бы слишком
+     тяжело. Поэтому переход — обычная смена страницы, а стык прикрыт
+     шторой в цвет фона (см. #page-fade ниже).
+
+     Адрес соседнего раздела зависит от того, как открыт проект:
+
+       localhost и папка dist   файлы лежат рядом: story.html, index.html
+       сайт GitHub Pages        у каждого раздела своя папка: /story/, /green/
+
+     Что перед нами, видно по адресу текущей страницы: у сайта он
+     кончается на /story/, /green/ или /path/. */
+
+  var SECTIONS = {
+    story: { file: 'story.html', dir: 'story' },
+    globe: { file: 'index.html', dir: 'green' },
+    path: { file: 'path.html', dir: 'path' }
+  };
+
+  var SITE_PATH = /\/(?:story|green|path)\/(?:index\.html)?$/;
+
+  /** Адрес раздела: sectionUrl('globe', {theme: 'green'}). */
+  function sectionUrl(name, params) {
+    var s = SECTIONS[name];
+    if (!s) return '';
+    var url = SITE_PATH.test(global.location.pathname || '')
+      ? '../' + s.dir + '/'
+      : s.file;
+    var q = [];
+    for (var k in params) {
+      if (Object.prototype.hasOwnProperty.call(params, k) && params[k] != null) {
+        q.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+      }
+    }
+    return q.length ? url + '?' + q.join('&') : url;
+  }
+
+  var FADE_MS = 340;                   // столько же стоит в CSS у #page-fade
+
+  function curtain() { return document.getElementById('page-fade'); }
+
+  /** Страница готова — убрать штору. */
+  function revealPage() {
+    var n = curtain();
+    if (!n) return;
+    // следующим тиком: иначе браузер не успевает заметить смену класса
+    // и вместо плавного проявления получается скачок
+    setTimeout(function () { n.classList.remove('is-on'); }, 30);
+  }
+
+  /** Уйти в другой раздел: сперва затемнение, потом смена страницы. */
+  function goSection(name, params) {
+    var url = sectionUrl(name, params);
+    if (!url) return;
+    var n = curtain();
+    if (!n) { global.location.href = url; return; }
+    n.classList.add('is-on');
+    setTimeout(function () { global.location.href = url; }, FADE_MS);
+  }
+
+  // возврат кнопкой «назад» отдаёт страницу из кеша вместе с опущенной
+  // шторой — поднимаем её обратно
+  global.addEventListener('pageshow', function (e) {
+    if (e && e.persisted) revealPage();
+  });
+
   global.U = {
+    sectionUrl: sectionUrl,
+    goSection: goSection,
+    revealPage: revealPage,
     fmtVolume: fmtVolume,
     fmtInt: fmtInt,
     capitalize: capitalize,

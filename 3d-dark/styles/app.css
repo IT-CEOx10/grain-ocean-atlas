@@ -825,6 +825,45 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 }
 .ghost-btn:active { background: var(--accent-press); color: var(--gold2); }
 
+/* «Главное меню» — возврат в презентацию «Путь зерна» (story.html).
+   Кнопка нужна только на выставочном экране, то есть в зелёной теме:
+   синий прототип живёт сам по себе, презентации рядом с ним нет.
+   На экране «Путь» её тоже не видно — оттуда сперва возвращаются
+   к карте кнопкой «← К карте».
+   Плашка сделана как строка списка стран (белый на 5 %), а высота
+   и уровень — как у пилюли года в таймлайне справа: 48 px, низ 70 px.
+   Поэтому кнопка встаёт с годами в одну строку. */
+#home-btn { display: none; }
+html.theme-green #home-btn {
+  display: flex;
+  left: 60px;
+  bottom: 70px;
+  height: 48px;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, .05);
+}
+html.theme-green body.state-b #home-btn { display: none; }
+
+/* ------------------ переход между разделами стенда ------------------
+   Разделы — отдельные страницы (презентация, глобус), и чтобы стык
+   не выглядел перезагрузкой сайта, поверх всего лежит штора в цвет
+   фона: при уходе она проявляется, после загрузки — гаснет.
+   Разметка: <div id="page-fade" class="is-on"></div> в конце body,
+   поведение — U.goSection / U.revealPage в src/util.js. */
+
+#page-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--page-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .34s ease;
+}
+#page-fade.is-on { opacity: 1; pointer-events: auto; }
+
 /* --------------------------- состояния --------------------------- */
 
 body.state-b #panel-left,
@@ -1030,12 +1069,14 @@ html.theme-green .search-icon {
 }
 
 /* высота кратна шагу строки (44 + 6), поэтому список обрывается
-   ровно по границе плашки, а не посередине названия */
+   ровно по границе плашки, а не посередине названия.
+   Снизу оставлено место под кнопку «Главное меню»: 1000 − 236 − 114 = 650,
+   ровно 13 строк. */
 html.theme-green .country-list {
   left: 0;
   right: 0;
   top: 236px;
-  bottom: 14px;
+  bottom: 114px;
   padding-right: 14px;
   scrollbar-width: thin;
   scrollbar-color: #D9B36A rgba(217, 179, 106, .12);

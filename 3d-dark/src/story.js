@@ -115,13 +115,20 @@
     return n;
   }
 
-  /** Кнопка: to — переход на экран (или 'back'), action — поведение экрана. */
+  /**
+   * Кнопка:
+   *   to     — переход на экран презентации (или 'back');
+   *   link   — уход в другой раздел стенда: 'globe' — экран глобуса
+   *            «Маршруты экспорта». Адрес и затемнение — U.goSection;
+   *   action — поведение самого экрана из словаря ACTIONS.
+   */
   function button(b, cls) {
     var n = el('button', cls || 'st-btn', b.label);
     n.type = 'button';
     n.addEventListener('click', function () {
       resetIdle();
       if (b.to === 'back') back();
+      else if (b.link) U.goSection(b.link, b.params);
       else if (b.to) go(b.to);
       else if (b.action && ACTIONS[b.action]) ACTIONS[b.action]();
     });
@@ -1004,6 +1011,7 @@
       setUrl(cur.id);
       resetIdle();
       $('loading').classList.add('hidden');
+      U.revealPage();
     });
   }
 

@@ -834,6 +834,45 @@ body.state-b #brand { right: 520px; bottom: 44px; }
 }
 .ghost-btn:active { background: var(--accent-press); color: var(--gold2); }
 
+/* «Главное меню» — возврат в презентацию «Путь зерна» (story.html).
+   Кнопка нужна только на выставочном экране, то есть в зелёной теме:
+   синий прототип живёт сам по себе, презентации рядом с ним нет.
+   На экране «Путь» её тоже не видно — оттуда сперва возвращаются
+   к карте кнопкой «← К карте».
+   Плашка сделана как строка списка стран (белый на 5 %), а высота
+   и уровень — как у пилюли года в таймлайне справа: 48 px, низ 70 px.
+   Поэтому кнопка встаёт с годами в одну строку. */
+#home-btn { display: none; }
+html.theme-green #home-btn {
+  display: flex;
+  left: 60px;
+  bottom: 70px;
+  height: 48px;
+  padding: 0 26px;
+  border-radius: 999px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, .05);
+}
+html.theme-green body.state-b #home-btn { display: none; }
+
+/* ------------------ переход между разделами стенда ------------------
+   Разделы — отдельные страницы (презентация, глобус), и чтобы стык
+   не выглядел перезагрузкой сайта, поверх всего лежит штора в цвет
+   фона: при уходе она проявляется, после загрузки — гаснет.
+   Разметка: <div id="page-fade" class="is-on"></div> в конце body,
+   поведение — U.goSection / U.revealPage в src/util.js. */
+
+#page-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: var(--page-bg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .34s ease;
+}
+#page-fade.is-on { opacity: 1; pointer-events: auto; }
+
 /* --------------------------- состояния --------------------------- */
 
 body.state-b #panel-left,
@@ -1039,12 +1078,14 @@ html.theme-green .search-icon {
 }
 
 /* высота кратна шагу строки (44 + 6), поэтому список обрывается
-   ровно по границе плашки, а не посередине названия */
+   ровно по границе плашки, а не посередине названия.
+   Снизу оставлено место под кнопку «Главное меню»: 1000 − 236 − 114 = 650,
+   ровно 13 строк. */
 html.theme-green .country-list {
   left: 0;
   right: 0;
   top: 236px;
-  bottom: 14px;
+  bottom: 114px;
   padding-right: 14px;
   scrollbar-width: thin;
   scrollbar-color: #D9B36A rgba(217, 179, 106, .12);
@@ -1870,7 +1911,80 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
     return n;
   }
 
+  /* ================= переходы между разделами стенда =================
+
+     Разделы — три отдельные страницы: презентация «Путь зерна»
+     (story.html), глобус «Маршруты экспорта» (index.html) и старый
+     экран схемы (path.html). Слить их в один файл нельзя: глобус
+     с текстурами весит около 7 МБ, и вместе получилось бы слишком
+     тяжело. Поэтому переход — обычная смена страницы, а стык прикрыт
+     шторой в цвет фона (см. #page-fade ниже).
+
+     Адрес соседнего раздела зависит от того, как открыт проект:
+
+       localhost и папка dist   файлы лежат рядом: story.html, index.html
+       сайт GitHub Pages        у каждого раздела своя папка: /story/, /green/
+
+     Что перед нами, видно по адресу текущей страницы: у сайта он
+     кончается на /story/, /green/ или /path/. */
+
+  var SECTIONS = {
+    story: { file: 'story.html', dir: 'story' },
+    globe: { file: 'index.html', dir: 'green' },
+    path: { file: 'path.html', dir: 'path' }
+  };
+
+  var SITE_PATH = /\/(?:story|green|path)\/(?:index\.html)?$/;
+
+  /** Адрес раздела: sectionUrl('globe', {theme: 'green'}). */
+  function sectionUrl(name, params) {
+    var s = SECTIONS[name];
+    if (!s) return '';
+    var url = SITE_PATH.test(global.location.pathname || '')
+      ? '../' + s.dir + '/'
+      : s.file;
+    var q = [];
+    for (var k in params) {
+      if (Object.prototype.hasOwnProperty.call(params, k) && params[k] != null) {
+        q.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k]));
+      }
+    }
+    return q.length ? url + '?' + q.join('&') : url;
+  }
+
+  var FADE_MS = 340;                   // столько же стоит в CSS у #page-fade
+
+  function curtain() { return document.getElementById('page-fade'); }
+
+  /** Страница готова — убрать штору. */
+  function revealPage() {
+    var n = curtain();
+    if (!n) return;
+    // следующим тиком: иначе браузер не успевает заметить смену класса
+    // и вместо плавного проявления получается скачок
+    setTimeout(function () { n.classList.remove('is-on'); }, 30);
+  }
+
+  /** Уйти в другой раздел: сперва затемнение, потом смена страницы. */
+  function goSection(name, params) {
+    var url = sectionUrl(name, params);
+    if (!url) return;
+    var n = curtain();
+    if (!n) { global.location.href = url; return; }
+    n.classList.add('is-on');
+    setTimeout(function () { global.location.href = url; }, FADE_MS);
+  }
+
+  // возврат кнопкой «назад» отдаёт страницу из кеша вместе с опущенной
+  // шторой — поднимаем её обратно
+  global.addEventListener('pageshow', function (e) {
+    if (e && e.persisted) revealPage();
+  });
+
   global.U = {
+    sectionUrl: sectionUrl,
+    goSection: goSection,
+    revealPage: revealPage,
     fmtVolume: fmtVolume,
     fmtInt: fmtInt,
     capitalize: capitalize,

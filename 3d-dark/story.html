@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <!-- «Путь зерна» — сквозная презентация: все экраны разделов 01–08
-     из docs/flow-spec.md в одном приложении.
-     Экран глобуса (index.html) и первый экран Блока 3 (path.html)
-     живут отдельно, их файлы здесь не используются. -->
+     из docs/flow-spec.md в одном приложении. Она же главное меню стенда:
+     кнопка «Маршруты экспорта» уводит на экран глобуса (index.html),
+     а он возвращает сюда кнопкой «Главное меню». Адреса разделов
+     считает U.sectionUrl в src/util.js.
+     Экран схемы (path.html) в основном сценарии не участвует. -->
 <html lang="ru" class="theme-green">
 <head>
 <meta charset="utf-8">
@@ -21,6 +23,9 @@
     <div id="loading" class="loading">Загрузка…</div>
   </div>
 </div>
+
+<!-- штора между разделами: гасит стык двух отдельных страниц -->
+<div id="page-fade" class="is-on"></div>
 
 <script src="src/util.js"></script>
 <script src="src/story-content.js"></script>
