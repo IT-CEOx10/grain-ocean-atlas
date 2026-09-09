@@ -17,6 +17,14 @@ window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
                   не меняется). В сборку всегда попадают обе темы,
                   вторую видно по адресу ?theme=navy / ?theme=green.
   --out ПУТЬ      куда положить готовый файл (по умолчанию dist/index.html)
+  --entry ФАЙЛ    какую страницу собирать (по умолчанию index.html).
+                  Экран «Путь зерна» собирается так:
+                  python3 tools/build_dist.py --entry path.html --out dist/path.html
+
+Что вшивать, скрипт решает сам по коду страницы: блок данных попадает
+в файл, только если его id (inline-config, inline-export, inline-topo)
+встречается в скриптах, а видео — только если код вообще про него знает.
+Поэтому экран без глобуса не тащит за собой карту мира и справочник.
 """
 from __future__ import print_function
 
@@ -78,13 +86,34 @@ def guard(code, what):
     return code
 
 
-def main(theme=None, out_path=None):
-    html = read(os.path.join(ROOT, "index.html"))
+def main(theme=None, out_path=None, entry=None):
+    entry = entry or "index.html"
+    entry_path = os.path.join(ROOT, entry)
+    if not os.path.exists(entry_path):
+        die("нет страницы %s" % entry)
+    html = read(entry_path)
 
-    # 1. данные
+    # 0. скрипты читаем первыми: по их коду видно, какие данные нужны экрану
+    scripts = re.findall(r'<script src="([^"]+)"></script>', html)
+    if not scripts:
+        die("в %s не найдено ни одного <script src=...>" % entry)
+    codes = []
+    for rel in scripts:
+        path = os.path.join(ROOT, rel)
+        if not os.path.exists(path):
+            die("нет скрипта %s" % rel)
+        codes.append(guard(read(path), rel))
+    all_code = "\n".join(codes)
+
+    def used(el_id):
+        return ("'%s'" % el_id) in all_code or ('"%s"' % el_id) in all_code
+
+    # 1. данные: только те блоки, к которым обращается код страницы
     blocks = []
     cfg = None
     for el_id, rel in INLINE_JSON:
+        if not used(el_id):
+            continue
         path = os.path.join(ROOT, rel)
         if not os.path.exists(path):
             die("нет файла %s. Сначала запустите tools/build_data.py." % rel)
@@ -94,30 +123,38 @@ def main(theme=None, out_path=None):
         blocks.append((el_id, obj, rel))
 
     # 1a. тема по умолчанию: в файле обе, меняется только стартовая
-    if theme:
-        if theme not in (cfg.get("themes") or {}):
-            die("темы «%s» нет в config.json (есть: %s)"
-                % (theme, ", ".join(sorted((cfg.get("themes") or {}).keys()))))
-        cfg["theme"] = theme
-    print("Тема по умолчанию: %s (переключается параметром ?theme=)" % cfg.get("theme"))
+    if cfg is not None:
+        if theme:
+            if theme not in (cfg.get("themes") or {}):
+                die("темы «%s» нет в config.json (есть: %s)"
+                    % (theme, ", ".join(sorted((cfg.get("themes") or {}).keys()))))
+            cfg["theme"] = theme
+        print("Тема по умолчанию: %s (переключается параметром ?theme=)" % cfg.get("theme"))
 
-    # 2. видео: если файл есть — вшиваем, если нет — сразу показываем заглушку
-    video_rel = (cfg or {}).get("shipVideo") or ""
-    video_path = os.path.join(ROOT, video_rel) if video_rel else ""
-    if video_path and os.path.exists(video_path):
-        size_mb = os.path.getsize(video_path) / (1024.0 * 1024.0)
-        if size_mb > MAX_VIDEO_MB:
-            die("видео %s весит %.1f МБ (лимит %d МБ). Сожмите файл." % (video_rel, size_mb, MAX_VIDEO_MB))
-        mime = mimetypes.guess_type(video_path)[0] or "video/mp4"
-        with open(video_path, "rb") as f:
-            data = base64.b64encode(f.read()).decode("ascii")
-        cfg["shipVideo"] = "data:%s;base64,%s" % (mime, data)
-        print("Видео вшито: %s (%.1f МБ)" % (video_rel, size_mb))
-    else:
-        cfg["shipVideo"] = ""
-        print("Видео не найдено (%s) — в dist будет заглушка." % (video_rel or "путь не задан"))
+    # 2. видео: вшиваем, только если экран вообще умеет его показывать
+    if cfg is not None and "shipVideo" in all_code:
+        video_rel = cfg.get("shipVideo") or ""
+        video_path = os.path.join(ROOT, video_rel) if video_rel else ""
+        if video_path and os.path.exists(video_path):
+            size_mb = os.path.getsize(video_path) / (1024.0 * 1024.0)
+            if size_mb > MAX_VIDEO_MB:
+                die("видео %s весит %.1f МБ (лимит %d МБ). Сожмите файл."
+                    % (video_rel, size_mb, MAX_VIDEO_MB))
+            mime = mimetypes.guess_type(video_path)[0] or "video/mp4"
+            with open(video_path, "rb") as f:
+                data = base64.b64encode(f.read()).decode("ascii")
+            cfg["shipVideo"] = "data:%s;base64,%s" % (mime, data)
+            print("Видео вшито: %s (%.1f МБ)" % (video_rel, size_mb))
+        else:
+            cfg["shipVideo"] = ""
+            print("Видео не найдено (%s) — в dist будет заглушка."
+                  % (video_rel or "путь не задан"))
+    elif cfg is not None:
+        cfg["shipVideo"] = ""              # экрану видео не нужно
 
     data_html = "\n".join(json_block(el_id, obj) for el_id, obj, _ in blocks)
+    if blocks:
+        print("Данные вшиты: %s" % ", ".join(rel for _, _, rel in blocks))
 
     # 3. стили: заодно вшиваем шрифты и картинки из url(...)
     fonts_kb = [0]
@@ -146,17 +183,10 @@ def main(theme=None, out_path=None):
     if fonts_kb[0]:
         print("Файлы из CSS (шрифты и т. п.) вшиты: %.0f КБ" % (fonts_kb[0] / 1024.0))
 
-    # 4. скрипты
-    scripts = re.findall(r'<script src="([^"]+)"></script>', html)
-    if not scripts:
-        die("в index.html не найдено ни одного <script src=...>")
+    # 4. скрипты (прочитаны на шаге 0)
     inlined = []
     assets = {}
-    for rel in scripts:
-        path = os.path.join(ROOT, rel)
-        if not os.path.exists(path):
-            die("нет скрипта %s" % rel)
-        code = guard(read(path), rel)
+    for rel, code in zip(scripts, codes):
         for a in ASSET_RE.findall(code):
             assets.setdefault(a, None)
         inlined.append("<!-- %s -->\n<script>\n%s\n</script>" % (rel, code))
@@ -203,5 +233,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Сборка одного файла dist/index.html")
     ap.add_argument("--theme", help="тема по умолчанию во вшитом конфиге (navy, green)")
     ap.add_argument("--out", help="путь к результату, по умолчанию dist/index.html")
+    ap.add_argument("--entry", help="какую страницу собирать, по умолчанию index.html")
     args = ap.parse_args()
-    main(theme=args.theme, out_path=args.out)
+    main(theme=args.theme, out_path=args.out, entry=args.entry)

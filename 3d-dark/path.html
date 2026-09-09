@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!-- Блок 3, экран 1: «Центр управления производства зерна».
+     Экран глобуса живёт отдельно — index.html, его файлы здесь не трогаются. -->
+<html lang="ru" class="theme-green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Центр управления производства зерна</title>
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/path.css">
+</head>
+<body class="path-screen">
+
+<div id="stage">
+  <div id="card">
+
+    <canvas id="stars"></canvas>
+
+    <h1 class="screen-title path-title">Центр управления<br>производства зерна</h1>
+
+    <!-- круглая кнопка-глобус, как на экране «Страны назначения» -->
+    <button id="globe-btn" class="round-btn" type="button" title="Вернуть экран в исходный вид">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+        <line x1="3.4" y1="9" x2="20.6" y2="9"></line>
+        <line x1="3.4" y1="15" x2="20.6" y2="15"></line>
+      </svg>
+    </button>
+
+    <div class="search">
+      <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+        <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
+      </svg>
+      <input id="search" type="search" placeholder="Поиск по продуктам" autocomplete="off">
+      <button id="search-go" class="search-go" type="button">Искать</button>
+    </div>
+
+    <!-- сцена: связи рисует холст, плитки и таблички создаёт src/path.js -->
+    <div id="scene">
+      <canvas id="links"></canvas>
+    </div>
+    <div id="marks"></div>
+
+    <section id="lab-cap" class="panel">
+      <div class="t">ЦОК АПК</div>
+      <div class="s">ядро — сопровождает зерно на каждом из этих путей</div>
+    </section>
+
+    <!-- ========== слева внизу: о применении ========== -->
+    <section id="panel-about" class="panel">
+      <div class="panel-head">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <line x1="12" y1="11" x2="12" y2="16.5"></line>
+          <line x1="12" y1="7.6" x2="12" y2="8"></line>
+        </svg>
+        О применении
+      </div>
+      <p id="about-text">Из зерна создаются продукты питания, корма, биоматериалы
+        и тысячи других решений. ЦОК АПК обеспечивает качество и безопасность
+        на всех этапах его применения.</p>
+      <div class="about-actions">
+        <button id="tour-prev" class="tour-arrow hidden" type="button" title="Предыдущее направление">&lsaquo;</button>
+        <button id="tour-btn" class="btn-primary" type="button"><span>Пройти путь</span></button>
+        <button id="tour-next" class="tour-arrow hidden" type="button" title="Следующее направление">&rsaquo;</button>
+      </div>
+    </section>
+
+    <!-- ========== справа внизу: ключевые факты ========== -->
+    <section id="panel-facts" class="panel">
+      <div class="panel-head">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 14.5L9 9.5l3.5 3.5L20 5.5"></path>
+          <polyline points="15,5.5 20,5.5 20,10.5"></polyline>
+          <line x1="4" y1="19" x2="20" y2="19"></line>
+        </svg>
+        Ключевые факты
+      </div>
+
+      <div class="fact-row">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect>
+          <rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect>
+          <rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect>
+          <rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect>
+        </svg>
+        <span>Более 500 продуктов на основе зерна</span>
+      </div>
+      <div class="fact-row">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="8.5"></circle>
+          <ellipse cx="12" cy="12" rx="3.6" ry="8.5"></ellipse>
+          <line x1="3.6" y1="9" x2="20.4" y2="9"></line>
+          <line x1="3.6" y1="15" x2="20.4" y2="15"></line>
+        </svg>
+        <span>Поставки в 100+ стран</span>
+      </div>
+      <div class="fact-row">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 16.5L9 11.5l3.5 3.5L20 7.5"></path>
+          <polyline points="15,7.5 20,7.5 20,12.5"></polyline>
+        </svg>
+        <span>Растущий спрос во всех отраслях</span>
+      </div>
+    </section>
+
+    <div id="brand">ЦОК АПК · Государственный мониторинг зерна</div>
+    <div id="loading" class="loading">Загрузка…</div>
+  </div>
+</div>
+
+<script src="src/util.js"></script>
+<script src="src/path.js"></script>
+</body>
+</html>

@@ -4,29 +4,37 @@
   index.html        — тёмный макет (docs/mockup/preview.html, обёрнутый в html/head/body)
   proto/index.html  — рабочий прототип одним файлом, синяя тема (navy)
   ../green/index.html  — тот же прототип в зелёной теме (адрес сайта /green/)
+  ../path/index.html   — экран «Центр управления производства зерна»,
+                         первый экран блока 3 (адрес сайта /path/)
 
-Обе темы лежат в каждом из двух файлов, отличается только стартовая:
+Обе темы лежат в каждом файле экрана глобуса, отличается только стартовая:
 любую страницу можно переключить параметром адреса ?theme=navy / ?theme=green.
+Экран блока 3 сделан только в зелёной теме.
 """
 import pathlib, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]      # 3d-dark/
 OUT = ROOT.parent / "dist" / "3d-dark"
 GREEN_OUT = ROOT.parent / "dist" / "green"
+PATH_OUT = ROOT.parent / "dist" / "path"
 BUILD = ROOT / "tools" / "build_dist.py"
 
 # синяя сборка кладётся в dist/index.html — это обычный результат build_dist.py,
 # зелёная собирается отдельным файлом рядом и в репозиторий не попадает
 proto_src = ROOT / "dist" / "index.html"
 green_src = ROOT / "dist" / "index-green.html"
+path_src = ROOT / "dist" / "path.html"
 
 subprocess.run([sys.executable, str(BUILD)], check=True)
 subprocess.run([sys.executable, str(BUILD), "--theme", "green",
                 "--out", str(green_src)], check=True)
+subprocess.run([sys.executable, str(BUILD), "--entry", "path.html",
+                "--out", str(path_src)], check=True)
 
 OUT.mkdir(parents=True, exist_ok=True)
 (OUT / "proto").mkdir(exist_ok=True)
 GREEN_OUT.mkdir(parents=True, exist_ok=True)
+PATH_OUT.mkdir(parents=True, exist_ok=True)
 
 mock = (ROOT / "docs" / "mockup" / "preview.html").read_text(encoding="utf-8")
 wrapped = ('<!doctype html>\n<html lang="ru">\n<head>\n<meta charset="utf-8">\n'
@@ -38,7 +46,10 @@ proto = proto_src.read_bytes()
 (OUT / "proto" / "index.html").write_bytes(proto)
 green = green_src.read_bytes()
 (GREEN_OUT / "index.html").write_bytes(green)
+grain = path_src.read_bytes()
+(PATH_OUT / "index.html").write_bytes(grain)
 
 print("ok:", OUT / "index.html", len(wrapped) // 1024, "KB;",
       OUT / "proto/index.html", len(proto) // 1024, "KB;",
-      GREEN_OUT / "index.html", len(green) // 1024, "KB")
+      GREEN_OUT / "index.html", len(green) // 1024, "KB;",
+      PATH_OUT / "index.html", len(grain) // 1024, "KB")
