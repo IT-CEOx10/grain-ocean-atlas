@@ -22,9 +22,11 @@ window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
                   python3 tools/build_dist.py --entry path.html --out dist/path.html
 
 Что вшивать, скрипт решает сам по коду страницы: блок данных попадает
-в файл, только если его id (inline-config, inline-export, inline-topo)
-встречается в скриптах, а видео — только если код вообще про него знает.
-Поэтому экран без глобуса не тащит за собой карту мира и справочник.
+в файл, только если его id (inline-config, inline-export, inline-topo,
+inline-regions, inline-monitoring) встречается в скриптах, а видео —
+только если код вообще про него знает. Поэтому экран без глобуса
+не тащит за собой карту мира и справочник, а экран без карты России —
+контуры субъектов.
 """
 from __future__ import print_function
 
@@ -44,6 +46,8 @@ INLINE_JSON = [
     ("inline-config", "config.json"),
     ("inline-export", os.path.join("data", "export.json")),
     ("inline-topo", os.path.join("data", "geo", "countries-110m.json")),
+    ("inline-regions", os.path.join("assets", "geo", "russia-regions.json")),
+    ("inline-monitoring", os.path.join("data", "monitoring.json")),
 ]
 
 MAX_VIDEO_MB = 60

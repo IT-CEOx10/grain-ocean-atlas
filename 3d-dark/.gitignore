@@ -8,3 +8,6 @@ dist/
 
 # исходники фотографий (тяжёлые, в сборку идут сжатые WebP)
 assets/photos/src/
+
+# исходник Natural Earth для карты регионов (40 МБ, качается make_regions.py)
+data/geo/ne_10m_admin_1_states_provinces.geojson

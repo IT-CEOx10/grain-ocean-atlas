@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!-- Раздел 09 спецификации: «Мониторинг зерна РФ», экраны 23–24.
+     Отдельная страница, как глобус и презентация: своя логика и стили,
+     общие с ними — шрифты, переменные зелёной темы и config.json.
+     Кнопка «Главное меню» уводит в презентацию (story.html) через
+     U.goSection в src/util.js. -->
+<html lang="ru" class="theme-green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Госмониторинг пшеницы РФ</title>
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/monitoring.css">
+</head>
+<body class="mon-screen">
+
+<div id="stage">
+  <div id="card">
+    <canvas id="stars"></canvas>
+
+    <!-- ================= экран 23: карта России ================= -->
+    <section id="scr-map" class="mon-scr is-on">
+
+      <h1 class="screen-title mon-title">Госмониторинг пшеницы&nbsp;РФ</h1>
+
+      <div class="search mon-search">
+        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
+        </svg>
+        <input id="search" type="search" placeholder="Поиск по регионам" autocomplete="off">
+      </div>
+
+      <!-- селектор года: пилюли, как на таймлайне глобуса -->
+      <div id="years" class="mon-years"></div>
+
+      <section id="card-total" class="panel mon-card mon-total">
+        <div class="mon-card-head">Всего по России</div>
+        <div id="total-body"></div>
+      </section>
+
+      <section id="card-top" class="panel mon-card mon-top">
+        <div class="mon-card-head"><span id="top-head">Топ-10 регионов</span></div>
+        <div id="top-body" class="mon-top-list"></div>
+      </section>
+
+      <!-- карта: контуры рисует src/monitoring.js на холсте -->
+      <div id="map-box">
+        <canvas id="map"></canvas>
+        <div id="map-tip" class="mon-tip"></div>
+      </div>
+
+      <div id="legend" class="mon-legend">
+        <span class="l-cap">Обследовано, тыс. т</span>
+        <span class="l-bar"></span>
+        <span class="l-lo">мало</span>
+        <span class="l-hi" id="legend-hi">много</span>
+      </div>
+
+      <div class="mon-hint">Коснитесь региона, чтобы узнать больше</div>
+
+      <button id="zoom-in" class="round-btn mon-zoom" type="button" title="Приблизить">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <button id="zoom-out" class="round-btn mon-zoom" type="button" title="Отдалить">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ================= экран 24: выбранный регион ================= -->
+    <section id="scr-region" class="mon-scr">
+
+      <div class="eyebrow mon-eyebrow" id="reg-eyebrow">Госмониторинг пшеницы РФ</div>
+      <h1 class="screen-title mon-title mon-title-reg" id="reg-title">Регион</h1>
+
+      <!-- фильтр вида пшеницы -->
+      <div id="kinds" class="mon-kinds"></div>
+
+      <section id="card-vol" class="panel mon-card mon-vol">
+        <div class="mon-card-head">Объемы обследования</div>
+        <div id="vol-body"></div>
+      </section>
+
+      <section id="card-hist" class="panel mon-card mon-hist">
+        <div class="mon-card-head">Обследовано по годам</div>
+        <div id="hist-body"></div>
+      </section>
+
+      <!-- образец зерна: точки показателей расставляет src/monitoring.js -->
+      <div id="sample" class="mon-sample">
+        <img id="sample-img" alt="Образец зерна в лабораторной чашке">
+        <div id="dots"></div>
+      </div>
+      <div class="mon-sample-cap">Образец из партии · точки показателей открываются касанием</div>
+
+      <section id="card-cls" class="panel mon-card mon-cls">
+        <div class="mon-card-head">Классы зерна</div>
+        <div id="cls-body"></div>
+      </section>
+
+      <section id="card-qual" class="panel mon-card mon-qual">
+        <div id="qual-body"></div>
+      </section>
+
+      <button id="back-map" class="ghost-btn mon-back" type="button">← К карте России</button>
+    </section>
+
+    <button id="home-btn" class="ghost-btn mon-home" type="button">Главное меню</button>
+
+    <div id="demo-note" class="mon-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
+    <div id="loading" class="loading">Загрузка данных…</div>
+  </div>
+</div>
+
+<!-- штора между разделами: гасит стык двух отдельных страниц -->
+<div id="page-fade" class="is-on"></div>
+
+<script src="src/util.js"></script>
+<script src="src/monitoring.js"></script>
+</body>
+</html>
