@@ -14,6 +14,9 @@
 </head>
 <body class="mon-screen">
 
+<!-- Обёртка раздела. В едином приложении app.html таких три,
+     по одной на раздел. Здесь она одна и сразу видима (is-on). -->
+<div id="sec-monitoring" class="sec mon-screen is-on">
 <div id="stage">
   <div id="card">
     <canvas id="stars"></canvas>
@@ -113,6 +116,7 @@
     <div id="demo-note" class="mon-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
     <div id="loading" class="loading">Загрузка данных…</div>
   </div>
+</div>
 </div>
 
 <!-- штора между разделами: гасит стык двух отдельных страниц -->

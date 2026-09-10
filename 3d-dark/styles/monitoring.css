@@ -30,7 +30,7 @@
   width: 860px;
 }
 
-body.mon-screen .mon-search {
+.mon-screen .mon-search {
   position: absolute;
   right: 60px;
   top: 46px;
@@ -39,13 +39,13 @@ body.mon-screen .mon-search {
   margin: 0;
   z-index: 6;
 }
-body.mon-screen .mon-search input {
+.mon-screen .mon-search input {
   height: 72px;
   border-radius: 999px;
   padding: 0 26px 0 62px;
   font-size: 18px;
 }
-body.mon-screen .mon-search .search-icon {
+.mon-screen .mon-search .search-icon {
   left: 28px;
   top: 27px;
   width: 18px;
@@ -560,7 +560,7 @@ html.theme-green #home-btn.mon-home {
   padding: 0 26px;
   font-size: 16px;
 }
-html.theme-green body.on-region #home-btn.mon-home { left: 322px; }
+html.theme-green .on-region #home-btn.mon-home { left: 322px; }
 
 .mon-back {
   left: 60px;

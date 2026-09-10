@@ -1,9 +1,19 @@
 /* ===================================================================
-   Точка входа: загрузка данных, состояния экрана A/B,
+   Раздел «Страны назначения»: загрузка данных, состояния экрана A/B,
    аттрактор-режим, масштабирование макета под окно.
+
+   Раздел единого приложения app.html (обёртка #sec-globe); та же логика
+   работает и отдельной страницей index.html. Сцена three.js создаётся
+   один раз: при уходе с раздела цикл отрисовки останавливается,
+   при возврате возобновляется (см. Globe.stop / Globe.start).
    =================================================================== */
 (function (global) {
   'use strict';
+
+  // элементы ищем внутри обёртки раздела: в едином приложении рядом
+  // лежат презентация и мониторинг, а часть идентификаторов совпадает
+  var ROOT = U.scope('globe');
+  var $ = U.byId('globe');
 
   var CFG = null;
   var THEME = 'navy';
@@ -14,13 +24,15 @@
   var state = 'A';
   var selected = null;
   var idleTimer = null;
+  var live = true;                     // раздел на экране (в app.html — не всегда)
 
   /* --------------------- масштабирование макета --------------------- */
 
   function fitStage() {
     var s = Math.min(global.innerWidth / 1920, global.innerHeight / 1080);
-    document.getElementById('stage').style.transform = 'scale(' + s + ')';
-    if (global.Globe) Globe.resize();
+    var stage = $('stage');
+    if (stage) stage.style.transform = 'scale(' + s + ')';
+    if (global.Globe && Globe.ready()) Globe.resize();
   }
 
   /* ---------------------------- данные ---------------------------- */
@@ -109,7 +121,7 @@
   var hintTimer = null;
 
   function flashHint() {
-    var el = document.getElementById('touch-hint');
+    var el = $('touch-hint');
     if (!el) return;
     if (hintTimer) clearTimeout(hintTimer);
     el.classList.add('is-on');
@@ -120,7 +132,11 @@
 
   var idleOff = false;                 // отключается параметром ?idle=0
 
+  /* В едином приложении таймер бездействия один на все разделы и живёт
+     в src/shell.js — здесь мы только сообщаем ему, что был отклик. */
+
   function resetIdle() {
+    if (global.Shell) { global.Shell.ping(); return; }
     if (idleTimer) clearTimeout(idleTimer);
     if (idleOff) { idleTimer = null; return; }
     var sec = (CFG.attractorTimeoutSec || 90) * 1000;
@@ -133,7 +149,7 @@
     selected = null;
     UI.setState('A');
     UI.clearSearch();
-    document.getElementById('panel-summary').classList.remove('is-collapsed');
+    $('panel-summary').classList.remove('is-collapsed');
     setYear(start, true);
     Globe.resetView();
     resetIdle();
@@ -142,13 +158,16 @@
 
   /* ------------------------------ старт ------------------------------ */
 
-  function boot() {
-    Promise.all([
+  function boot(active) {
+    live = active !== false;
+    return Promise.all([
       U.loadJSON('inline-config', 'config.json'),
       U.loadJSON('inline-export', 'data/export.json'),
       U.loadJSON('inline-topo', 'data/geo/countries-110m.json')
     ]).then(function (res) {
-      CFG = res[0];
+      // конфиг общий на все разделы (U.loadJSON его запоминает), а тема
+      // правит поля прямо в нём — поэтому работаем со своей копией
+      CFG = JSON.parse(JSON.stringify(res[0]));
       DATA = res[1];
       var topo = res[2];
 
@@ -170,7 +189,7 @@
       UI.setupVideo(CFG.shipVideo);
 
       Globe.init({
-        canvas: document.getElementById('globe'),
+        canvas: $('globe'),
         config: CFG,
         topo: topo,
         onInteract: resetIdle,
@@ -178,12 +197,18 @@
         onPick: function (name) {
           resetIdle();
           if (state === 'A') goToCountry(name);
+        },
+        // Сцена готова и текстуры залиты в видеопамять. Если раздел
+        // готовился в фоне, дальше крутить его незачем — цикл отрисовки
+        // останавливается до первого показа.
+        onReady: function () {
+          if (!live) setTimeout(function () { if (!live) Globe.stop(); }, 120);
         }
       });
 
       // «Главное меню» — обратно в презентацию, на экран start.
       // Кнопка видна только в зелёной теме (см. #home-btn в styles/app.css).
-      var home = document.getElementById('home-btn');
+      var home = $('home-btn');
       if (home) {
         home.addEventListener('click', function () {
           resetIdle();
@@ -198,15 +223,16 @@
       UI.hideLoading();
       U.revealPage();
       resetIdle();
-      flashHint();
+      if (live) flashHint();
       applyUrlParams();
 
       ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(function (ev) {
         document.addEventListener(ev, resetIdle, { passive: true });
       });
       global.addEventListener('resize', fitStage);
+      if (global.Shell) global.Shell.ready('globe');
     }).catch(function (err) {
-      var box = document.getElementById('loading');
+      var box = $('loading');
       box.textContent = 'Ошибка загрузки: ' + err.message;
       box.style.color = '#c0392b';
       U.revealPage();                  // иначе ошибку не видно из-под шторы
@@ -216,25 +242,13 @@
 
   /* ---------------- параметры адресной строки (отладка) ---------------- */
 
-  /** Разбор ?a=1&b=2 в обычный объект. */
-  function parseQuery() {
-    var q = {};
-    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
-      if (!kv) return;
-      var i = kv.indexOf('=');
-      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
-      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
-    });
-    return q;
-  }
-
   /**
    * Позволяет открыть приложение сразу в нужном состоянии — для снимков
    * экрана, показа заказчику и автотестов. Все параметры необязательные,
    * список — в README, раздел «Параметры адресной строки».
    */
   function applyUrlParams() {
-    var q = parseQuery();
+    var q = U.query('globe');
     if (!Object.keys(q).length) return;
 
     if (q.year && DATA.years.indexOf(+q.year) >= 0 && +q.year !== year) setYear(+q.year, false);
@@ -258,7 +272,7 @@
    */
   function applyTheme() {
     var themes = CFG.themes || {};
-    var want = parseQuery().theme || CFG.theme;
+    var want = U.query('globe').theme || CFG.theme;
     var name = themes[want] ? want : (themes[CFG.theme] ? CFG.theme : Object.keys(themes)[0]);
     if (!name) return;                 // конфиг без тем — всё как в CSS по умолчанию
 
@@ -285,7 +299,32 @@
     if (c.routeActive) root.setProperty('--gold2', c.routeActive);
   }
 
-  if (document.readyState === 'loading') {
+  /* Раздел единого приложения (app.html) или отдельная страница index.html.
+
+     Сцена three.js создаётся один раз. При уходе с раздела цикл отрисовки
+     останавливается, при возврате возобновляется — ни текстуры, ни
+     геометрия заново не собираются. */
+
+  if (global.Shell) {
+    global.Shell.register('globe', {
+      boot: boot,
+      show: function () {
+        live = true;
+        fitStage();
+        Globe.start();
+        Globe.remeasure();               // пока раздел был скрыт, подписи не мерились
+        flashHint();
+      },
+      hide: function () {
+        live = false;
+        Globe.stop();
+      },
+      reset: function () {
+        if (!DATA) return;
+        toAttractor();
+      }
+    });
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();

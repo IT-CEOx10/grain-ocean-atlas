@@ -15,13 +15,19 @@
      - аттрактор: возврат на первый экран по таймауту из config.json;
      - адрес ?screen=<id> открывает нужный экран сразу.
 
+   Раздел единого приложения app.html (обёртка #sec-story); та же логика
+   работает и отдельной страницей story.html.
+
    Экраны глобуса (index.html) и Блока 3 (path.html) этот файл не трогает.
    =================================================================== */
 (function (global) {
   'use strict';
 
   var C = global.StoryContent;
-  var $ = function (id) { return document.getElementById(id); };
+  // элементы ищем внутри обёртки раздела: в едином приложении рядом
+  // лежат ещё глобус и мониторинг, а часть идентификаторов совпадает
+  var ROOT = U.scope('story');
+  var $ = U.byId('story');
   var el = function (t, c, x) { return U.el(t, c, x); };
 
   var byId = {};
@@ -781,7 +787,7 @@
 
   var ACTIONS = {
     calcFert: function () {
-      var card = document.querySelector('[data-slot="fert"]');
+      var card = ROOT.querySelector('[data-slot="fert"]');
       if (!card) return;
       var node = card.querySelector('.fert');
       if (!node) { node = el('div', 'fert'); card.appendChild(node); }
@@ -905,6 +911,7 @@
   }
 
   function setUrl(id) {
+    if (global.Shell) { global.Shell.url('story', { screen: id }); return; }
     if (!global.history || !global.history.replaceState) return;
     try {
       global.history.replaceState(null, '', '?screen=' + encodeURIComponent(id));
@@ -913,7 +920,11 @@
 
   /* --------------------------- аттрактор --------------------------- */
 
+  /* В едином приложении таймер бездействия один на все разделы и живёт
+     в src/shell.js — здесь мы только сообщаем ему, что был отклик. */
+
   function resetIdle() {
+    if (global.Shell) { global.Shell.ping(); return; }
     if (idleTimer) clearTimeout(idleTimer);
     if (idleOff) { idleTimer = null; return; }
     idleTimer = setTimeout(toAttractor, (CFG.attractorTimeoutSec || 90) * 1000);
@@ -924,6 +935,24 @@
     if (cur && cur.id === HOME) return;
     hist = [];
     swap(byId[HOME]);
+  }
+
+  /** Аттрактор оболочки: вернуться на заставку без затухания раздела. */
+  function reset() {
+    hist = [];
+    if (cur && cur.id === HOME) return;
+    openScreen(HOME);
+  }
+
+  /** Показать экран сразу, без затухания: так входят в раздел из меню. */
+  function openScreen(id) {
+    var scr = byId[id];
+    if (!scr || (cur && cur.id === id)) return;
+    hist = [];
+    cur = scr;
+    st = {};
+    draw();
+    setUrl(scr.id);
   }
 
   /* --------------------------- масштаб --------------------------- */
@@ -971,19 +1000,8 @@
 
   /* ------------------------------ старт ------------------------------ */
 
-  function parseQuery() {
-    var q = {};
-    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
-      if (!kv) return;
-      var i = kv.indexOf('=');
-      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
-      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
-    });
-    return q;
-  }
-
   function boot() {
-    U.loadJSON('inline-config', 'config.json').then(function (cfg) {
+    return U.loadJSON('inline-config', 'config.json').then(function (cfg) {
       CFG = cfg || CFG;
       var green = (CFG.themes && CFG.themes.green) || {};
       applyColors(green.colors);
@@ -997,7 +1015,7 @@
         document.addEventListener(ev, resetIdle, { passive: true });
       });
 
-      var q = parseQuery();
+      var q = U.query('story');
       if (q.idle === '0') idleOff = true;
       cur = byId[q.screen] || byId[HOME];
       st = {};
@@ -1012,6 +1030,7 @@
       resetIdle();
       $('loading').classList.add('hidden');
       U.revealPage();
+      if (global.Shell) global.Shell.ready('story');
     });
   }
 
@@ -1023,7 +1042,19 @@
     state: function () { return { screen: cur && cur.id, st: st, hist: hist.slice() }; }
   };
 
-  if (document.readyState === 'loading') {
+  /* Раздел единого приложения (app.html) или отдельная страница story.html */
+  if (global.Shell) {
+    global.Shell.register('story', {
+      boot: boot,
+      show: function (p) {
+        fitStage();
+        if (p && p.screen) openScreen(p.screen);
+        else setUrl(cur ? cur.id : HOME);
+      },
+      hide: function () { ACTIONS.closeOver(); },
+      reset: reset
+    });
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();

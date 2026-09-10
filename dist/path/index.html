@@ -165,6 +165,20 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
 
 /* ------------------------------ каркас ------------------------------ */
 
+/* --------------------- разделы единого приложения ---------------------
+   В app.html три раздела лежат в одном документе, каждый в своей обёртке
+   (#sec-story, #sec-globe, #sec-monitoring). Виден тот, у которого класс
+   is-on; остальные сняты с раскладки, поэтому ничего не рисуют и не ловят
+   касания. Отдельные страницы story.html, index.html и monitoring.html
+   содержат ту же обёртку, только одну и сразу с is-on. */
+
+.sec {
+  position: fixed;
+  inset: 0;
+  display: none;
+}
+.sec.is-on { display: block; }
+
 #stage {
   position: absolute;
   left: 50%;
@@ -284,7 +298,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   text-transform: uppercase;
   color: var(--brand);
 }
-body.state-b #brand { right: 520px; bottom: 44px; }
+.state-b #brand { right: 520px; bottom: 44px; }
 
 /* --------------------------- левая панель --------------------------- */
 
@@ -853,14 +867,14 @@ html.theme-green #home-btn {
   font-size: 16px;
   background: rgba(255, 255, 255, .05);
 }
-html.theme-green body.state-b #home-btn { display: none; }
+html.theme-green .state-b #home-btn { display: none; }
 
 /* ------------------ переход между разделами стенда ------------------
-   Разделы — отдельные страницы (презентация, глобус), и чтобы стык
-   не выглядел перезагрузкой сайта, поверх всего лежит штора в цвет
-   фона: при уходе она проявляется, после загрузки — гаснет.
-   Разметка: <div id="page-fade" class="is-on"></div> в конце body,
-   поведение — U.goSection / U.revealPage в src/util.js. */
+   Чтобы переход не выглядел рывком, поверх всего лежит штора в цвет фона:
+   при уходе она проявляется, когда новый раздел готов — гаснет.
+   Разметка: <div id="page-fade" class="is-on"></div> в конце body.
+   Поведение: в едином приложении app.html — src/shell.js, на отдельных
+   страницах — U.goSection / U.revealPage в src/util.js. */
 
 #page-fade {
   position: fixed;
@@ -875,10 +889,10 @@ html.theme-green body.state-b #home-btn { display: none; }
 
 /* --------------------------- состояния --------------------------- */
 
-body.state-b #panel-left,
-body.state-b #panel-summary,
-body.state-b #timeline,
-body.state-b #reset-view { display: none; }
+.state-b #panel-left,
+.state-b #panel-summary,
+.state-b #timeline,
+.state-b #reset-view { display: none; }
 
 /* --------------------------- подсказка внизу --------------------------- */
 
@@ -898,7 +912,7 @@ body.state-b #reset-view { display: none; }
   pointer-events: none;
   text-shadow: 0 2px 12px rgba(0, 0, 0, .7);
 }
-body.state-b #touch-hint { display: none !important; }
+.state-b #touch-hint { display: none !important; }
 
 /* =============================== зелёная тема ===============================
    Тёмный зелёно-бирюзовый фон, стекло панелей в тот же тон, золотая графика.
@@ -1240,7 +1254,7 @@ html.theme-green #panel-video #video-canvas { width: 490px; height: 320px; }
 html.theme-green .video-cap { display: none; }
 
 /* на экране «Путь» карточка возвращается на прежнее место слева */
-html.theme-green body.state-b #panel-video {
+html.theme-green .state-b #panel-video {
   left: 40px;
   right: auto;
   top: 240px;
@@ -1248,9 +1262,9 @@ html.theme-green body.state-b #panel-video {
   height: 500px;
   z-index: 5;
 }
-html.theme-green body.state-b #panel-video .video-box { width: 600px; height: 392px; border-radius: 12px; }
-html.theme-green body.state-b #panel-video #video-canvas { width: 600px; height: 392px; }
-html.theme-green body.state-b .video-cap { display: flex; }
+html.theme-green .state-b #panel-video .video-box { width: 600px; height: 392px; border-radius: 12px; }
+html.theme-green .state-b #panel-video #video-canvas { width: 600px; height: 392px; }
+html.theme-green .state-b .video-cap { display: flex; }
 
 /* ---- таймлайн и кнопка сброса вида ---- */
 
@@ -1855,20 +1869,31 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
   /**
    * Загрузка JSON: сперва ищем инлайн-блок <script type="application/json" id="...">
    * (так работает собранный dist/index.html), иначе — обычный fetch.
+   *
+   * Результат запоминается: в едином приложении (app.html) один и тот же
+   * config.json спрашивают четыре модуля, и незачем читать его четыре раза.
    */
+  var jsonCache = {};
+
   function loadJSON(inlineId, url) {
+    var key = inlineId + '|' + url;
+    if (jsonCache[key]) return jsonCache[key];
+    var p;
     var node = document.getElementById(inlineId);
     if (node && node.textContent.trim()) {
       try {
-        return Promise.resolve(JSON.parse(node.textContent));
+        p = Promise.resolve(JSON.parse(node.textContent));
       } catch (e) {
-        return Promise.reject(new Error('Не разобрать инлайн-данные #' + inlineId + ': ' + e.message));
+        p = Promise.reject(new Error('Не разобрать инлайн-данные #' + inlineId + ': ' + e.message));
       }
+    } else {
+      p = fetch(url).then(function (r) {
+        if (!r.ok) throw new Error('Не загрузить ' + url + ' (' + r.status + ')');
+        return r.json();
+      });
     }
-    return fetch(url).then(function (r) {
-      if (!r.ok) throw new Error('Не загрузить ' + url + ' (' + r.status + ')');
-      return r.json();
-    });
+    jsonCache[key] = p;
+    return p;
   }
 
   /**
@@ -1911,15 +1936,54 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
     return n;
   }
 
+  /* ==================== разделы: обёртка и параметры ====================
+
+     На стенде все разделы живут в одном документе app.html, каждый —
+     внутри своей обёртки #sec-story / #sec-globe / #sec-monitoring.
+     Отдельные страницы (story.html, index.html, monitoring.html) остались
+     для отладки и содержат ту же обёртку, только одну. Поэтому модуль
+     ищет свои элементы не по всему документу, а внутри своей обёртки:
+     идентификаторы у разделов местами совпадают (#stage, #search, #years).
+
+     U.scope('globe') отдаёт эту обёртку, U.byId — функцию поиска в ней. */
+
+  function scope(name) {
+    return document.getElementById('sec-' + name) || document.body;
+  }
+
+  /** Функция поиска элемента внутри обёртки раздела: var $ = U.byId('globe'). */
+  function byId(name) {
+    var root = scope(name);
+    return function (id) { return root.querySelector('[id="' + id + '"]'); };
+  }
+
+  /** Разбор ?a=1&b=2 в обычный объект. */
+  function parseQuery() {
+    var q = {};
+    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('=');
+      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
+      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
+    });
+    return q;
+  }
+
+  /**
+   * Параметры адреса для раздела. В едином приложении их раздаёт Shell:
+   * ?year=2021 достаётся тому разделу, который назван в ?section=,
+   * иначе глобус и мониторинг разобрали бы один и тот же параметр.
+   */
+  function query(name) {
+    if (global.Shell && global.Shell.paramsFor) return global.Shell.paramsFor(name);
+    return parseQuery();
+  }
+
   /* ================= переходы между разделами стенда =================
 
-     Разделы — четыре отдельные страницы: презентация «Путь зерна»
-     (story.html), глобус «Маршруты экспорта» (index.html), карта
-     госмониторинга (monitoring.html) и старый экран схемы (path.html).
-     Слить их в один файл нельзя: глобус с текстурами весит около 7 МБ,
-     и вместе получилось бы слишком тяжело. Поэтому переход — обычная
-     смена страницы, а стык прикрыт шторой в цвет фона
-     (см. #page-fade ниже).
+     В app.html переход между разделами — показ соседней обёртки, адрес
+     не меняется (см. src/shell.js). На отдельных страницах — обычная
+     смена страницы, а стык прикрыт шторой в цвет фона (#page-fade ниже).
 
      Адрес соседнего раздела зависит от того, как открыт проект:
 
@@ -1958,8 +2022,9 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
 
   function curtain() { return document.getElementById('page-fade'); }
 
-  /** Страница готова — убрать штору. */
+  /** Страница готова — убрать штору. В app.html шторой заведует Shell. */
   function revealPage() {
+    if (global.Shell) return;
     var n = curtain();
     if (!n) return;
     // следующим тиком: иначе браузер не успевает заметить смену класса
@@ -1969,6 +2034,7 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
 
   /** Уйти в другой раздел: сперва затемнение, потом смена страницы. */
   function goSection(name, params) {
+    if (global.Shell) { global.Shell.go(name, params); return; }
     var url = sectionUrl(name, params);
     if (!url) return;
     var n = curtain();
@@ -1987,6 +2053,11 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
     sectionUrl: sectionUrl,
     goSection: goSection,
     revealPage: revealPage,
+    scope: scope,
+    byId: byId,
+    parseQuery: parseQuery,
+    query: query,
+    FADE_MS: FADE_MS,
     fmtVolume: fmtVolume,
     fmtInt: fmtInt,
     capitalize: capitalize,

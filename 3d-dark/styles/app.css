@@ -156,6 +156,20 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
 
 /* ------------------------------ каркас ------------------------------ */
 
+/* --------------------- разделы единого приложения ---------------------
+   В app.html три раздела лежат в одном документе, каждый в своей обёртке
+   (#sec-story, #sec-globe, #sec-monitoring). Виден тот, у которого класс
+   is-on; остальные сняты с раскладки, поэтому ничего не рисуют и не ловят
+   касания. Отдельные страницы story.html, index.html и monitoring.html
+   содержат ту же обёртку, только одну и сразу с is-on. */
+
+.sec {
+  position: fixed;
+  inset: 0;
+  display: none;
+}
+.sec.is-on { display: block; }
+
 #stage {
   position: absolute;
   left: 50%;
@@ -275,7 +289,7 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   text-transform: uppercase;
   color: var(--brand);
 }
-body.state-b #brand { right: 520px; bottom: 44px; }
+.state-b #brand { right: 520px; bottom: 44px; }
 
 /* --------------------------- левая панель --------------------------- */
 
@@ -844,14 +858,14 @@ html.theme-green #home-btn {
   font-size: 16px;
   background: rgba(255, 255, 255, .05);
 }
-html.theme-green body.state-b #home-btn { display: none; }
+html.theme-green .state-b #home-btn { display: none; }
 
 /* ------------------ переход между разделами стенда ------------------
-   Разделы — отдельные страницы (презентация, глобус), и чтобы стык
-   не выглядел перезагрузкой сайта, поверх всего лежит штора в цвет
-   фона: при уходе она проявляется, после загрузки — гаснет.
-   Разметка: <div id="page-fade" class="is-on"></div> в конце body,
-   поведение — U.goSection / U.revealPage в src/util.js. */
+   Чтобы переход не выглядел рывком, поверх всего лежит штора в цвет фона:
+   при уходе она проявляется, когда новый раздел готов — гаснет.
+   Разметка: <div id="page-fade" class="is-on"></div> в конце body.
+   Поведение: в едином приложении app.html — src/shell.js, на отдельных
+   страницах — U.goSection / U.revealPage в src/util.js. */
 
 #page-fade {
   position: fixed;
@@ -866,10 +880,10 @@ html.theme-green body.state-b #home-btn { display: none; }
 
 /* --------------------------- состояния --------------------------- */
 
-body.state-b #panel-left,
-body.state-b #panel-summary,
-body.state-b #timeline,
-body.state-b #reset-view { display: none; }
+.state-b #panel-left,
+.state-b #panel-summary,
+.state-b #timeline,
+.state-b #reset-view { display: none; }
 
 /* --------------------------- подсказка внизу --------------------------- */
 
@@ -889,7 +903,7 @@ body.state-b #reset-view { display: none; }
   pointer-events: none;
   text-shadow: 0 2px 12px rgba(0, 0, 0, .7);
 }
-body.state-b #touch-hint { display: none !important; }
+.state-b #touch-hint { display: none !important; }
 
 /* =============================== зелёная тема ===============================
    Тёмный зелёно-бирюзовый фон, стекло панелей в тот же тон, золотая графика.
@@ -1231,7 +1245,7 @@ html.theme-green #panel-video #video-canvas { width: 490px; height: 320px; }
 html.theme-green .video-cap { display: none; }
 
 /* на экране «Путь» карточка возвращается на прежнее место слева */
-html.theme-green body.state-b #panel-video {
+html.theme-green .state-b #panel-video {
   left: 40px;
   right: auto;
   top: 240px;
@@ -1239,9 +1253,9 @@ html.theme-green body.state-b #panel-video {
   height: 500px;
   z-index: 5;
 }
-html.theme-green body.state-b #panel-video .video-box { width: 600px; height: 392px; border-radius: 12px; }
-html.theme-green body.state-b #panel-video #video-canvas { width: 600px; height: 392px; }
-html.theme-green body.state-b .video-cap { display: flex; }
+html.theme-green .state-b #panel-video .video-box { width: 600px; height: 392px; border-radius: 12px; }
+html.theme-green .state-b #panel-video #video-canvas { width: 600px; height: 392px; }
+html.theme-green .state-b .video-cap { display: flex; }
 
 /* ---- таймлайн и кнопка сброса вида ---- */
 

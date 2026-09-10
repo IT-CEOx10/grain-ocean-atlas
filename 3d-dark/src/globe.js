@@ -75,6 +75,14 @@
   var drawAnim = null;                  // анимация прорисовки дуг
   var onPick = function () {};
   var onInteract = function () {};
+  var onReady = function () {};
+  /* Цикл отрисовки. В едином приложении (app.html) сцена создаётся один
+     раз и живёт до конца показа, а когда раздел уходит с экрана, цикл
+     останавливается (Globe.stop) и возобновляется при возврате
+     (Globe.start) — сцена, текстуры и геометрия не пересоздаются. */
+  var rafId = 0;                        // 0 — цикл не крутится
+  var started = false;                  // init() уже отработал
+  var texLeft = 0;                      // сколько текстур Земли ещё грузится
 
   /* ------------------------- геометрия сферы ------------------------- */
 
@@ -618,6 +626,7 @@
     gcfg = cfg.globe;
     onPick = opts.onPick || onPick;
     onInteract = opts.onInteract || onInteract;
+    onReady = opts.onReady || onReady;
     if (gcfg.homeX != null) HOME.fx = gcfg.homeX;
     if (gcfg.homeY != null) HOME.fy = gcfg.homeY;
     ARC_START = num(gcfg.arcStart, 1);
@@ -664,14 +673,23 @@
       emissiveIntensity: gcfg.lightsIntensity || 1.35
     });
     var loader = new THREE.TextureLoader();
+    // Снимки Земли распаковываются долго, поэтому считаем их: когда обе
+    // готовы и попали в кадр, раздел докладывает onReady — по этому
+    // сигналу оболочка гасит цикл у раздела, поднятого в фоне.
+    texLeft = 2;
+    function texDone() {
+      if (--texLeft > 0) return;
+      // ещё кадр, чтобы текстуры успели уехать в видеопамять
+      setTimeout(function () { onReady(); }, 0);
+    }
     var landSet = TEX_LAND[cfg.theme] || TEX_LAND.navy;
     loader.load(U.asset(pickTexture(landSet)), function (t) {
-      earthMat.map = prepTexture(t); earthMat.needsUpdate = true;
-    });
+      earthMat.map = prepTexture(t); earthMat.needsUpdate = true; texDone();
+    }, null, texDone);
     var lightSet = TEX_LIGHTS[cfg.theme] || TEX_LIGHTS.navy;
     loader.load(U.asset(pickTexture(lightSet)), function (t) {
-      earthMat.emissiveMap = prepTexture(t); earthMat.needsUpdate = true;
-    });
+      earthMat.emissiveMap = prepTexture(t); earthMat.needsUpdate = true; texDone();
+    }, null, texDone);
     // сегментов много: вблизи на гранёном шаре виден многоугольный край диска
     earth = new THREE.Mesh(new THREE.SphereGeometry(R, 160, 96), earthMat);
     world.add(earth);
@@ -758,7 +776,22 @@
     bindPointer();
     resize();
     global.addEventListener('resize', resize);
-    requestAnimationFrame(loop);
+    started = true;
+    start();
+  }
+
+  /** Запустить цикл отрисовки (idempotent). */
+  function start() {
+    if (!started || rafId) return;
+    lastFrame = 0;
+    rafId = requestAnimationFrame(loop);
+  }
+
+  /** Остановить цикл: раздел ушёл с экрана, сцена остаётся в памяти. */
+  function stop() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
   }
 
   function resize() {
@@ -809,7 +842,8 @@
   }
 
   function initLabels() {
-    labelHost = document.getElementById('glabels');
+    // ищем внутри обёртки раздела: в app.html рядом лежат ещё два раздела
+    labelHost = U.scope('globe').querySelector('[id="glabels"]');
     originLabel = makeLabel('is-port');
     setLabelText(originLabel, cfg.origin.name, 'порт отправления');
     selLabel = makeLabel('is-port');
@@ -1328,9 +1362,12 @@
   /* ------------------------------ цикл ------------------------------ */
 
   var partVec = new THREE.Vector3();
+  var frames = 0, fps = 0, fpsT = 0;   // счётчик кадров: Globe.stats()
 
   function loop(now) {
-    requestAnimationFrame(loop);
+    rafId = requestAnimationFrame(loop);
+    frames++;
+    if (now - fpsT > 1000) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now; }
     var dt = lastFrame ? Math.min((now - lastFrame) / 1000, 0.1) : 0.016;
     lastFrame = now;
 
@@ -1379,8 +1416,29 @@
 
   /* ------------------------------ API ------------------------------ */
 
+  /** Перемерить подписи: пока раздел был скрыт, offsetWidth равнялся нулю. */
+  function remeasure() {
+    if (!started) return;
+    labels.concat([originLabel, selLabel]).forEach(function (L) {
+      if (!L) return;
+      L.w = L.el.offsetWidth;
+      L.h = L.el.offsetHeight;
+    });
+  }
+
   global.Globe = {
     init: init,
+    start: start,
+    stop: stop,
+    remeasure: remeasure,
+    ready: function () { return started; },
+    running: function () { return !!rafId; },
+    /** Счётчик кадров и состояние цикла — для отладки и автотестов. */
+    stats: function () {
+      return { fps: Math.round(fps), running: !!rafId,
+               frames: renderer ? renderer.info.render.frame : 0,
+               routes: routes.length };
+    },
     setRoutes: setRoutes,
     setSelected: setSelected,
     focus: focus,

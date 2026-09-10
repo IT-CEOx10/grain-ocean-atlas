@@ -37,20 +37,31 @@
   /**
    * Загрузка JSON: сперва ищем инлайн-блок <script type="application/json" id="...">
    * (так работает собранный dist/index.html), иначе — обычный fetch.
+   *
+   * Результат запоминается: в едином приложении (app.html) один и тот же
+   * config.json спрашивают четыре модуля, и незачем читать его четыре раза.
    */
+  var jsonCache = {};
+
   function loadJSON(inlineId, url) {
+    var key = inlineId + '|' + url;
+    if (jsonCache[key]) return jsonCache[key];
+    var p;
     var node = document.getElementById(inlineId);
     if (node && node.textContent.trim()) {
       try {
-        return Promise.resolve(JSON.parse(node.textContent));
+        p = Promise.resolve(JSON.parse(node.textContent));
       } catch (e) {
-        return Promise.reject(new Error('Не разобрать инлайн-данные #' + inlineId + ': ' + e.message));
+        p = Promise.reject(new Error('Не разобрать инлайн-данные #' + inlineId + ': ' + e.message));
       }
+    } else {
+      p = fetch(url).then(function (r) {
+        if (!r.ok) throw new Error('Не загрузить ' + url + ' (' + r.status + ')');
+        return r.json();
+      });
     }
-    return fetch(url).then(function (r) {
-      if (!r.ok) throw new Error('Не загрузить ' + url + ' (' + r.status + ')');
-      return r.json();
-    });
+    jsonCache[key] = p;
+    return p;
   }
 
   /**
@@ -93,15 +104,54 @@
     return n;
   }
 
+  /* ==================== разделы: обёртка и параметры ====================
+
+     На стенде все разделы живут в одном документе app.html, каждый —
+     внутри своей обёртки #sec-story / #sec-globe / #sec-monitoring.
+     Отдельные страницы (story.html, index.html, monitoring.html) остались
+     для отладки и содержат ту же обёртку, только одну. Поэтому модуль
+     ищет свои элементы не по всему документу, а внутри своей обёртки:
+     идентификаторы у разделов местами совпадают (#stage, #search, #years).
+
+     U.scope('globe') отдаёт эту обёртку, U.byId — функцию поиска в ней. */
+
+  function scope(name) {
+    return document.getElementById('sec-' + name) || document.body;
+  }
+
+  /** Функция поиска элемента внутри обёртки раздела: var $ = U.byId('globe'). */
+  function byId(name) {
+    var root = scope(name);
+    return function (id) { return root.querySelector('[id="' + id + '"]'); };
+  }
+
+  /** Разбор ?a=1&b=2 в обычный объект. */
+  function parseQuery() {
+    var q = {};
+    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf('=');
+      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
+      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
+    });
+    return q;
+  }
+
+  /**
+   * Параметры адреса для раздела. В едином приложении их раздаёт Shell:
+   * ?year=2021 достаётся тому разделу, который назван в ?section=,
+   * иначе глобус и мониторинг разобрали бы один и тот же параметр.
+   */
+  function query(name) {
+    if (global.Shell && global.Shell.paramsFor) return global.Shell.paramsFor(name);
+    return parseQuery();
+  }
+
   /* ================= переходы между разделами стенда =================
 
-     Разделы — четыре отдельные страницы: презентация «Путь зерна»
-     (story.html), глобус «Маршруты экспорта» (index.html), карта
-     госмониторинга (monitoring.html) и старый экран схемы (path.html).
-     Слить их в один файл нельзя: глобус с текстурами весит около 7 МБ,
-     и вместе получилось бы слишком тяжело. Поэтому переход — обычная
-     смена страницы, а стык прикрыт шторой в цвет фона
-     (см. #page-fade ниже).
+     В app.html переход между разделами — показ соседней обёртки, адрес
+     не меняется (см. src/shell.js). На отдельных страницах — обычная
+     смена страницы, а стык прикрыт шторой в цвет фона (#page-fade ниже).
 
      Адрес соседнего раздела зависит от того, как открыт проект:
 
@@ -140,8 +190,9 @@
 
   function curtain() { return document.getElementById('page-fade'); }
 
-  /** Страница готова — убрать штору. */
+  /** Страница готова — убрать штору. В app.html шторой заведует Shell. */
   function revealPage() {
+    if (global.Shell) return;
     var n = curtain();
     if (!n) return;
     // следующим тиком: иначе браузер не успевает заметить смену класса
@@ -151,6 +202,7 @@
 
   /** Уйти в другой раздел: сперва затемнение, потом смена страницы. */
   function goSection(name, params) {
+    if (global.Shell) { global.Shell.go(name, params); return; }
     var url = sectionUrl(name, params);
     if (!url) return;
     var n = curtain();
@@ -169,6 +221,11 @@
     sectionUrl: sectionUrl,
     goSection: goSection,
     revealPage: revealPage,
+    scope: scope,
+    byId: byId,
+    parseQuery: parseQuery,
+    query: query,
+    FADE_MS: FADE_MS,
     fmtVolume: fmtVolume,
     fmtInt: fmtInt,
     capitalize: capitalize,

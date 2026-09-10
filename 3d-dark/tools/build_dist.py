@@ -20,6 +20,10 @@ window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
   --entry ФАЙЛ    какую страницу собирать (по умолчанию index.html).
                   Экран «Путь зерна» собирается так:
                   python3 tools/build_dist.py --entry path.html --out dist/path.html
+                  Единое приложение (все три раздела в одном файле):
+                  python3 tools/build_dist.py --entry app.html --out dist/app.html
+  --max-mb ЧИСЛО  с какого размера ругаться (по умолчанию 8 МБ; у app.html
+                  внутри все разделы сразу, там уместно 16)
 
 Что вшивать, скрипт решает сам по коду страницы: блок данных попадает
 в файл, только если его id (inline-config, inline-export, inline-topo,
@@ -53,6 +57,8 @@ INLINE_JSON = [
 MAX_VIDEO_MB = 60
 # Предупреждение, если файл разросся. 8 МБ, а не 6: у зелёной темы свои
 # текстуры — второй набор суши и своя карта огней (вместе около 1,3 МБ).
+# У единого приложения (app.html) внутри лежат все три раздела сразу,
+# поэтому там порог поднимается ключом --max-mb.
 MAX_DIST_MB = 8
 
 mimetypes.add_type("font/woff2", ".woff2")
@@ -90,7 +96,8 @@ def guard(code, what):
     return code
 
 
-def main(theme=None, out_path=None, entry=None):
+def main(theme=None, out_path=None, entry=None, max_mb=None):
+    max_mb = max_mb or MAX_DIST_MB
     entry = entry or "index.html"
     entry_path = os.path.join(ROOT, entry)
     if not os.path.exists(entry_path):
@@ -228,8 +235,8 @@ def main(theme=None, out_path=None, entry=None):
 
     size_mb = os.path.getsize(out) / 1048576.0
     print("Собрано: %s (%.1f МБ)" % (os.path.relpath(out, ROOT), size_mb))
-    if size_mb > MAX_DIST_MB:
-        print("ВНИМАНИЕ: файл больше %d МБ — проверьте, что вшито." % MAX_DIST_MB)
+    if size_mb > max_mb:
+        print("ВНИМАНИЕ: файл больше %d МБ — проверьте, что вшито." % max_mb)
     print("Файл открывается двойным щелчком, сервер не нужен.")
 
 
@@ -238,5 +245,7 @@ if __name__ == "__main__":
     ap.add_argument("--theme", help="тема по умолчанию во вшитом конфиге (navy, green)")
     ap.add_argument("--out", help="путь к результату, по умолчанию dist/index.html")
     ap.add_argument("--entry", help="какую страницу собирать, по умолчанию index.html")
+    ap.add_argument("--max-mb", type=float,
+                    help="порог предупреждения о размере, по умолчанию %d МБ" % MAX_DIST_MB)
     args = ap.parse_args()
-    main(theme=args.theme, out_path=args.out, entry=args.entry)
+    main(theme=args.theme, out_path=args.out, entry=args.entry, max_mb=args.max_mb)

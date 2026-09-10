@@ -15,6 +15,9 @@
 </head>
 <body class="story-screen">
 
+<!-- Обёртка раздела. В едином приложении app.html таких три,
+     по одной на раздел. Здесь она одна и сразу видима (is-on). -->
+<div id="sec-story" class="sec story-screen is-on">
 <div id="stage">
   <div id="card">
     <canvas id="stars"></canvas>
@@ -22,6 +25,7 @@
     <div id="view"></div>
     <div id="loading" class="loading">Загрузка…</div>
   </div>
+</div>
 </div>
 
 <!-- штора между разделами: гасит стык двух отдельных страниц -->

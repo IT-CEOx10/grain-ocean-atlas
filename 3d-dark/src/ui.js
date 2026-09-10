@@ -5,7 +5,10 @@
 (function (global) {
   'use strict';
 
-  var $ = function (id) { return document.getElementById(id); };
+  // элементы ищем внутри обёртки раздела глобуса: в едином приложении
+  // рядом лежат презентация и мониторинг, а часть идентификаторов совпадает
+  var ROOT = U.scope('globe');
+  var $ = U.byId('globe');
   var els = {};
   var handlers = {};
   var listState = { items: [], filter: '', expanded: null };
@@ -68,7 +71,7 @@
     // На карте в зелёной теме карточка видео работает как кнопка:
     // открывает «Путь» в страну №1 за выбранный год.
     els.video.addEventListener('click', function () {
-      if (document.body.classList.contains('state-b')) return;
+      if (ROOT.classList.contains('state-b')) return;
       var top = listState.items[0];
       if (top) handlers.onStart(top.name);
     });
@@ -449,7 +452,9 @@
 
   function setState(state) {
     var b = state === 'B';
-    document.body.className = b ? 'state-b' : '';
+    // класс состояния — на обёртке раздела, а не на body: в едином
+    // приложении body общий на все три раздела
+    ROOT.classList.toggle('state-b', b);
     els.countryPanel.classList.toggle('hidden', !b);
     // в зелёной теме карточка видео есть и на «Карте» — там она стоит
     // третьей в правой колонке и показывает неподвижное превью

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!-- ===================================================================
+     Единое приложение стенда «Золотая осень».
+
+     Все разделы живут в одном документе: браузер читает файл один раз,
+     разбирает вшитые ассеты один раз и один раз поднимает сцену three.js.
+     Переход между разделами — показ соседней обёртки под шторой, без
+     смены адреса, поэтому он мгновенный.
+
+       #sec-story        презентация «Путь зерна»
+       #sec-globe        глобус «Страны назначения»
+       #sec-monitoring   карта «Госмониторинг пшеницы РФ»
+
+     Разметка обёрток — это те же блоки, что в story.html, index.html
+     и monitoring.html. Те страницы остались для отладки разделов по
+     отдельности; правку разметки нужно вносить в обе, за этим следит
+     проверка в tools/publish_pages.py.
+
+     Порядок и жизненный цикл разделов ведёт src/shell.js, см. README,
+     раздел «Единое приложение».
+     =================================================================== -->
+<html lang="ru" class="theme-green">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920, initial-scale=1">
+<title>Путь зерна — стенд ЦОК АПК</title>
+<link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/story.css">
+<link rel="stylesheet" href="styles/monitoring.css">
+</head>
+<body>
+
+<!-- ==================== раздел 1: презентация ==================== -->
+<div id="sec-story" class="sec story-screen">
+<div id="stage">
+  <div id="card">
+    <canvas id="stars"></canvas>
+    <!-- сюда src/story.js рисует текущий экран -->
+    <div id="view"></div>
+    <div id="loading" class="loading">Загрузка…</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== раздел 2: глобус ==================== -->
+<div id="sec-globe" class="sec">
+<div id="stage">
+  <div id="card">
+
+    <canvas id="stars"></canvas>
+    <canvas id="globe"></canvas>
+    <div id="vignette"></div>
+    <div id="glabels"></div>
+
+    <!-- ========== состояние A: список стран ========== -->
+    <section id="panel-left" class="panel">
+      <h1 class="screen-title">Страны назначения</h1>
+      <div id="left-eyebrow" class="eyebrow">Российское зерно</div>
+
+      <div class="search">
+        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
+        </svg>
+        <input id="search" type="search" placeholder="Поиск по странам" autocomplete="off">
+      </div>
+
+      <div id="country-list" class="country-list"></div>
+      <div id="left-hint" class="list-hint">Выберите страну или маршрут на глобусе</div>
+    </section>
+
+    <!-- ========== состояние A: сводка ========== -->
+    <section id="panel-summary" class="panel box">
+      <!-- Две обёртки нужны зелёной теме: там это две отдельные карточки.
+           В синей теме они без оформления и вёрстку не меняют. -->
+      <div class="sum-main">
+        <button id="summary-head" class="box-head" type="button">
+          <span id="summary-title">Экспорт зерна</span>
+          <svg class="chevron" viewBox="0 0 16 16" aria-hidden="true"><polyline points="4,6 8,10 12,6"></polyline></svg>
+        </button>
+
+        <div id="summary-body" class="box-body">
+          <div class="metric">
+            <span id="sum-total" class="metric-value">—</span>
+            <span class="metric-unit">тыс. т</span>
+          </div>
+          <div class="metric-caption">поставлено на экспорт</div>
+
+          <div class="stat-row">
+            <div class="stat"><b id="sum-countries">—</b><span>стран-получателей</span></div>
+            <div class="stat"><b id="sum-groups">—</b><span>групп продукции</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sum-top-box">
+        <div class="section-title">Топ-3 направлений</div>
+        <div id="sum-top" class="top-list"></div>
+      </div>
+    </section>
+
+    <!-- ========== состояние B: видео ========== -->
+    <section id="panel-video" class="panel hidden">
+      <div class="video-box">
+        <video id="ship-video" muted loop playsinline preload="auto"></video>
+        <div id="video-fallback" class="video-fallback">
+          <canvas id="video-canvas"></canvas>
+        </div>
+        <div class="play-badge">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="4,2 21,12 4,22"></polygon></svg>
+        </div>
+      </div>
+      <div class="video-cap">
+        <div>
+          <div id="video-route" class="eyebrow">Новороссийск</div>
+          <div class="t">Видео: путь корабля</div>
+        </div>
+        <div id="video-time" class="eyebrow" style="letter-spacing:.06em"></div>
+      </div>
+    </section>
+
+    <!-- ========== состояние B: три факта ========== -->
+    <div id="facts" class="hidden">
+      <div class="fact"><div class="l">Расстояние</div><div id="fact-dist" class="v">—</div></div>
+      <div class="fact"><div class="l">В пути</div><div id="fact-days" class="v">—</div></div>
+      <div class="fact"><div class="l">Порт назначения</div><div id="fact-port" class="v">—</div></div>
+    </div>
+
+    <!-- ========== состояние B: карточка страны ========== -->
+    <section id="panel-country" class="panel box hidden">
+      <div class="eyebrow">Направление</div>
+      <span id="country-name">—</span>
+
+      <div class="metric">
+        <span id="country-total" class="metric-value">—</span>
+        <span class="metric-unit">тыс. т</span>
+      </div>
+
+      <div class="rank-row">
+        <b id="country-rank">—</b>
+        <span>среди стран-получателей российского зерна</span>
+      </div>
+
+      <div class="divider"></div>
+      <div class="eyebrow">Продукция, <span id="country-year">—</span></div>
+      <div id="country-products" class="product-grid"></div>
+      <div id="country-more" class="product-more"></div>
+      <div class="eyebrow card-foot">Данные ФГИС «Зерно» · тыс. тонн</div>
+    </section>
+
+    <!-- ========== таймлайн (состояние A) ========== -->
+    <button id="reset-view" class="round-btn" type="button" title="Сбросить вид">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="12" r="9"></circle>
+        <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+        <line x1="3.4" y1="9" x2="20.6" y2="9"></line>
+        <line x1="3.4" y1="15" x2="20.6" y2="15"></line>
+      </svg>
+    </button>
+    <div id="timeline" class="panel"><div id="years" class="years"></div></div>
+
+    <!-- ========== низ (состояние B) ========== -->
+    <div id="bottom-b" class="hidden">
+      <button id="reset-view-b" class="round-btn" type="button" title="Сбросить вид">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"></circle>
+          <ellipse cx="12" cy="12" rx="4" ry="9"></ellipse>
+          <line x1="3.4" y1="9" x2="20.6" y2="9"></line>
+          <line x1="3.4" y1="15" x2="20.6" y2="15"></line>
+        </svg>
+      </button>
+      <button id="back-map" class="ghost-btn" type="button">&larr;&nbsp; К карте</button>
+    </div>
+
+    <!-- возврат в презентацию «Путь зерна»: только в зелёной теме,
+         на выставке это раздел «Маршруты экспорта» одного приложения -->
+    <button id="home-btn" class="ghost-btn" type="button">Главное меню</button>
+
+    <!-- подсказка по центру внизу: показывается только в зелёной теме -->
+    <div id="touch-hint">Коснитесь страны или маршрута, чтобы узнать больше</div>
+
+    <div id="brand">ЦОК АПК · Государственный мониторинг зерна</div>
+    <div id="loading" class="loading">Загрузка данных…</div>
+  </div>
+</div>
+</div>
+
+<!-- ==================== раздел 3: мониторинг ==================== -->
+<div id="sec-monitoring" class="sec mon-screen">
+<div id="stage">
+  <div id="card">
+    <canvas id="stars"></canvas>
+
+    <!-- ================= экран 23: карта России ================= -->
+    <section id="scr-map" class="mon-scr is-on">
+
+      <h1 class="screen-title mon-title">Госмониторинг пшеницы&nbsp;РФ</h1>
+
+      <div class="search mon-search">
+        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
+          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
+        </svg>
+        <input id="search" type="search" placeholder="Поиск по регионам" autocomplete="off">
+      </div>
+
+      <!-- селектор года: пилюли, как на таймлайне глобуса -->
+      <div id="years" class="mon-years"></div>
+
+      <section id="card-total" class="panel mon-card mon-total">
+        <div class="mon-card-head">Всего по России</div>
+        <div id="total-body"></div>
+      </section>
+
+      <section id="card-top" class="panel mon-card mon-top">
+        <div class="mon-card-head"><span id="top-head">Топ-10 регионов</span></div>
+        <div id="top-body" class="mon-top-list"></div>
+      </section>
+
+      <!-- карта: контуры рисует src/monitoring.js на холсте -->
+      <div id="map-box">
+        <canvas id="map"></canvas>
+        <div id="map-tip" class="mon-tip"></div>
+      </div>
+
+      <div id="legend" class="mon-legend">
+        <span class="l-cap">Обследовано, тыс. т</span>
+        <span class="l-bar"></span>
+        <span class="l-lo">мало</span>
+        <span class="l-hi" id="legend-hi">много</span>
+      </div>
+
+      <div class="mon-hint">Коснитесь региона, чтобы узнать больше</div>
+
+      <button id="zoom-in" class="round-btn mon-zoom" type="button" title="Приблизить">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+      <button id="zoom-out" class="round-btn mon-zoom" type="button" title="Отдалить">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </section>
+
+    <!-- ================= экран 24: выбранный регион ================= -->
+    <section id="scr-region" class="mon-scr">
+
+      <div class="eyebrow mon-eyebrow" id="reg-eyebrow">Госмониторинг пшеницы РФ</div>
+      <h1 class="screen-title mon-title mon-title-reg" id="reg-title">Регион</h1>
+
+      <!-- фильтр вида пшеницы -->
+      <div id="kinds" class="mon-kinds"></div>
+
+      <section id="card-vol" class="panel mon-card mon-vol">
+        <div class="mon-card-head">Объемы обследования</div>
+        <div id="vol-body"></div>
+      </section>
+
+      <section id="card-hist" class="panel mon-card mon-hist">
+        <div class="mon-card-head">Обследовано по годам</div>
+        <div id="hist-body"></div>
+      </section>
+
+      <!-- образец зерна: точки показателей расставляет src/monitoring.js -->
+      <div id="sample" class="mon-sample">
+        <img id="sample-img" alt="Образец зерна в лабораторной чашке">
+        <div id="dots"></div>
+      </div>
+      <div class="mon-sample-cap">Образец из партии · точки показателей открываются касанием</div>
+
+      <section id="card-cls" class="panel mon-card mon-cls">
+        <div class="mon-card-head">Классы зерна</div>
+        <div id="cls-body"></div>
+      </section>
+
+      <section id="card-qual" class="panel mon-card mon-qual">
+        <div id="qual-body"></div>
+      </section>
+
+      <button id="back-map" class="ghost-btn mon-back" type="button">← К карте России</button>
+    </section>
+
+    <button id="home-btn" class="ghost-btn mon-home" type="button">Главное меню</button>
+
+    <div id="demo-note" class="mon-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
+    <div id="loading" class="loading">Загрузка данных…</div>
+  </div>
+</div>
+</div>
+
+<!-- штора между разделами: гасит стык при переключении -->
+<div id="page-fade" class="is-on"></div>
+
+<!-- Порядок важен: util.js даёт помощники, shell.js заводит реестр
+     разделов, дальше каждый раздел в него записывается. Библиотеки
+     глобуса идут перед globe.js. -->
+<script src="src/util.js"></script>
+<script src="src/shell.js"></script>
+
+<script src="src/story-content.js"></script>
+<script src="src/story.js"></script>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="src/globe.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/app.js"></script>
+
+<script src="src/monitoring.js"></script>
+</body>
+</html>

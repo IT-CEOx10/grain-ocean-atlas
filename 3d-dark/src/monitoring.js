@@ -1,9 +1,10 @@
 /* ===================================================================
    Раздел 09 — «Мониторинг зерна РФ», экраны 23 и 24.
 
-   Отдельная страница monitoring.html. С глобусом и презентацией кода
-   не делит: общие только util.js, переменные зелёной темы из
-   styles/app.css и настройки из config.json.
+   Раздел единого приложения app.html (обёртка #sec-monitoring); та же
+   логика работает и отдельной страницей monitoring.html. С глобусом
+   и презентацией кода не делит: общие только util.js, переменные зелёной
+   темы из styles/app.css и настройки из config.json.
 
    Что здесь:
      - плоская карта России: 85 субъектов на холсте, заливка по объёму
@@ -24,7 +25,10 @@
 (function (global) {
   'use strict';
 
-  var $ = function (id) { return document.getElementById(id); };
+  // элементы ищем внутри обёртки раздела: в едином приложении рядом
+  // лежат презентация и глобус, а часть идентификаторов совпадает
+  var ROOT = U.scope('monitoring');
+  var $ = U.byId('monitoring');
   var el = function (t, c, x) { return U.el(t, c, x); };
 
   /* ------------------------------ настройки ------------------------------ */
@@ -91,6 +95,7 @@
   var openDot = null;
   var idleTimer = null, idleOff = false;
   var frames = 0, fps = 0, fpsT = 0;
+  var live = true;                     // раздел на экране (в app.html — не всегда)
 
   /* --------------------------- масштаб под окно --------------------------- */
 
@@ -277,7 +282,24 @@
     ctx.setTransform(1, 0, 0, 1, 0, 0);
   }
 
+  var rafId = 0;                       // 0 — цикл не крутится
+
+  /** Запустить цикл отрисовки карты (idempotent). */
+  function startLoop() {
+    if (rafId) return;
+    fpsT = performance.now();
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /** Остановить цикл: раздел ушёл с экрана, данные и контуры остаются. */
+  function stopLoop() {
+    if (!rafId) return;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
+  }
+
   function frame(now) {
+    rafId = requestAnimationFrame(frame);
     if (anim) {
       var t = U.clamp((now - anim.t0) / anim.ms, 0, 1);
       var e = U.easeInOutCubic(t);
@@ -290,7 +312,6 @@
     if (need) { need = false; draw(); }
     frames++;
     if (now - fpsT > 1000) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now; }
-    requestAnimationFrame(frame);
   }
 
   /* ------------------------------ попадание ------------------------------ */
@@ -642,7 +663,9 @@
     screen = name;
     $('scr-map').classList.toggle('is-on', name === 'map');
     $('scr-region').classList.toggle('is-on', name === 'region');
-    document.body.classList.toggle('on-region', name === 'region');
+    // класс состояния — на обёртке раздела, а не на body: в едином
+    // приложении body общий на все три раздела
+    ROOT.classList.toggle('on-region', name === 'region');
     $('back-map').style.display = name === 'region' ? '' : 'none';
     setUrl();
   }
@@ -665,19 +688,26 @@
   }
 
   function setUrl() {
-    if (!global.history || !history.replaceState) return;
-    var q = ['year=' + year];
+    var p = { year: year };
     if (screen === 'region' && regionId) {
-      q.push('region=' + encodeURIComponent(regionId));
-      if (kind !== 'soft') q.push('kind=' + kind);
+      p.region = regionId;
+      if (kind !== 'soft') p.kind = kind;
     }
+    if (global.Shell) { global.Shell.url('monitoring', p); return; }
+    if (!global.history || !history.replaceState) return;
+    var q = [];
+    for (var k in p) q.push(k + '=' + encodeURIComponent(p[k]));
     if (idleOff) q.push('idle=0');
     history.replaceState(null, '', '?' + q.join('&'));
   }
 
   /* ------------------------------ аттрактор ------------------------------ */
 
+  /* В едином приложении таймер бездействия один на все разделы и живёт
+     в src/shell.js — здесь мы только сообщаем ему, что был отклик. */
+
   function resetIdle() {
+    if (global.Shell) { global.Shell.ping(); return; }
     if (idleTimer) clearTimeout(idleTimer);
     if (idleOff) { idleTimer = null; return; }
     idleTimer = setTimeout(toAttractor, (CFG.attractorTimeoutSec || 90) * 1000);
@@ -766,17 +796,6 @@
     shapes.forEach(function (s) { maxVol = Math.max(maxVol, volume(s.id)); });
   }
 
-  function parseQuery() {
-    var q = {};
-    (global.location.search || '').replace(/^\?/, '').split('&').forEach(function (kv) {
-      if (!kv) return;
-      var i = kv.indexOf('=');
-      var k = decodeURIComponent(i < 0 ? kv : kv.slice(0, i));
-      q[k] = decodeURIComponent((i < 0 ? '' : kv.slice(i + 1)).replace(/\+/g, ' '));
-    });
-    return q;
-  }
-
   function applyColors(c) {
     if (!c) return;
     var root = document.documentElement.style;
@@ -819,11 +838,12 @@
     U.revealPage();
   }
 
-  function boot() {
+  function boot(active) {
+    live = active !== false;
     ctx = $('map').getContext('2d');
     $('sample-img').src = U.asset(SAMPLE_IMG);
 
-    U.loadJSON('inline-config', 'config.json').then(function (cfg) {
+    return U.loadJSON('inline-config', 'config.json').then(function (cfg) {
       CFG = cfg || CFG;
       var green = (CFG.themes && CFG.themes.green) || {};
       applyColors(green.colors);
@@ -844,7 +864,7 @@
       fitStage();
       resetView();
 
-      var q = parseQuery();
+      var q = U.query('monitoring');
       if (q.idle === '0') idleOff = true;
       year = mon.years.indexOf(parseInt(q.year, 10)) >= 0
         ? parseInt(q.year, 10)
@@ -896,9 +916,12 @@
 
       resetIdle();
       $('loading').classList.add('hidden');
-      fpsT = performance.now();
-      requestAnimationFrame(frame);
+      // раздел, поднятый в фоне, один раз рисуется и замирает до показа
+      draw();
+      need = false;
+      if (live) startLoop();
       U.revealPage();
+      if (global.Shell) global.Shell.ready('monitoring');
     }).catch(function (e) {
       fail('Не загрузить данные мониторинга: ' + (e && e.message ? e.message : e));
     });
@@ -922,11 +945,33 @@
     stats: function () {
       return { fps: Math.round(fps), dpr: dpr, regions: shapes.length,
                year: year, zoom: Math.round(view.z * 100) / 100,
-               screen: screen, region: regionId };
+               screen: screen, region: regionId, running: !!rafId };
     }
   };
 
-  if (document.readyState === 'loading') {
+  /* Раздел единого приложения (app.html) или отдельная страница
+     monitoring.html. Контуры субъектов строятся один раз; при уходе
+     с раздела останавливается только цикл отрисовки. */
+
+  if (global.Shell) {
+    global.Shell.register('monitoring', {
+      boot: boot,
+      show: function () {
+        live = true;
+        fitStage();
+        need = true;
+        startLoop();
+      },
+      hide: function () {
+        live = false;
+        stopLoop();
+      },
+      reset: function () {
+        if (!mon) return;
+        toAttractor();
+      }
+    });
+  } else if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {
     boot();
