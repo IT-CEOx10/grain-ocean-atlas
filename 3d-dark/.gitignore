@@ -11,3 +11,6 @@ assets/photos/src/
 
 # исходник Natural Earth для карты регионов (40 МБ, качается make_regions.py)
 data/geo/ne_10m_admin_1_states_provinces.geojson
+
+# выгрузка из фигмы: исходники сцен и полные кадры (тяжёлые, в сборку идут WebP)
+assets/concept/
