@@ -1,0 +1,427 @@
+/* ===================================================================
+   Презентация «Путь зерна» — оформление по макетам «Design concept 17.09».
+
+   Здесь живут шрифт, переменные темы и общие детали интерфейса
+   (стеклянные панели, кнопки, табы, метки, шапка экрана, навигация).
+   Раскладки экранов — в styles/story.css, разбор макетов —
+   в docs/design-concept-17-09.md.
+
+   ВАЖНО: всё, что тут написано, действует только внутри презентации —
+   селекторы начинаются с #sec-story (обёртка раздела в app.html
+   и на отдельной странице story.html). Глобус и карта мониторинга
+   лежат в том же документе и должны выглядеть как раньше, поэтому
+   ни одного правила на :root, body или голые теги здесь нет.
+
+   Порядок разделов: шрифт → переменные → фон → шапка → кнопки →
+   панели → строки показателей → табы → метки на сцене → навигация.
+   =================================================================== */
+
+/* ------------------------------ шрифт ------------------------------
+   Inter из assets/fonts/inter (лицензия OFL лежит рядом). Дизайнеры
+   взяли его вместо недоступного Akkurat. Начертания статические:
+   Light 300 — заголовки, Regular 400 — основной текст, Medium 500
+   и SemiBold 600 — акценты и цифры. Файлы локальные, в собранный
+   dist их вшивает tools/build_dist.py: он подставляет содержимое файла
+   прямо в стиль, как data:URI. */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 300;
+  font-display: block;
+  src: url(../assets/fonts/inter/Inter-Light.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url(../assets/fonts/inter/Inter-Regular.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: block;
+  src: url(../assets/fonts/inter/Inter-Medium.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: block;
+  src: url(../assets/fonts/inter/Inter-SemiBold.woff2) format('woff2');
+}
+
+/* ---------------------------- переменные ----------------------------
+   Значения сняты с кадров макетов (assets/concept/frames, 1920x1080)
+   и с UI KIT. Заодно переопределяем переменные общей темы (--body,
+   --mono, --text, --panel и прочие из styles/app.css) — так экраны,
+   которые ещё не переверстаны под новый дизайн, сразу получают новый
+   шрифт и цвета, а соседние разделы стенда остаются нетронутыми. */
+
+#sec-story {
+  /* шкала раскладки */
+  --sc-edge: 64px;               /* отступ интерфейса от края экрана */
+  --sc-pad: 32px;                /* внутренний отступ панели */
+  --sc-gap: 16px;                /* шаг между строками и панелями */
+  --sc-r: 24px;                  /* радиус панели */
+  --sc-btn-h: 108px;             /* высота кнопки (в макетах именно такая) */
+  --sc-col-l: 434px;             /* левая колонка панелей */
+  --sc-col-r: 440px;             /* правая колонка панелей */
+
+  /* цвета */
+  --sc-bg: #17252C;              /* фон экрана */
+  --sc-gold: #DDC195;            /* акцент: заголовки и главная кнопка */
+  --sc-text: #F2F5F4;
+  --sc-muted: #9FB0AE;
+  --sc-dim: #7C8E8A;
+
+  /* Стекло. Панель осветляет сцену под собой примерно на 10 %
+     и к низу становится прозрачнее — так снято с кадров макетов.
+     Кнопки почти прозрачные: на кадрах они не светлее фона,
+     их держит только тонкая светлая обводка. */
+  --sc-glass: linear-gradient(180deg, rgba(255, 255, 255, .125),
+    rgba(255, 255, 255, .06));
+  --sc-glass-soft: rgba(255, 255, 255, .05);
+  --sc-glass-line: rgba(255, 255, 255, .12);
+  --sc-btn-bg: rgba(255, 255, 255, .04);
+  --sc-btn-line: rgba(255, 255, 255, .16);
+  --sc-blur: blur(70px);
+
+  /* золотая кнопка: плотная заливка со свечением по краю изнутри */
+  --sc-gold-bg: #855812;
+  --sc-gold-glow: inset 0 0 0 1px rgba(246, 226, 189, .45),
+    inset 0 0 30px rgba(233, 196, 135, .55);
+
+  /* выбранная метка на сцене — голубоватое стекло */
+  --sc-pick: rgba(150, 205, 230, .20);
+  --sc-pick-line: rgba(168, 214, 236, .55);
+
+  /* переопределение общей темы (styles/app.css) для старых экранов */
+  --mono: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --body: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  --text: var(--sc-text);
+  --strong: #FFFFFF;
+  --muted: var(--sc-muted);
+  --hint: var(--sc-dim);
+  --accent: var(--sc-gold);
+  --accent-soft: rgba(221, 193, 149, .12);
+  --accent-press: rgba(221, 193, 149, .18);
+  --title: var(--sc-gold);
+  --panel: var(--sc-glass);
+  --card-bg: var(--sc-bg);
+  --line: var(--sc-glass-line);
+  --btn-bg: var(--sc-gold-bg);
+  --btn-fg: #FFFFFF;
+  --btn-shadow: var(--sc-gold-glow);
+
+  font-family: var(--body);
+  font-weight: 400;
+}
+
+/* ------------------------------- фон -------------------------------
+   Сцена лежит во весь экран, поэтому фон виден только по краям
+   и под прозрачными сценами (остров Центра вырезан из фона).
+   Звёздная россыпь из общей темы презентации не нужна. */
+
+#sec-story #card {
+  background-color: var(--sc-bg);
+  background-image: none;
+}
+#sec-story #stars { display: none; }
+
+/* На отдельной странице story.html фон страницы тоже должен быть
+   новым: там за пределами #card видна подложка body. */
+body.story-screen { background: #17252C; }
+
+/* ---------------------------- шапка экрана ----------------------------
+   Надзаголовок капсом, крупный заголовок золотом, подзаголовок.
+   Слева сверху, на расстоянии 64 px от краёв. */
+
+#sec-story .sc-head {
+  position: absolute;
+  left: var(--sc-edge);
+  top: 63px;
+  z-index: 5;
+  max-width: 1120px;
+}
+
+#sec-story .sc-eyebrow {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--sc-muted);
+}
+
+#sec-story .sc-title {
+  margin: 0;
+  font-size: 42px;
+  font-weight: 300;
+  line-height: 48px;
+  letter-spacing: .01em;
+  text-transform: uppercase;
+  color: var(--sc-gold);
+  /* переносы строк в заголовках расставлены вручную, как в макетах */
+  white-space: pre-line;
+}
+
+#sec-story .sc-sub {
+  margin: 14px 0 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+
+/* ------------------------------ кнопки ------------------------------
+   Две разновидности. Стеклянная — обычная, их на экране может быть
+   сколько угодно. Золотая — главная, по правилу кита не больше одной
+   на экран. Высота одинаковая. */
+
+#sec-story .sc-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: var(--sc-btn-h);
+  padding: 0 28px;
+  border-radius: 999px;
+  background: var(--sc-btn-bg);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-btn-line);
+  color: var(--sc-text);
+  font-family: var(--body);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+#sec-story .sc-btn:active {
+  background: rgba(255, 255, 255, .16);
+}
+
+#sec-story .sc-btn.is-gold {
+  background: var(--sc-gold-bg);
+  box-shadow: var(--sc-gold-glow);
+  color: #FFFFFF;
+  font-weight: 500;
+}
+#sec-story .sc-btn.is-gold:active {
+  background: #6F4A0E;
+}
+
+/* ------------------------------ панели ------------------------------
+   Стеклянная плашка: светлая заливка, сильное размытие, радиус 24,
+   внутренний отступ 32. Всё содержимое панелей — через эти классы. */
+
+#sec-story .sc-panel {
+  padding: var(--sc-pad);
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  color: var(--sc-text);
+}
+
+#sec-story .sc-panel-t {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--sc-text);
+}
+
+#sec-story .sc-panel-cap {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--sc-dim);
+}
+
+#sec-story .sc-panel-p {
+  margin: 20px 0 0;
+  white-space: pre-line;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+  color: var(--sc-muted);
+}
+#sec-story .sc-panel-t + .sc-panel-p { margin-top: 24px; }
+
+/* строки показателей: номер, название, значение */
+
+#sec-story .sc-rows {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#sec-story .sc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 18px 0 0;
+  border-radius: 12px;
+  background: var(--sc-glass-soft);
+}
+
+#sec-story .sc-row-n {
+  flex: none;
+  width: 48px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--sc-dim);
+}
+
+#sec-story .sc-row-k {
+  flex: 1;
+  min-width: 0;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--sc-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#sec-story .sc-row-v {
+  flex: none;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--sc-text);
+}
+
+#sec-story .sc-note {
+  margin-top: 16px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--sc-dim);
+}
+
+/* ------------------------------- табы -------------------------------
+   Единая нейтральная подложка, выбранный сегмент светлее. Золото
+   в переключателях по киту не используется. */
+
+#sec-story .sc-tabs {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: 18px;
+  background: var(--sc-glass-soft);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+}
+
+#sec-story .sc-tab {
+  height: 56px;
+  padding: 0 34px;
+  border-radius: 14px;
+  background: none;
+  color: var(--sc-muted);
+  font-family: var(--body);
+  font-size: 20px;
+  font-weight: 400;
+  transition: background .18s ease, color .18s ease;
+}
+#sec-story .sc-tab.is-on {
+  background: rgba(255, 255, 255, .12);
+  color: var(--sc-text);
+}
+
+/* --------------------------- метки на сцене ---------------------------
+   Стеклянный чип с номером и названием объекта. Выбранный светится
+   голубоватым — так в макетах отмечена станция «1 Почва». */
+
+#sec-story .sc-marker {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 72px;
+  padding: 0 28px 0 12px;
+  border-radius: 999px;
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  color: var(--sc-text);
+  font-family: var(--body);
+  font-size: 22px;
+  font-weight: 400;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  transition: background .18s ease, box-shadow .18s ease;
+}
+
+#sec-story .sc-marker-n {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .10);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--sc-text);
+}
+
+#sec-story .sc-marker.is-on {
+  background: var(--sc-pick);
+  box-shadow: inset 0 0 0 1px var(--sc-pick-line),
+    0 0 28px rgba(150, 205, 230, .25);
+}
+#sec-story .sc-marker.is-on .sc-marker-n {
+  background: rgba(255, 255, 255, .22);
+  color: #FFFFFF;
+}
+
+/* линии между станциями рисуются SVG поверх сцены */
+#sec-story .sc-links {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+#sec-story .sc-links path {
+  fill: none;
+  stroke: rgba(219, 205, 178, .35);
+  stroke-width: 2;
+}
+
+/* ---------------------------- навигация ----------------------------
+   «← Назад» слева снизу, «Вперёд →» справа снизу, обе на расстоянии
+   64 px от краёв. Постоянной боковой колонки в новом дизайне нет. */
+
+#sec-story .sc-nav-back,
+#sec-story .sc-nav-next {
+  position: absolute;
+  bottom: var(--sc-edge);
+  z-index: 5;
+  width: var(--sc-col-l);
+}
+#sec-story .sc-nav-back { left: var(--sc-edge); }
+#sec-story .sc-nav-next { right: var(--sc-edge); width: var(--sc-col-r); }
+
+/* ---------------- экраны в прежней раскладке ----------------
+   Станции ещё не переверстаны под новый дизайн, но шрифт и цвета
+   они уже берут отсюда. Одна деталь правится сразу: по киту в табах
+   золото не используется, а старый стиль подсвечивал выбранную
+   вкладку золотой заливкой. */
+
+#sec-story .st-tab.is-on {
+  background: rgba(255, 255, 255, .12);
+  color: var(--sc-text);
+  box-shadow: none;
+}

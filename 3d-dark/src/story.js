@@ -7,8 +7,14 @@
 
    Что здесь:
      - движок: реестр экранов, переход с затуханием, история для «назад»;
-     - четыре раскладки (hero, hub, station, wide) — новый экран
-       добавляется описанием в справочнике, а не вёрсткой;
+     - раскладки — новый экран добавляется описанием в справочнике,
+       а не вёрсткой:
+         scene   основная по макетам «Design concept 17.09»: сцена во весь
+                 экран, поверх неё плавающие панели, метки и навигация;
+         intro   заставка: коллаж, заголовок, касание в любом месте;
+         station, wide, hero — прежние раскладки. Они остались у экранов,
+                 которые ещё не переверстаны под новый дизайн, и уйдут
+                 по мере перевода экранов на scene;
      - интерактивы экранов (виджеты) — словарь WIDGETS;
      - заглушки изображений: пока путь к файлу пуст, рисуется рамка
        с подписью, что за кадр тут будет;
@@ -309,54 +315,219 @@
     root.appendChild(body);
   }
 
-  /** Центр управления: цепочка из семи станций (экраны 3 и 4). */
-  function renderHub(scr, root) {
-    root.appendChild(head(scr));
+  /* =================================================================
+     Раскладка «scene» — макеты «Design concept 17.09»
 
-    var chain = el('div', 'hub-chain');
-    C.stations.forEach(function (s, i) {
-      if (i) chain.appendChild(el('div', 'hub-arrow', '→'));
-      var t = el('button', 'hub-tile' + (selKey() === s.key ? ' is-on' : ''));
-      t.type = 'button';
-      t.appendChild(el('span', 'hub-n', s.n < 10 ? '0' + s.n : String(s.n)));
-      t.appendChild(el('span', 'hub-t', s.title));
-      t.addEventListener('click', function () {
-        resetIdle();
-        // первое касание — подсветка и карточка «О станции»,
-        // повторное касание той же станции открывает её
-        if (selKey() === s.key) go(s.to);
-        else { st.sel = s.key; rerender(); }
-      });
-      chain.appendChild(t);
-    });
-    root.appendChild(chain);
+     Экран описывается объектом в справочнике, здесь только сборка:
 
-    var foot = el('div', 'hub-foot');
+       scene:    { pic }                  картинка во весь экран
+       shade:    'top' | 'bottom' | 'soft'  затемнение под текст
+       eyebrow / title / sub              шапка слева сверху
+       topRight: { label, to|link }       кнопка «В Центр» справа сверху
+       left / right: { at, width, items } колонки плавающих панелей
+       markers:  [{ key, n, label, x, y, to }]  метки на объектах сцены
+       links:    ['M … L …']              линии между метками (SVG)
+       tiles:    [{ name, sub, img, … }]  плитки переходов (экран меню)
+       nav:      { back, next }           навигация снизу
 
-    var ways = el('section', 'st-card hub-ways');
-    ways.appendChild(el('h3', 'st-card-t', scr.waysTitle));
-    var chips = el('div', 'st-chips');
-    scr.ways.forEach(function (w) { chips.appendChild(el('span', 'st-chip', w)); });
-    ways.appendChild(chips);
-    foot.appendChild(ways);
+     Элемент колонки — панель ({ title, text, rows, note }), кнопка
+     ({ label, to|link|action, gold: true }) или блок, который движок
+     собирает сам по выбору на экране ({ dyn: 'station' }).
+     ================================================================= */
 
-    var about = el('section', 'st-card hub-about');
-    if (st.sel) {
-      var s = find(C.stations, st.sel);
-      about.appendChild(el('h3', 'st-card-t', 'О станции'));
-      about.appendChild(el('div', 'hub-about-n', 'Станция ' + s.n + ' · ' + s.title));
-      about.appendChild(el('p', 'st-card-p', s.hint));
-      about.appendChild(button({ label: 'Открыть станцию', to: s.to },
-        'st-btn is-primary st-card-btn'));
-    } else {
-      about.classList.add('is-empty');
-      about.appendChild(el('h3', 'st-card-t', 'О станции'));
-      about.appendChild(el('p', 'st-card-p',
-        'Коснитесь станции на схеме — здесь появится подсказка и кнопка «Открыть станцию».'));
+  /** Картинка-сцена во весь экран. */
+  function sceneLayer(scr) {
+    var p = (scr.scene && scr.scene.pic) || null;
+    var box = el('div', 'sc-scene' + (p && p.fit === 'contain' ? ' is-contain' : ''));
+    if (p && p.img) {
+      var im = new Image();
+      im.src = U.asset(p.img);
+      im.alt = p.cap || '';
+      box.appendChild(im);
     }
-    foot.appendChild(about);
-    root.appendChild(foot);
-    root.appendChild(navEl(scr));
+    return box;
+  }
+
+  /** Шапка экрана: надзаголовок, заголовок, подзаголовок. */
+  function headEl(scr) {
+    var h = el('header', 'sc-head');
+    if (scr.eyebrow) h.appendChild(el('div', 'sc-eyebrow', scr.eyebrow));
+    if (scr.title) h.appendChild(el('h1', 'sc-title', scr.title));
+    if (scr.sub) h.appendChild(el('div', 'sc-sub', scr.sub));
+    return h;
+  }
+
+  /** Стеклянная панель: надпись, заголовок, текст, строки, пометка. */
+  function panelEl(p) {
+    var n = el('section', 'sc-panel' + (p.cls ? ' ' + p.cls : ''));
+    if (p.cap) n.appendChild(el('div', 'sc-panel-cap', p.cap));
+    if (p.title) n.appendChild(el('h3', 'sc-panel-t', p.title));
+    if (p.text) n.appendChild(el('p', 'sc-panel-p', p.text));
+    if (p.rows) {
+      var rt = el('div', 'sc-rows');
+      p.rows.forEach(function (r, i) {
+        var row = el('div', 'sc-row');
+        row.appendChild(el('span', 'sc-row-n', String(i + 1)));
+        row.appendChild(el('span', 'sc-row-k', r[0]));
+        row.appendChild(el('span', 'sc-row-v', r[1]));
+        rt.appendChild(row);
+      });
+      n.appendChild(rt);
+    }
+    if (p.note) n.appendChild(el('div', 'sc-note', p.note));
+    return n;
+  }
+
+  /* Блоки, которые зависят от выбора на экране: тексты всё равно лежат
+     в справочнике, здесь только сборка (как DYNAMIC для карточек). */
+  var SLOTS = {
+    /** Центр: панель «О станции» — про выбранную метку. */
+    station: function () {
+      var s = find(C.stations, selKey());
+      return panelEl({ title: 'О станции', text: s.hint });
+    },
+    /** Центр: золотая кнопка «Начать с почвы →» / «Открыть станцию →». */
+    stationBtn: function () {
+      var s = find(C.stations, selKey());
+      var first = C.stations[0];
+      return button({ label: s.key === first.key ? 'Начать с почвы →' : 'Открыть станцию →',
+        to: s.to }, 'sc-btn is-gold');
+    }
+  };
+
+  function slotEl(item) {
+    if (item.dyn) return SLOTS[item.dyn] ? SLOTS[item.dyn]() : el('div');
+    if (item.label) return button(item, 'sc-btn' + (item.gold ? ' is-gold' : ''));
+    return panelEl(item);
+  }
+
+  /** Колонка панелей слева или справа; at: 'top' (по умолчанию) или 'bottom'. */
+  function colEl(spec, side) {
+    var box = el('div', 'sc-col is-' + side + ' is-' + (spec.at || 'top') +
+      (spec.hasNav ? ' has-nav' : ''));
+    if (spec.width) box.style.width = spec.width + 'px';
+    (spec.items || []).forEach(function (item) { box.appendChild(slotEl(item)); });
+    return box;
+  }
+
+  /** Метки-чипы на объектах сцены. Координаты — в пикселях кадра 1920x1080. */
+  function markersEl(scr, root) {
+    scr.markers.forEach(function (m) {
+      var b = el('button', 'sc-marker' + (selKey() === m.key ? ' is-on' : ''));
+      b.type = 'button';
+      b.style.left = m.x + 'px';
+      b.style.top = m.y + 'px';
+      if (m.n) b.appendChild(el('span', 'sc-marker-n', String(m.n)));
+      b.appendChild(el('span', 'sc-marker-t', m.label));
+      b.addEventListener('click', function () {
+        resetIdle();
+        // первое касание выбирает объект, повторное открывает станцию
+        if (selKey() === m.key && m.to) go(m.to);
+        else { st.sel = m.key; rerender(); }
+      });
+      root.appendChild(b);
+    });
+  }
+
+  /** Линии между метками: готовые пути SVG в координатах кадра. */
+  function linksEl(scr) {
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'sc-links');
+    svg.setAttribute('viewBox', '0 0 1920 1080');
+    scr.links.forEach(function (d) {
+      var p = document.createElementNS(ns, 'path');
+      p.setAttribute('d', d);
+      svg.appendChild(p);
+    });
+    return svg;
+  }
+
+  /** Плитки переходов в другие разделы стенда (экран меню). */
+  function tilesEl(scr) {
+    var box = el('div', 'sc-tiles');
+    scr.tiles.forEach(function (t) {
+      var b = el('button', 'sc-tile');
+      b.type = 'button';
+      var ph = el('div', 'sc-tile-pic');
+      if (t.img) {
+        var im = new Image();
+        im.src = U.asset(t.img);
+        im.alt = t.name;
+        ph.appendChild(im);
+      }
+      b.appendChild(ph);
+      var body = el('div', 'sc-tile-body');
+      var txt = el('div', 'sc-tile-text');
+      txt.appendChild(el('div', 'sc-tile-name', t.name));
+      txt.appendChild(el('div', 'sc-tile-sub', t.sub || 'Узнайте больше'));
+      body.appendChild(txt);
+      body.appendChild(el('span', 'sc-tile-go', '→'));
+      b.appendChild(body);
+      b.addEventListener('click', function () {
+        resetIdle();
+        if (t.link) U.goSection(t.link, t.params);
+        else if (t.to) go(t.to);
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /** Навигация новой раскладки: «← Назад» слева, «Вперёд →» справа. */
+  function navSceneEl(scr, root) {
+    ['back', 'next'].forEach(function (slot) {
+      var b = scr.nav && scr.nav[slot];
+      if (!b) return;
+      var cell = el('div', 'sc-nav-' + slot);
+      cell.appendChild(button(b, 'sc-btn' + (b.gold ? ' is-gold' : '')));
+      root.appendChild(cell);
+    });
+  }
+
+  /** Экран по макетам: сцена во весь экран и плавающие панели поверх. */
+  function renderSceneLayout(scr, root) {
+    root.appendChild(sceneLayer(scr));
+    if (scr.shade) {
+      // затемнений может быть несколько: 'top bottom'
+      root.appendChild(el('div', 'sc-shade is-' + scr.shade.split(' ').join(' is-')));
+    }
+    if (scr.links) root.appendChild(linksEl(scr));
+    if (scr.markers) markersEl(scr, root);
+    if (scr.title || scr.eyebrow) root.appendChild(headEl(scr));
+    if (scr.topRight) {
+      var top = el('div', 'sc-top');
+      top.appendChild(button(scr.topRight, 'sc-btn'));
+      root.appendChild(top);
+    }
+    if (scr.left) root.appendChild(colEl(scr.left, 'left'));
+    if (scr.right) root.appendChild(colEl(scr.right, 'right'));
+    if (scr.tiles) root.appendChild(tilesEl(scr));
+    if (scr.nav) navSceneEl(scr, root);
+  }
+
+  /** Заставка: коллаж, заголовок, подпись, касание в любом месте. */
+  function renderIntro(scr, root) {
+    var cover = el('div', 'sc-cover');
+    if (scr.collage && scr.collage.img) {
+      var box = el('div', 'sc-collage');
+      var im = new Image();
+      im.src = U.asset(scr.collage.img);
+      im.alt = scr.collage.cap || '';
+      box.appendChild(im);
+      cover.appendChild(box);
+    }
+    cover.appendChild(el('h1', 'sc-cover-title', scr.title));
+    if (scr.sub) cover.appendChild(el('div', 'sc-cover-hint', scr.sub));
+    root.appendChild(cover);
+
+    // слушатель висит на своём слое, а не на #view — иначе он пережил бы
+    // смену экрана
+    var tap = el('button', 'sc-tap');
+    tap.type = 'button';
+    tap.setAttribute('aria-label', scr.sub || 'Дальше');
+    tap.addEventListener('click', function () { resetIdle(); go(scr.tapTo); });
+    root.appendChild(tap);
   }
 
   /* =================================================================
@@ -866,8 +1037,10 @@
     view.innerHTML = '';
     view.setAttribute('data-screen', cur.id);
     var layout = cur.layout || 'station';
-    if (layout === 'hero') renderHero(cur, view);
-    else if (layout === 'hub') renderHub(cur, view);
+    view.setAttribute('data-layout', layout);
+    if (layout === 'scene') renderSceneLayout(cur, view);
+    else if (layout === 'intro') renderIntro(cur, view);
+    else if (layout === 'hero') renderHero(cur, view);
     else renderStation(cur, view);
   }
 
