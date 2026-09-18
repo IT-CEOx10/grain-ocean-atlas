@@ -27,7 +27,7 @@ window.INLINE_ASSETS, откуда их берёт U.asset() в src/util.js.
 
 Что вшивать, скрипт решает сам по коду страницы: блок данных попадает
 в файл, только если его id (inline-config, inline-export, inline-topo,
-inline-regions, inline-monitoring) встречается в скриптах, а видео —
+inline-regions, inline-monitoring, inline-presence) встречается в скриптах, а видео —
 только если код вообще про него знает. Поэтому экран без глобуса
 не тащит за собой карту мира и справочник, а экран без карты России —
 контуры субъектов.
@@ -52,6 +52,7 @@ INLINE_JSON = [
     ("inline-topo", os.path.join("data", "geo", "countries-110m.json")),
     ("inline-regions", os.path.join("assets", "geo", "russia-regions.json")),
     ("inline-monitoring", os.path.join("data", "monitoring.json")),
+    ("inline-presence", os.path.join("data", "presence.json")),
 ]
 
 MAX_VIDEO_MB = 60

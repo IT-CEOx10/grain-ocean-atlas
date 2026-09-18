@@ -1,0 +1,78 @@
+const imgCodex1620260054171 = "http://localhost:3845/assets/1af2b31dd6d06727222b076e8c03b92fc37b5cb6.png";
+const imgSelectionIndicatorNeutral = "http://localhost:3845/assets/ecefc3e365f122479187bd256e649362c88135ab.svg";
+const imgSelectionIndicatorNeutral1 = "http://localhost:3845/assets/bcd07e080c90126302e7fc33624d16617af01481.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:1803" data-name="07 · Выездная экспертиза">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="448:1804" data-name="01 · Единая предметная сцена">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1103px] left-1/2 top-[calc(50%+0.5px)] w-[1960px]" data-node-id="448:1805" data-name="Изображение Codex 16 сент. 2026 г., 00_54_17 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260054171} />
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="448:1806">
+        СТАНЦИЯ 2 · СЕМЕНА И ПОСЕВЫ
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] w-[1428px]" data-node-id="448:1807">
+        ВЫЕЗДНАЯ ЭКСПЕРТИЗА В ПЕРИОД ВЕГЕТАЦИИ
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="448:1808" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1808;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:1810" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1811" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1812" data-name="Previous">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1812;164:647">
+              ← Контроль семян
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1813" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1814" data-name="Next">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1814;164:647">
+              Защита растений →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[174px] w-[1100px]" data-node-id="448:1815">
+        Выберите область исследования
+      </p>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[1220px] not-italic p-[32px] rounded-[24px] top-[699px] w-[636px]" data-node-id="448:1816" data-name="Grain/Panel">
+        <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[556px]" data-node-id="I448:1816;167:641">
+          Сортовая апробация
+        </p>
+        <div className="leading-[0] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[556px]" data-node-id="I448:1816;167:642">
+          <p className="leading-[32px] mb-0">Специалисты подтверждают, что растения</p>
+          <p className="leading-[32px]">соответствуют заявленному сорту</p>
+        </div>
+      </div>
+      <div className="absolute border border-[var(--grain-color-muted,rgba(255,255,255,0.7))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[64px] items-center left-[478px] px-[var(--grain-space-32,32px)] py-[var(--grain-space-16,16px)] rounded-[var(--grain-radius-16,16px)] top-[572px]" data-node-id="448:1818" style={{ backgroundImage: "linear-gradient(90deg, rgba(246, 246, 246, 0.1) 0%, rgba(246, 246, 246, 0.1) 100%), linear-gradient(90deg, rgb(23, 37, 44) 0%, rgb(23, 37, 44) 100%)" }} data-name="ResearchArea · Сортовая апробация">
+        <div className="relative shrink-0 size-[24px]" data-node-id="I448:1818;581:943" data-name="Selection indicator · neutral">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSelectionIndicatorNeutral} />
+        </div>
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1818;581:946">
+          Подтверждение сорта
+        </p>
+      </div>
+      <div className="absolute bg-[var(--grain-color-background,#17252c)] border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[64px] items-center left-[1061px] px-[var(--grain-space-32,32px)] py-[var(--grain-space-16,16px)] rounded-[var(--grain-radius-16,16px)] top-[435px]" data-node-id="448:1819" data-name="ResearchArea · Ранняя диагностика">
+        <div className="relative shrink-0 size-[24px]" data-node-id="I448:1819;581:938" data-name="Selection indicator · neutral">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSelectionIndicatorNeutral1} />
+        </div>
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1819;581:941">
+          Диагностика по листьям
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,118 @@
+const imgCodex1620260140431 = "http://localhost:3845/assets/162432965365b6004c8360ad71049d89a3904d52.png";
+const imgCodex1620260140471 = "http://localhost:3845/assets/764ed2d63474d72584fc5f34ef412a4e0d48f6c6.png";
+const imgCodex1620260140511 = "http://localhost:3845/assets/998f9941f1d50df3d297110c98d889208c0458b7.png";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:2251" data-name="14 · Куда отправится зерно? · общий источник">
+      <div className="absolute h-[1048px] left-[16px] pointer-events-none rounded-[32px] top-[16px] w-[1888px]" data-node-id="448:2252" data-name="01 · Зернохранилище и работа специалистов">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 rounded-[32px]" />
+        <div className="absolute inset-0 rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="448:2253">
+        СТАНЦИЯ 5 · ПЕРЕРАБОТКА ЗЕРНА
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] uppercase w-[1400px]" data-node-id="448:2254">
+        Дифференциация партий
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="448:2255" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2255;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:2256" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:2257" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[480px]" data-node-id="448:2258" data-name="Previous">
+            <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2258;164:647">
+              ← Приёмка зерна
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:2259" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[480px]" data-node-id="448:2260" data-name="Next">
+            <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2260;164:647">
+              Готовая продукция →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[654px] items-start justify-between left-[64px] overflow-clip p-[var(--grain-space-32,32px)] rounded-[24px] top-[230px] w-[589px]" data-node-id="448:2261" data-name="Grain/RouteChoice">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[742px] left-[calc(50%-2px)] top-1/2 w-[593px]" data-node-id="448:2262" data-name="Изображение Codex 16 сент. 2026 г., 01_40_43 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260140431} />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-node-id="448:2263">
+          <div className="content-stretch flex items-start overflow-clip relative shrink-0 w-full" data-node-id="448:2264" data-name="Frame">
+            <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[38.4px] min-w-px not-italic relative text-[32px] text-[color:var(--grain-color-text,white)]" data-node-id="448:2265">
+              Продовольствие
+            </p>
+          </div>
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="448:2266">
+            Мука, крупы, хлопья и масло
+          </p>
+        </div>
+        <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-[542px]" data-node-id="448:2267" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2267;164:644">
+            Выбрать маршрут
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[654px] items-start justify-between left-[665px] overflow-clip p-[var(--grain-space-32,32px)] rounded-[24px] top-[230px] w-[588px]" data-node-id="448:2268" data-name="Grain/RouteChoice">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[734px] left-1/2 top-1/2 w-[588px]" data-node-id="448:2269" data-name="Изображение Codex 16 сент. 2026 г., 01_40_47 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260140471} />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-node-id="448:2270">
+          <div className="content-stretch flex items-start overflow-clip relative shrink-0 w-full" data-node-id="448:2271" data-name="Frame">
+            <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[38.4px] min-w-px not-italic relative text-[32px] text-[color:var(--grain-color-text,white)]" data-node-id="448:2272">
+              Корма
+            </p>
+          </div>
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="448:2273">
+            Комбикорм и животноводство
+          </p>
+        </div>
+        <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-[542px]" data-node-id="448:2274" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2274;164:644">
+            Выбрать маршрут
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[654px] items-start justify-between left-[1265px] overflow-clip p-[var(--grain-space-32,32px)] rounded-[24px] top-[230px] w-[589px]" data-node-id="448:2275" data-name="Grain/RouteChoice">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[693px] left-[calc(50%+2px)] top-[calc(50%+13.5px)] w-[617px]" data-node-id="448:2276" data-name="Изображение Codex 16 сент. 2026 г., 01_40_51 1">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[99.94%] left-[0.01%] max-w-none top-[0.06%] w-[99.95%]" src={imgCodex1620260140511} />
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-start relative shrink-0 w-full" data-node-id="448:2277">
+          <div className="content-stretch flex items-start overflow-clip relative shrink-0 w-full" data-node-id="448:2278" data-name="Frame">
+            <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[38.4px] min-w-px not-italic relative text-[32px] text-[color:var(--grain-color-text,white)]" data-node-id="448:2279">
+              Технические цели
+            </p>
+          </div>
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="448:2280">
+            Биотопливо, текстильные волокна, биоразлагаемые полимеры.
+          </p>
+        </div>
+        <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-[542px]" data-node-id="448:2281" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2281;164:644">
+            Выбрать маршрут
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+        </div>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[40px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[174px] w-[1300px]" data-node-id="448:2282">
+        Выберите направление переработки
+      </p>
+    </div>
+  );
+}

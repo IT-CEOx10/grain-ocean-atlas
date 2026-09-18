@@ -1,0 +1,353 @@
+const imgChatGptImage1720261248331 = "http://localhost:3845/assets/739150b6e4ce3033836bc22951d12108b8cc42ab.png";
+const imgChatGptImage1820261803171 = "http://localhost:3845/assets/f8b91020037be0dd74e19dce04137d1b0b9b5d33.png";
+const imgVector5 = "http://localhost:3845/assets/b843ea00a33ee0b44b436a0a7327d2c134c804d2.svg";
+const imgEllipse20 = "http://localhost:3845/assets/6dafd3b20f5da71274296104fec95fbffd952944.svg";
+const imgFrame2136139329 = "http://localhost:3845/assets/7c11fd398ff24ff5e7f2dba07171397f30310441.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="477:789" data-name="2. Карта зерна - Открытая информация">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="477:790">
+        <div className="absolute h-[1095.148px] left-[-118px] top-[-7.57px] w-[2022px]" data-node-id="477:791">
+          <div className="absolute h-[1095.148px] left-0 top-0 w-[2022px]" data-node-id="477:792" data-name="ChatGPT Image 17 сент. 2026 г., 12_48_33 1">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[135.75%] left-0 max-w-none top-0 w-full" src={imgChatGptImage1720261248331} />
+            </div>
+          </div>
+          <div className="absolute h-[64.803px] left-[922.9px] top-[479.11px] w-[161.884px]" data-node-id="477:793">
+            <div className="absolute inset-[-33.16%_-13.27%]">
+              <img alt="" className="block max-w-none size-full" src={imgVector5} />
+            </div>
+          </div>
+          <div className="absolute left-[990.27px] size-[10.976px] top-[504.89px]" data-node-id="477:794">
+            <div className="absolute inset-[-77.78%]">
+              <img alt="" className="block max-w-none size-full" src={imgEllipse20} />
+            </div>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1121px] left-[calc(50%+36px)] top-[calc(50%-12.5px)] w-[1992px]" data-node-id="477:795" data-name="ChatGPT Image 18 сент. 2026 г., 18_03_17 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImage1820261803171} />
+          </div>
+        </div>
+        <div className="absolute h-[1048px] left-0 top-0 w-[1888px]" data-node-id="477:796">
+          <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1115px] left-[calc(50%-3.5px)] top-[calc(50%-9.5px)] w-[1967px]" data-node-id="477:797" data-name="ChatGPT Image 17 сент. 2026 г., 14_19_03 1" />
+        </div>
+        <div className="[word-break:break-word] absolute font-['Akkurat_LL_Cyrillic:Regular'] leading-[0] left-[calc(50%-879px)] not-italic text-[#ddc195] text-[64px] top-[calc(50%-461px)] uppercase whitespace-nowrap" data-node-id="477:798">
+          <p className="leading-[normal] mb-0">Маршруты</p>
+          <p className="leading-[normal]">экспорта</p>
+        </div>
+        <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[48px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[892px] w-[480px]" data-node-id="477:799" data-name="Previous">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I477:799;164:647">
+            ← К странам назначения
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[26px] h-[124px] items-start left-[670px] overflow-clip p-[32px] rounded-[24px] top-[876px] w-[1170px]" data-node-id="477:800" data-name="Container">
+          <div className="content-stretch flex gap-[4px] items-start overflow-clip relative shrink-0" data-node-id="477:801" data-name="List">
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:802" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:803">
+                2015
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:804" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:805">
+                2016
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:806" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:807">
+                2017
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:808" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:809">
+                2018
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:810" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:811">
+                2019
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:812" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:813">
+                2020
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:814" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:815">
+                2021
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:816" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:817">
+                2022
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:818" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:819">
+                2023
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:820" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:821">
+                2024
+              </p>
+            </div>
+            <div className="bg-[#ebc669] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:822" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-black whitespace-nowrap" data-node-id="477:823">
+                2025
+              </p>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:824" data-name="Number-1">
+              <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:825">
+                2026
+              </p>
+            </div>
+          </div>
+          <div className="absolute h-[4px] left-[32px] top-[95px] w-[1195px]" data-node-id="477:826">
+            <div className="absolute inset-[0_0_-100%_0]">
+              <img alt="" className="block max-w-none size-full" src={imgFrame2136139329} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start left-[1310px] overflow-clip px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[48px] w-[530px]" data-node-id="477:840">
+          <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.2] not-italic relative shrink-0 text-[32px] text-white whitespace-nowrap" data-node-id="477:841">
+            Турция
+          </p>
+          <div className="[word-break:break-word] content-stretch flex flex-col font-['Akkurat_LL_Cyrillic:Regular'] gap-[2px] items-start not-italic overflow-clip relative shrink-0 text-white w-full whitespace-nowrap" data-node-id="477:842" data-name="Number-1">
+            <div className="content-stretch flex gap-[10px] items-baseline leading-[normal] overflow-clip relative shrink-0" data-node-id="477:843" data-name="Frame">
+              <p className="relative shrink-0 text-[64px]" data-node-id="477:844">
+                10 663
+              </p>
+              <p className="relative shrink-0 text-[20px]" data-node-id="477:845">
+                тыс. т
+              </p>
+            </div>
+            <p className="leading-[1.4] relative shrink-0 text-[14px]" data-node-id="477:846">
+              поставлено на экспорт
+            </p>
+          </div>
+          <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0 w-full" data-node-id="477:847" data-name="Number-1">
+            <div className="content-stretch flex gap-[10px] items-center overflow-clip relative shrink-0" data-node-id="477:848" data-name="Frame">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex items-center justify-center px-[16px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="477:849">
+                <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Regular'] leading-[normal] not-italic relative shrink-0 text-[32px] text-white whitespace-nowrap" data-node-id="477:850">
+                  1 место
+                </p>
+              </div>
+              <div className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Regular'] leading-[0] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="477:851">
+                <p className="leading-[normal] mb-0">среди стран-импортеров</p>
+                <p className="leading-[normal]">российского зерна</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[4px] h-[517px] items-start left-[1309px] overflow-clip px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[340px] w-[529px]" data-node-id="477:852" data-name="Container">
+          <div className="content-stretch flex h-[48px] items-start justify-between relative shrink-0 w-full" data-node-id="477:853">
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="477:854">
+              Продукция, 2025
+            </p>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] gap-[16px] items-start min-h-px not-italic relative text-white w-full whitespace-nowrap" data-node-id="477:855">
+            <div className="content-stretch flex flex-[1_0_0] flex-col gap-[4px] h-full items-start min-w-px relative" data-node-id="477:856">
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:857">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:858">
+                  Пшеница
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:859">
+                  5 798
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:860">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:861">
+                  Отруби пшеничные
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:862">
+                  1 501
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:863">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:864">
+                  Шрот подсолнечный
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:865">
+                  755
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:866">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:867">
+                  Ячмень
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:868">
+                  578
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:869">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:870">
+                  Кукуруза
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:871">
+                  515
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:872">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:873">
+                  Нут
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:874">
+                  259
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:875">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:876">
+                  Горох
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:877">
+                  156
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:878">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:879">
+                  Чечевица
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:880">
+                  176
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:881">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:882">
+                  Отруби кукурузные
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:883">
+                  129,11
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:884">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:885">
+                  Мучка рисовая
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:886">
+                  100,59
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:887">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:888">
+                  Барда
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:889">
+                  86
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:890">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:891">
+                  Лузга подсолнечная
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:892">
+                  82
+                </p>
+              </div>
+            </div>
+            <div className="content-stretch flex flex-[1_0_0] flex-col gap-[4px] h-full items-start min-w-px relative" data-node-id="477:893">
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:894">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:895">
+                  Шрот соевый
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:896">
+                  74
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:897">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:898">
+                  Жмых рапсовый
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:899">
+                  56
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:900">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:901">
+                  Жмых подсолнечный
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:902">
+                  51
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:903">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:904">
+                  Зародыш кукурузный
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:905">
+                  51
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:906">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:907">
+                  Шрот рапсовый
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:908">
+                  27
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:909">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:910">
+                  Жмых соевый
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:911">
+                  26
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:912">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:913">
+                  Семена сафлора
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:914">
+                  26
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:915">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:916">
+                  Жмых льняной
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:917">
+                  22
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:918">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:919">
+                  Крупа рисовая
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:920">
+                  22
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:921">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:922">
+                  Семена льна
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:923">
+                  17
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:924">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:925">
+                  Семена горчицы
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:926">
+                  8
+                </p>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] items-start justify-between min-h-px relative w-full" data-node-id="477:927">
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px]" data-node-id="477:928">
+                  Концентрат белковый
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[24px] relative shrink-0 text-[16px]" data-node-id="477:929">
+                  7
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

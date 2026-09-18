@@ -1,0 +1,205 @@
+const imgF7Ant = "http://localhost:3845/assets/a93f5b0001d9b828bb8c5418bd0b471c04aa2a19.svg";
+const imgGroup = "http://localhost:3845/assets/f2834f2a3bb58fa09e56daad01a8ebd276060f57.svg";
+const imgCilDrop = "http://localhost:3845/assets/61a81a750c8c53b7a9a0ea143cf99264da52f9cc.svg";
+const imgLineiconsMushroom5 = "http://localhost:3845/assets/8ac60e9f81f5dd11083c5ff8a2f91a03b20a62e7.svg";
+const imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1 = "http://localhost:3845/assets/44c43498e49ca757a9289c0c4e9278264a6aadfc.png";
+const imgGC06BPng = "http://localhost:3845/assets/6dac4367ee46c644c6afdebea0691cf85321de28.png";
+const imgGC06APng = "http://localhost:3845/assets/e12b886b537bac2b1d30bc9e31367077eb3d01ff.png";
+const imgLine7 = "http://localhost:3845/assets/62c551f627eae0b2f431219eb28b10f8ccb3c0a2.svg";
+const imgEllipse18 = "http://localhost:3845/assets/6beef1053b2fc9c82370e21284d9665a1ca21be4.svg";
+const imgPolygon2 = "http://localhost:3845/assets/89596b72fb6fed113e75afb06b2c3759cf01a760.svg";
+const imgPolygon3 = "http://localhost:3845/assets/8d6e210cd59113cb0d63497f631ddc4f5b0466b7.svg";
+const imgEosIconsScienceOutlined = "http://localhost:3845/assets/31f252f735eae93dc73f72984e328168b6625d66.svg";
+
+function F7Ant({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[28px]"} data-node-id="448:1178" data-name="f7:ant">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgF7Ant} />
+    </div>
+  );
+}
+
+function HugeiconsEcoEnergy({ className }: { className?: string }) {
+  return (
+    <div className={className || "content-stretch flex items-center p-[2px] relative"} data-node-id="441:884" data-name="hugeicons:eco-energy">
+      <div className="relative shrink-0 size-[20px]" data-node-id="441:885" data-name="Group">
+        <div className="absolute inset-[-3.75%]">
+          <img alt="" className="block max-w-none size-full" src={imgGroup} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CilDrop({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[25px]"} data-node-id="441:882" data-name="cil:drop">
+      <div className="absolute inset-[-2%_0]">
+        <img alt="" className="block max-w-none size-full" src={imgCilDrop} />
+      </div>
+    </div>
+  );
+}
+
+function LineiconsMushroom({ className }: { className?: string }) {
+  return (
+    <div className={className || "h-[24.999px] relative w-[25px]"} data-node-id="441:879" data-name="lineicons:mushroom-5">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgLineiconsMushroom5} />
+    </div>
+  );
+}
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:1758" data-name="06 · Качество семян · согласованная детализация">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="448:1759" data-name="01 · Единая предметная сцена">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Light'] font-light h-[32px] leading-[28px] left-[546.5px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] text-center top-[845px] w-[621px]" data-node-id="448:1760">
+          Без внешних повреждений
+        </p>
+        <div className="absolute flex h-[1143px] items-center justify-center left-[-50px] top-[-51px] w-[1988px]" data-node-id="448:1761">
+          <div className="-scale-y-100 flex-none">
+            <div className="blur-[125px] h-[1143px] relative w-[1988px]" data-name="exec-d3a67c97-dde1-48dc-93d7-c1be9f8ccc2a 1">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <img alt="" className="absolute h-[99.92%] left-[0.03%] max-w-none top-[0.07%] w-[99.95%]" src={imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="448:1762">
+        СТАНЦИЯ 2 · СЕМЕНА И ПОСЕВЫ
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] w-[1428px]" data-node-id="448:1763">
+        КАЧЕСТВО СЕМЯН — ФУНДАМЕНТ УРОЖАЯ
+      </p>
+      <div className="absolute h-[762px] left-[581px] top-[254px] w-[710px]" data-node-id="448:1764">
+        <div className="absolute left-[-60px] size-[866px] top-[-104px]" data-node-id="448:1765" data-name="G-C06-B · Внешние повреждения · прозрачный PNG">
+          <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgGC06BPng} />
+        </div>
+        <div className="absolute h-[771px] left-[-40px] top-[-15px] w-[398px]" data-node-id="448:1766" data-name="G-C06-A · Целая оболочка · прозрачный PNG">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-full left-0 max-w-none top-0 w-[193.47%]" src={imgGC06APng} />
+          </div>
+        </div>
+        <div className="absolute flex h-[763px] items-center justify-center left-[362px] top-[10px] w-0" data-node-id="448:1767">
+          <div className="flex-none rotate-90">
+            <div className="h-0 relative w-[763px]">
+              <div className="absolute inset-[-1px_0_0_0]">
+                <img alt="" className="block max-w-none size-full" src={imgLine7} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute left-[344px] size-[37px] top-[341px]" data-node-id="448:1768">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgEllipse18} />
+        </div>
+        <div className="absolute flex h-[6.928px] items-center justify-center left-[365px] top-[356px] w-[6px]" data-node-id="448:1769">
+          <div className="flex-none rotate-90">
+            <div className="h-[6px] relative w-[6.928px]">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgPolygon2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[6.928px] items-center justify-center left-[354px] top-[356px] w-[6px]" data-node-id="448:1770">
+          <div className="-scale-y-100 flex-none rotate-90">
+            <div className="h-[6px] relative w-[6.928px]">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgPolygon3} />
+            </div>
+          </div>
+        </div>
+        <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Light'] font-light h-[32px] leading-[28px] left-[691.5px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] text-center top-[607px] w-[621px]" data-node-id="448:1771">
+          С внешними повреждениями
+        </p>
+      </div>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="448:1772" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1772;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:1774" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1775" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1776" data-name="Previous">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1776;164:647">
+              ← Почва и плодородие
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1777" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1778" data-name="Next">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1778;164:647">
+              Выездная экспертиза →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[64px] not-italic p-[var(--grain-space-32,32px)] rounded-[24px] top-[188px] w-[445px]" data-node-id="448:1779" data-name="Grain/Panel">
+        <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1779;167:641">
+          Лабораторная проверка
+        </p>
+        <div className="leading-[0] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I448:1779;167:642">
+          <p className="leading-[32px] mb-0">Помогает убедиться в качестве</p>
+          <p className="leading-[32px]">посевного материала</p>
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[1430px] rounded-[36px] top-[188px]" data-node-id="448:1780">
+        <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[96px] items-start p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="448:1781" data-name="Grain/Panel">
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="448:1782">
+            Направления исследования
+          </p>
+        </div>
+        <div className="gap-x-[4px] gap-y-[4px] grid grid-cols-[repeat(2,minmax(0,1fr))] grid-rows-[repeat(3,fit-content(100%))] relative shrink-0 w-[426px]" data-node-id="448:1783">
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[171px] items-start justify-between justify-self-stretch px-[var(--grain-space-32,32px)] py-[32px] relative rounded-[24px] self-start shrink-0" data-node-id="448:1784">
+            <div className="relative shrink-0 size-[40px]" data-node-id="448:1785" data-name="eos-icons:science-outlined">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgEosIconsScienceOutlined} />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] min-w-full not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="448:1786">
+              Всхожесть и энергия прорастания
+            </p>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[170.999px] items-start justify-between justify-self-stretch p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0" data-node-id="448:1787">
+            <div className="bg-[rgba(255,255,255,0.05)] content-stretch flex flex-col items-start p-[8px] relative rounded-[999px] shrink-0" data-node-id="448:1788">
+              <LineiconsMushroom className="h-[24.999px] relative shrink-0 w-[25px]" />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] min-w-full not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="448:1790">
+              Заражённость болезнями
+            </p>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[170px] items-start justify-between justify-self-stretch p-[var(--grain-space-32,32px)] relative rounded-[24px] self-start shrink-0" data-node-id="448:1791">
+            <div className="bg-[rgba(255,255,255,0.05)] content-stretch flex items-center p-[8px] relative rounded-[999px] shrink-0" data-node-id="448:1792">
+              <CilDrop className="relative shrink-0 size-[25px]" />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] min-w-full not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="448:1794">
+              Влажность
+            </p>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[170px] items-start justify-between justify-self-stretch p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0" data-node-id="448:1795">
+            <div className="bg-[rgba(255,255,255,0.05)] content-stretch flex items-center p-[8px] relative rounded-[999px] shrink-0" data-node-id="448:1796">
+              <HugeiconsEcoEnergy className="content-stretch flex items-center p-[2px] relative shrink-0" />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] min-w-full not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content] whitespace-pre-wrap" data-node-id="448:1798">
+              {`Исследования `}
+              <br aria-hidden />
+              на ГМО
+            </p>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] col-[span_2] content-stretch flex flex-col h-[146px] items-start justify-between justify-self-stretch p-[var(--grain-space-32,32px)] relative rounded-[24px] self-start shrink-0" data-node-id="448:1799">
+            <div className="bg-[rgba(255,255,255,0.05)] content-stretch flex items-center p-[8px] relative rounded-[999px] shrink-0" data-node-id="448:1800">
+              <F7Ant className="relative shrink-0 size-[28px]" />
+            </div>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] min-w-full not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="448:1802">
+              Заселенность вредителями
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

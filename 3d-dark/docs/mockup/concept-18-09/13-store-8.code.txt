@@ -1,0 +1,158 @@
+const imgElOkCircle = "http://localhost:3845/assets/f0c1acff7f3a9343f7b8a5a0f3417390e0dfd008.svg";
+const imgGC1213Png = "http://localhost:3845/assets/c2dfe1f407fd4d9d4f827e61b5aecb2f2d5940e5.png";
+const imgExecFe376CcdE7694436B7693831B222Ff591 = "http://localhost:3845/assets/6b1bc7d121d7fa05ada54480216ded792b1df2b0.png";
+const imgImage2090017739 = "http://localhost:3845/assets/506380426a70af5dfd27837f96dfe0642710bd1f.png";
+const imgExecFe376CcdE7694436B7693831B222Ff592 = "http://localhost:3845/assets/420c1b0210da67e20ed8fd67f5071e735a1c3bbb.png";
+
+function ElOkCircle({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[27px]"} data-node-id="465:1916" data-name="el:ok-circle">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgElOkCircle} />
+    </div>
+  );
+}
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="465:2036" data-name="12 · Подготовка элеваторов">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="465:2037" style={{ backgroundImage: "linear-gradient(148.86538695850172deg, rgb(29, 45, 48) 7.0423%, rgb(12, 21, 26) 45.775%, rgb(6, 13, 16) 77.465%)" }} data-name="01 · Зернохранилище и работа специалистов">
+        <div className="absolute h-[637px] left-[90px] top-[262px] w-[956px]" data-node-id="465:2038" data-name="G-C12-13 · Санитарная подготовка и приёмка · PNG">
+          <img alt="" className="absolute inset-0 max-w-none object-contain pointer-events-none size-full" src={imgGC1213Png} />
+        </div>
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1175px] left-[calc(50%+11.5px)] top-[calc(50%+19.5px)] w-[2089px]" data-node-id="465:2039" data-name="exec-fe376ccd-e769-4436-b769-3831b222ff59 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgExecFe376CcdE7694436B7693831B222Ff591} />
+        </div>
+        <div className="absolute h-[1062px] left-[12px] top-[-7px] w-[1888px]" data-node-id="465:2040" data-name="image 2090017739">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage2090017739} />
+        </div>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="465:2041">
+        СТАНЦИЯ 4 · ХРАНЕНИЕ И ПРИЁМКА
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] w-[1400px]" data-node-id="465:2042">
+        ПОДГОТОВКА СКЛАДОВ
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="465:2043" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2043;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="465:2044" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="465:2045" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="465:2046" data-name="Previous">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2046;164:647">
+              ← Результаты оценки
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="465:2047" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="465:2048" data-name="Next">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2048;164:647">
+              Приёмка зерна →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[1418px] rounded-[36px] top-[188px] w-[438px]" data-node-id="465:2049">
+        <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start not-italic p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="465:2050" data-name="Grain/Panel">
+          <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] whitespace-nowrap" data-node-id="465:2051">
+            Инструментальный контроль
+          </p>
+          <p className="font-['Inter:Light'] font-light leading-[38.4px] min-w-full relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[min-content]" data-node-id="465:2052">
+            Контроль остаточного газа
+          </p>
+        </div>
+        <div className="h-[301px] relative rounded-[24px] shrink-0 w-full" data-node-id="465:2053" data-name="exec-fe376ccd-e769-4436-b769-3831b222ff59 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[24px] size-full" src={imgExecFe376CcdE7694436B7693831B222Ff592} />
+        </div>
+        <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="465:2054" data-name="Grain/QualityMetricSelector">
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I465:2054;510:1586">
+            Показания прибора позволяют оценить наличие остаточного газа
+          </p>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex flex-col gap-[16px] items-start left-[64px] top-[188px] w-[431px]" data-node-id="465:2055">
+        <div className="backdrop-blur-[35px] content-stretch flex flex-col gap-[4px] items-start relative rounded-[36px] shrink-0 w-full" data-node-id="465:2056">
+          <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="465:2057" data-name="Grain/Panel">
+            <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:2057;167:641">
+              Проветривание помещения
+            </p>
+            <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full whitespace-pre-wrap" data-node-id="I465:2057;167:642">
+              {`После нескольких дней `}
+              <br aria-hidden />
+              нужно проветрить помещение
+            </p>
+          </div>
+          <div className="content-stretch flex items-center justify-center px-[var(--grain-space-24,24px)] py-[16px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-full" data-node-id="465:2058" data-name="Grain/QualityMetricSelector">
+            <div aria-hidden className="absolute bg-[rgba(23,74,49,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <div className="flex-[1_0_0] min-w-px relative" data-node-id="465:2059">
+              <div className="[word-break:break-word] bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col font-['Inter:Regular'] font-normal items-start not-italic relative size-full">
+                <p className="leading-[28.8px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="465:2060">
+                  Осмотр
+                </p>
+                <p className="leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="465:2061">
+                  Вредители в хранилище
+                </p>
+              </div>
+            </div>
+            <ElOkCircle className="relative shrink-0 size-[27px]" />
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(20,233,155,0.25)]" />
+          </div>
+          <div className="content-stretch flex h-[81px] items-center justify-center px-[var(--grain-space-24,24px)] py-[16px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-full" data-node-id="465:2063" data-name="Grain/QualityMetricSelector">
+            <div aria-hidden className="absolute bg-[rgba(23,74,49,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <div className="flex-[1_0_0] min-w-px relative" data-node-id="465:2064">
+              <div className="[word-break:break-word] bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col font-['Inter:Regular'] font-normal items-start not-italic relative size-full">
+                <p className="leading-[28.8px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="465:2065">
+                  Подготовка
+                </p>
+                <p className="leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="465:2066">
+                  Очистка, маска, препарат
+                </p>
+              </div>
+            </div>
+            <ElOkCircle className="relative shrink-0 size-[27px]" />
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(20,233,155,0.25)]" />
+          </div>
+          <div className="content-stretch flex h-[81px] items-center justify-center px-[var(--grain-space-24,24px)] py-[16px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-full" data-node-id="465:2068" data-name="Grain/QualityMetricSelector">
+            <div aria-hidden className="absolute bg-[rgba(23,74,49,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <div className="flex-[1_0_0] min-w-px relative" data-node-id="465:2069">
+              <div className="[word-break:break-word] bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col font-['Inter:Regular'] font-normal items-start not-italic relative size-full">
+                <p className="leading-[28.8px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="465:2070">
+                  Обработка
+                </p>
+                <p className="leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="465:2071">
+                  Время и проветривание
+                </p>
+              </div>
+            </div>
+            <ElOkCircle className="relative shrink-0 size-[27px]" />
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(20,233,155,0.25)]" />
+          </div>
+          <div className="content-stretch flex flex-col items-center justify-center px-[var(--grain-space-24,24px)] py-[16px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-full" data-node-id="465:2073" data-name="Grain/QualityMetricSelector">
+            <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(34,79,107,0.5)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:2073;510:198">
+              Контроль
+            </p>
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[19.6px] not-italic relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I465:2073;510:199">
+              Газ и результат обработки
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#cddaef,inset_0px_0px_35px_0px_#88cbed]" />
+          </div>
+        </div>
+        <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-full" data-node-id="465:2074" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2074;164:644">
+            Измерить остаточный газ →
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+        </div>
+      </div>
+    </div>
+  );
+}

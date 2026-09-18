@@ -1,0 +1,197 @@
+const img01 = "http://localhost:3845/assets/795b6a483aaf3b72dc4f4efb6bb787827e781496.png";
+const imgImage18 = "http://localhost:3845/assets/2cd4e254c9124ef865081e741ccf9d312afe2422.png";
+const imgEllipse1 = "http://localhost:3845/assets/24cc819b4a139704b102b5097ca6ee7dc30ac5f0.svg";
+const imgEllipse5 = "http://localhost:3845/assets/f8baa7caf3c0f25c4def49bcabc1aae26f0c9d69.svg";
+const imgLine6 = "http://localhost:3845/assets/e9bdeae4e57929f72ec9617d118812f9793fb329.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:1585" data-name="04 · Диагностика плодородия почв">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[40.932px] top-[16px] w-[1888px]" data-node-id="448:1586" data-name="01 · Полноэкранная сцена">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[40.932px]">
+          <img alt="" className="absolute h-[116.05%] left-[-0.85%] max-w-none top-[-8.72%] w-[126.15%]" src={img01} />
+        </div>
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1081px] left-[calc(50%+16.5px)] top-[calc(50%+0.5px)] w-[1921px]" data-node-id="448:1587" data-name="image 18">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage18} />
+        </div>
+        <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start left-[48px] px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[172px] w-[445px]" data-node-id="448:1588" data-name="Grain/NonconformityChart">
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[38.4px] not-italic relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="448:1589">{`Содержание элементов `}</p>
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="448:1590">
+            Выберите элемент и задайте его концентрацию в почве
+          </p>
+          <div className="content-start flex flex-wrap gap-[16px] items-start relative shrink-0 w-full" data-node-id="448:1591">
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1592" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1594">
+                Медь
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#cddaef,inset_0px_0px_35px_0px_#88cbed]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[115px]" data-node-id="448:1595" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1596">
+                Цинк
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1597" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1599">
+                Свинец
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1600" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1601">
+                Нитраты
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[115px]" data-node-id="448:1602" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1604">
+                Ртуть
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1605" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1607">
+                Сера
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1608" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1609">
+                Кобальт
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[115px]" data-node-id="448:1610" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1612">
+                Фтор
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] items-center justify-center px-[16px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[117px]" data-node-id="448:1613" data-name="Grain/Button">
+              <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1615">
+                Кадмий
+              </p>
+              <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col gap-[var(--grain-space-8,8px)] items-start relative shrink-0 w-full" data-node-id="448:1616" data-name="Grain/NonconformityBar">
+            <div className="[word-break:break-word] content-stretch flex font-['Inter:Light'] font-light gap-[24px] items-start leading-[28px] not-italic overflow-clip relative shrink-0 text-[20px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="448:1617" data-name="Frame">
+              <p className="flex-[1_0_0] min-w-px relative" data-node-id="448:1618">
+                Содержание меди
+              </p>
+              <p className="h-[30px] relative shrink-0 text-right w-[80px]" data-node-id="448:1619">
+                мг/кг
+              </p>
+            </div>
+            <div className="bg-[var(--grain-color-border,rgba(255,255,255,0.2))] h-[8px] overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-full" data-node-id="448:1620" data-name="Шкала · 0–10%">
+              <div className="absolute bg-[var(--grain-color-accent,#ddc195)] h-[8px] left-0 rounded-[var(--grain-radius-16,16px)] top-0 w-[257.6px]" data-node-id="448:1621" data-name="Значение · длина редактируется" />
+            </div>
+            <div className="[word-break:break-word] content-stretch flex font-['Inter:Regular'] font-normal items-start justify-between leading-[19.6px] not-italic relative shrink-0 text-[#aeaeae] text-[14px] text-right w-full whitespace-nowrap" data-node-id="448:1622">
+              <p className="relative shrink-0" data-node-id="448:1623">
+                Минимум
+              </p>
+              <p className="relative shrink-0" data-node-id="448:1624">
+                Максимум
+              </p>
+            </div>
+            <div className="absolute left-[244px] size-[28px] top-[28px]" data-node-id="448:1625">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgEllipse1} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex items-start justify-between left-[64px] top-[64px] w-[1792px]" data-node-id="448:1629">
+        <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[var(--grain-space-16,16px)] items-start min-w-px not-italic overflow-clip p-[var(--grain-space-0,0px)] relative" data-node-id="448:1630" data-name="Заголовок и разделы">
+          <p className="font-['Inter:Light'] font-light h-[30px] leading-[28px] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[1792px]" data-node-id="448:1631">
+            СТАНЦИЯ 1 · ПОЧВА И ОБЕСПЕЧЕНИЕ ПЛОДОРОДИЯ
+          </p>
+          <p className="font-['Inter:Regular'] font-normal leading-[48px] relative shrink-0 text-[42px] text-[color:var(--grain-color-accent,#ddc195)] w-[1792px]" data-node-id="448:1632">
+            ДИАГНОСТИКА ПЛОДОРОДИЯ И БЕЗОПАСНОСТИ ПОЧВ
+          </p>
+        </div>
+        <div className="content-stretch flex gap-[16px] h-[108px] items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[300px]" data-node-id="448:1634" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1634;164:647">
+            В Центр
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1386px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[908px] w-[470px]" data-node-id="448:1635" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[10px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1635;164:647">
+          Восстановление земель →
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[1368px] rounded-[36px] top-[188px] w-[488px]" data-node-id="448:1636">
+        <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic px-[var(--grain-space-32,32px)] py-[32px] relative rounded-[24px] shrink-0 w-full" data-node-id="448:1637">
+          <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="448:1638">
+            Что исследует лаборатория
+          </p>
+          <div className="leading-[0] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full whitespace-pre-wrap" data-node-id="448:1639">
+            <p className="leading-[28px] mb-0">{`Агрохимический анализ (pH), `}</p>
+            <p className="leading-[28px] mb-0">гумус, NPK и микроэлементы</p>
+            <p className="leading-[28px]">Токсилогический анализ почв</p>
+          </div>
+        </div>
+        <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] h-[267px] items-start p-[32px] relative rounded-[24px] shrink-0 w-full" data-node-id="448:1640" data-name="Grain/Panel">
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light h-[39px] leading-[38.4px] not-italic relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[556px]" data-node-id="448:1641">
+            Оценка показателя
+          </p>
+          <div className="content-stretch flex flex-col gap-[26px] items-start relative shrink-0 w-full" data-node-id="448:1642">
+            <div className="[word-break:break-word] content-stretch flex gap-[16px] items-end not-italic relative shrink-0 whitespace-nowrap" data-node-id="448:1643">
+              <p className="[text-box-edge:cap_alphabetic] [text-box-trim:trim-both] font-['Inter:Light'] font-light leading-[96px] relative shrink-0 text-[96px] text-[color:var(--grain-color-accent,#ddc195)]" data-node-id="448:1644">
+                Cu
+              </p>
+              <p className="[text-box-edge:cap_alphabetic] [text-box-trim:trim-both] font-['Inter:Regular'] font-normal leading-[28.6px] relative shrink-0 text-[32px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))]" data-node-id="448:1645">{`C < T`}</p>
+            </div>
+            <div className="content-stretch flex flex-col gap-[var(--grain-space-8,8px)] items-start relative shrink-0 w-full" data-node-id="448:1646" data-name="Grain/NonconformityBar">
+              <div className="bg-[rgba(255,48,48,0.2)] h-[8px] overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-full" data-node-id="448:1647" data-name="Шкала · 0–10%">
+                <div className="absolute bg-[#478e7a] h-[8px] left-0 top-0 w-[322px]" data-node-id="448:1648" data-name="Значение · длина редактируется" />
+              </div>
+              <div className="[word-break:break-word] content-stretch flex font-['Inter:Regular'] font-normal items-start justify-between leading-[19.6px] not-italic relative shrink-0 text-[#aeaeae] text-[14px] text-right w-full whitespace-nowrap" data-node-id="448:1649">
+                <p className="relative shrink-0" data-node-id="448:1650">
+                  Концентрация C
+                </p>
+                <p className="relative shrink-0" data-node-id="448:1651">
+                  Норматив Т
+                </p>
+              </div>
+              <div className="absolute left-[222px] size-[25px] top-[-9px]" data-node-id="448:1652">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgEllipse5} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="content-stretch flex flex-col h-[125px] items-start justify-center px-[32px] py-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-full" data-node-id="448:1653">
+          <div aria-hidden className="absolute bg-[rgba(0,72,55,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <div className="[word-break:break-word] font-['Inter:Light'] font-light leading-[0] not-italic relative shrink-0 text-[#19c899] text-[24px] whitespace-nowrap" data-node-id="448:1654">
+            <p className="leading-[28px] mb-0 whitespace-pre">{`✓ По выбранному показателю `}</p>
+            <p className="leading-[28px] whitespace-pre">превышения нет</p>
+          </div>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(209,255,249,0.25),inset_0px_0px_35px_0px_rgba(60,207,114,0.35)]" />
+        </div>
+      </div>
+      <div className="absolute flex h-[24px] items-center justify-center left-[1722px] top-[391px] w-0" data-node-id="448:1655">
+        <div className="-rotate-90 flex-none">
+          <div className="h-0 relative w-[24px]">
+            <div className="absolute inset-[-1px_0_0_0]">
+              <img alt="" className="block max-w-none size-full" src={imgLine6} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

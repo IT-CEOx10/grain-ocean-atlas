@@ -1,15 +1,21 @@
 <!DOCTYPE html>
-<!-- Раздел 09 спецификации: «Мониторинг зерна РФ», экраны 23–24.
-     Отдельная страница, как глобус и презентация: своя логика и стили,
-     общие с ними — шрифты, переменные зелёной темы и config.json.
-     Кнопка «Главное меню» уводит в презентацию (story.html) через
-     U.goSection в src/util.js. -->
+<!-- Раздел 09 спецификации: «Мониторинг зерна РФ», экраны 23–24, плюс
+     второй таб «Регионы присутствия ЦОК АПК».
+     Оформление — по кадрам фигмы docs/mockup/concept-18-09:
+     23-monitoring, 24-region, 03b-regions (рядом лежат *.code.txt
+     с координатами). Значки взяты из слоёв тех же кадров.
+     Отдельная страница, как глобус и презентация: своя логика и стили.
+     styles/story-theme.css подключён ради одних только начертаний Inter
+     (@font-face); все его правила начинаются с #sec-story и на карту
+     не действуют. Кнопка «Главное меню» уводит в презентацию
+     (story.html) через U.goSection в src/util.js. -->
 <html lang="ru" class="theme-green">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=1920, initial-scale=1">
-<title>Госмониторинг пшеницы РФ</title>
+<title>Госмониторинг зерна РФ</title>
 <link rel="stylesheet" href="styles/app.css">
+<link rel="stylesheet" href="styles/story-theme.css">
 <link rel="stylesheet" href="styles/monitoring.css">
 </head>
 <body class="mon-screen">
@@ -21,99 +27,125 @@
   <div id="card">
     <canvas id="stars"></canvas>
 
-    <!-- ================= экран 23: карта России ================= -->
+    <!-- Карта России: один холст во весь экран на два экрана сразу —
+         госмониторинг и регионы присутствия. Панели лежат поверх. -->
+    <div id="map-box">
+      <canvas id="map"></canvas>
+      <div id="map-tip" class="mn-tip"></div>
+      <div id="map-call" class="mn-call"><span id="call-name"></span><i></i></div>
+    </div>
+
+    <!-- кнопки масштаба общие для карты обоих экранов -->
+    <div id="map-tools">
+      <button id="zoom-reset" type="button" title="Развернуть карту"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19 12V7.1L7.1 19H12V22H2V12H5V16.9L16.9 5H12V2H22V12H19ZM29.65 46C28.85 46 28.0833 45.85 27.35 45.55C26.6167 45.25 25.9667 44.8167 25.4 44.25L15.2 34L16.7 32.45C17.2333 31.9167 17.8583 31.5583 18.575 31.375C19.2917 31.1917 20 31.2 20.7 31.4L24 32.35V16C24 15.4333 24.1917 14.9583 24.575 14.575C24.9583 14.1917 25.4333 14 26 14C26.5667 14 27.0417 14.1917 27.425 14.575C27.8083 14.9583 28 15.4333 28 16V37.65L23.15 36.3L28.25 41.4C28.4167 41.5667 28.625 41.7083 28.875 41.825C29.125 41.9417 29.3833 42 29.65 42H38C39.1 42 40.0417 41.6083 40.825 40.825C41.6083 40.0417 42 39.1 42 38V30C42 29.4333 42.1917 28.9583 42.575 28.575C42.9583 28.1917 43.4333 28 44 28C44.5667 28 45.0417 28.1917 45.425 28.575C45.8083 28.9583 46 29.4333 46 30V38C46 40.2 45.2167 42.0833 43.65 43.65C42.0833 45.2167 40.2 46 38 46H29.65ZM30 32V24C30 23.4333 30.1917 22.9583 30.575 22.575C30.9583 22.1917 31.4333 22 32 22C32.5667 22 33.0417 22.1917 33.425 22.575C33.8083 22.9583 34 23.4333 34 24V32H30ZM36 32V26C36 25.4333 36.1917 24.9583 36.575 24.575C36.9583 24.1917 37.4333 24 38 24C38.5667 24 39.0417 24.1917 39.425 24.575C39.8083 24.9583 40 25.4333 40 26V32H36Z"></path></svg></button>
+      <div class="mn-zooms">
+        <button id="zoom-in" class="mn-round" type="button" title="Приблизить"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M22 26.0002H9.99997V22.0002H22V10.0002H26V22.0002H38V26.0002H26V38.0002H22V26.0002Z"></path></svg></button>
+        <button id="zoom-out" class="mn-round" type="button" title="Отдалить"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M22 26H10V22H22H38V26H22Z"></path></svg></button>
+      </div>
+    </div>
+
+    <!-- ============ экран 23: карта госмониторинга ============ -->
     <section id="scr-map" class="mon-scr is-on">
 
-      <h1 class="screen-title mon-title">Госмониторинг пшеницы&nbsp;РФ</h1>
+      <h1 id="map-title" class="mn-title">Госмониторинг зерна
+пшеницы 2026</h1>
 
-      <div class="search mon-search">
-        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
-        </svg>
+      <!-- табы «Госмониторинг зерна | Регионы присутствия»: рисует JS -->
+      <nav id="tabs-map" class="mn-tabs map-tabs"></nav>
+
+      <!-- в кадре карты кнопки возврата нет: ставим её слева от глобуса -->
+      <button id="home-btn" class="mn-btn mn-home" type="button">Главное меню</button>
+
+      <button id="globe-btn" class="mn-round mn-globe" type="button" title="Маршруты экспорта"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16.25 42.425C13.8167 41.375 11.6917 39.9417 9.875 38.125C8.05833 36.3083 6.625 34.1833 5.575 31.75C4.525 29.3167 4 26.725 4 23.975C4 21.225 4.525 18.6417 5.575 16.225C6.625 13.8083 8.05833 11.6917 9.875 9.875C11.6917 8.05833 13.8167 6.625 16.25 5.575C18.6833 4.525 21.275 4 24.025 4C26.775 4 29.3583 4.525 31.775 5.575C34.1917 6.625 36.3083 8.05833 38.125 9.875C39.9417 11.6917 41.375 13.8083 42.425 16.225C43.475 18.6417 44 21.225 44 23.975C44 26.725 43.475 29.3167 42.425 31.75C41.375 34.1833 39.9417 36.3083 38.125 38.125C36.3083 39.9417 34.1917 41.375 31.775 42.425C29.3583 43.475 26.775 44 24.025 44C21.275 44 18.6833 43.475 16.25 42.425ZM24 39.9C24.8667 38.7 25.6167 37.45 26.25 36.15C26.8833 34.85 27.4 33.4667 27.8 32H20.2C20.6 33.4667 21.1167 34.85 21.75 36.15C22.3833 37.45 23.1333 38.7 24 39.9ZM18.8 39.1C18.2 38 17.675 36.8583 17.225 35.675C16.775 34.4917 16.4 33.2667 16.1 32H10.2C11.1667 33.6667 12.375 35.1167 13.825 36.35C15.275 37.5833 16.9333 38.5 18.8 39.1ZM29.2 39.1C31.0667 38.5 32.725 37.5833 34.175 36.35C35.625 35.1167 36.8333 33.6667 37.8 32H31.9C31.6 33.2667 31.225 34.4917 30.775 35.675C30.325 36.8583 29.8 38 29.2 39.1ZM8.5 28H15.3C15.2 27.3333 15.125 26.675 15.075 26.025C15.025 25.375 15 24.7 15 24C15 23.3 15.025 22.625 15.075 21.975C15.125 21.325 15.2 20.6667 15.3 20H8.5C8.33333 20.6667 8.20833 21.325 8.125 21.975C8.04167 22.625 8 23.3 8 24C8 24.7 8.04167 25.375 8.125 26.025C8.20833 26.675 8.33333 27.3333 8.5 28ZM19.3 28H28.7C28.8 27.3333 28.875 26.675 28.925 26.025C28.975 25.375 29 24.7 29 24C29 23.3 28.975 22.625 28.925 21.975C28.875 21.325 28.8 20.6667 28.7 20H19.3C19.2 20.6667 19.125 21.325 19.075 21.975C19.025 22.625 19 23.3 19 24C19 24.7 19.025 25.375 19.075 26.025C19.125 26.675 19.2 27.3333 19.3 28ZM32.7 28H39.5C39.6667 27.3333 39.7917 26.675 39.875 26.025C39.9583 25.375 40 24.7 40 24C40 23.3 39.9583 22.625 39.875 21.975C39.7917 21.325 39.6667 20.6667 39.5 20H32.7C32.8 20.6667 32.875 21.325 32.925 21.975C32.975 22.625 33 23.3 33 24C33 24.7 32.975 25.375 32.925 26.025C32.875 26.675 32.8 27.3333 32.7 28ZM31.9 16H37.8C36.8333 14.3333 35.625 12.8833 34.175 11.65C32.725 10.4167 31.0667 9.5 29.2 8.9C29.8 10 30.325 11.1417 30.775 12.325C31.225 13.5083 31.6 14.7333 31.9 16ZM20.2 16H27.8C27.4 14.5333 26.8833 13.15 26.25 11.85C25.6167 10.55 24.8667 9.3 24 8.1C23.1333 9.3 22.3833 10.55 21.75 11.85C21.1167 13.15 20.6 14.5333 20.2 16ZM10.2 16H16.1C16.4 14.7333 16.775 13.5083 17.225 12.325C17.675 11.1417 18.2 10 18.8 8.9C16.9333 9.5 15.275 10.4167 13.825 11.65C12.375 12.8833 11.1667 14.3333 10.2 16Z"></path></svg></button>
+
+      <div class="mn-search">
+        <svg class="mn-search-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M34.9778 37L25.8778 27.9C25.1556 28.4778 24.325 28.9352 23.3861 29.2722C22.4472 29.6093 21.4481 29.7778 20.3889 29.7778C17.7648 29.7778 15.544 28.869 13.7264 27.0514C11.9088 25.2338 11 23.013 11 20.3889C11 17.7648 11.9088 15.544 13.7264 13.7264C15.544 11.9088 17.7648 11 20.3889 11C23.013 11 25.2338 11.9088 27.0514 13.7264C28.869 15.544 29.7778 17.7648 29.7778 20.3889C29.7778 21.4481 29.6093 22.4472 29.2722 23.3861C28.9352 24.325 28.4778 25.1556 27.9 25.8778L37 34.9778L34.9778 37ZM20.3889 26.8889C22.1944 26.8889 23.7292 26.2569 24.9931 24.9931C26.2569 23.7292 26.8889 22.1944 26.8889 20.3889C26.8889 18.5833 26.2569 17.0486 24.9931 15.7847C23.7292 14.5208 22.1944 13.8889 20.3889 13.8889C18.5833 13.8889 17.0486 14.5208 15.7847 15.7847C14.5208 17.0486 13.8889 18.5833 13.8889 20.3889C13.8889 22.1944 14.5208 23.7292 15.7847 24.9931C17.0486 26.2569 18.5833 26.8889 20.3889 26.8889Z"></path></svg>
         <input id="search" type="search" placeholder="Поиск по регионам" autocomplete="off">
+        <button id="search-go" class="mn-search-btn" type="button">Искать</button>
       </div>
 
-      <!-- селектор года: пилюли, как на таймлайне глобуса -->
-      <div id="years" class="mon-years"></div>
+      <!-- селектор года: в кадре его нет, у нас данные за 2020–2026 -->
+      <div id="years" class="mn-years"></div>
 
-      <section id="card-total" class="panel mon-card mon-total">
-        <div class="mon-card-head">Всего по России</div>
-        <div id="total-body"></div>
-      </section>
+      <div class="mn-col">
+        <section class="mn-panel mn-total">
+          <div class="mn-cap">Всего по России</div>
+          <div id="total-body"></div>
+        </section>
 
-      <section id="card-top" class="panel mon-card mon-top">
-        <div class="mon-card-head"><span id="top-head">Топ-10 регионов</span></div>
-        <div id="top-body" class="mon-top-list"></div>
-      </section>
+        <div id="total-tiles" class="mn-tiles"></div>
 
-      <!-- карта: контуры рисует src/monitoring.js на холсте -->
-      <div id="map-box">
-        <canvas id="map"></canvas>
-        <div id="map-tip" class="mon-tip"></div>
+        <section class="mn-panel mn-top">
+          <div class="mn-top-head"><span id="top-head">Топ-10 регионов</span></div>
+          <div id="top-body" class="mn-top-list"></div>
+        </section>
       </div>
 
-      <div id="legend" class="mon-legend">
-        <span class="l-cap">Обследовано, тыс. т</span>
-        <span class="l-bar"></span>
-        <span class="l-lo">мало</span>
-        <span class="l-hi" id="legend-hi">много</span>
+      <div class="mn-legend">
+        <span><i class="is-data"></i>Регионы с данными по сборам зерна</span>
+        <span><i class="is-strong"></i>Регионы с сильной пшеницей</span>
+        <span><i class="is-none"></i>Не проводится госмониторинг</span>
       </div>
 
-      <div class="mon-hint">Коснитесь региона, чтобы узнать больше</div>
-
-      <button id="zoom-in" class="round-btn mon-zoom" type="button" title="Приблизить">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
-      <button id="zoom-out" class="round-btn mon-zoom" type="button" title="Отдалить">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
+      <div class="map-hint">Коснитесь региона, чтобы узнать больше</div>
     </section>
 
-    <!-- ================= экран 24: выбранный регион ================= -->
+    <!-- ============ экран 24: выбранный регион ============ -->
     <section id="scr-region" class="mon-scr">
 
-      <div class="eyebrow mon-eyebrow" id="reg-eyebrow">Госмониторинг пшеницы РФ</div>
-      <h1 class="screen-title mon-title mon-title-reg" id="reg-title">Регион</h1>
+      <div class="mn-scene"><img id="scene-img" alt="Зерно в лабораторном цилиндре"></div>
 
-      <!-- фильтр вида пшеницы -->
-      <div id="kinds" class="mon-kinds"></div>
+      <div id="reg-eyebrow" class="mn-eyebrow">Госмониторинг пшеницы · 2026</div>
+      <h1 id="reg-title" class="mn-title-reg">Регион</h1>
+      <div id="reg-sub" class="mn-sub">Мягкая пшеница · Демонстрационные данные</div>
 
-      <section id="card-vol" class="panel mon-card mon-vol">
-        <div class="mon-card-head">Объемы обследования</div>
-        <div id="vol-body"></div>
-      </section>
+      <button id="home-btn-reg" class="mn-btn mn-home-reg" type="button">Главное меню</button>
 
-      <section id="card-hist" class="panel mon-card mon-hist">
-        <div class="mon-card-head">Обследовано по годам</div>
-        <div id="hist-body"></div>
-      </section>
+      <!-- метки-цифры вокруг цилиндра: расставляет src/monitoring.js -->
+      <div id="marks" class="mn-marks"></div>
 
-      <!-- образец зерна: точки показателей расставляет src/monitoring.js -->
-      <div id="sample" class="mon-sample">
-        <img id="sample-img" alt="Образец зерна в лабораторной чашке">
-        <div id="dots"></div>
+      <div class="mn-metrics">
+        <section id="card-gross" class="mn-panel">
+          <div class="mn-cap">Валовой сбор</div>
+          <div id="gross-body"></div>
+        </section>
+        <section id="card-surv" class="mn-panel">
+          <div class="mn-cap">Обследовано зерна</div>
+          <div id="surv-body"></div>
+        </section>
       </div>
-      <div class="mon-sample-cap">Образец из партии · точки показателей открываются касанием</div>
 
-      <section id="card-cls" class="panel mon-card mon-cls">
-        <div class="mon-card-head">Классы зерна</div>
-        <div id="cls-body"></div>
+      <section id="card-cls" class="mn-panel mn-cls">
+        <div class="mn-cap">Классы зерна</div>
+        <div id="cls-sub" class="mn-cls-sub">Доля от обследованного объёма</div>
+        <div id="cls-body" class="mn-cls-list"></div>
+        <div id="cls-foot" class="mn-cls-foot">Значения для показа структуры</div>
       </section>
 
-      <section id="card-qual" class="panel mon-card mon-qual">
-        <div id="qual-body"></div>
-      </section>
-
-      <button id="back-map" class="ghost-btn mon-back" type="button">← К карте России</button>
+      <button id="back-map" class="mn-btn mn-back" type="button">← К карте России</button>
     </section>
 
-    <button id="home-btn" class="ghost-btn mon-home" type="button">Главное меню</button>
+    <!-- ============ экран «Регионы присутствия ЦОК АПК» ============ -->
+    <section id="scr-presence" class="mon-scr">
 
-    <div id="demo-note" class="mon-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
+      <h1 class="pres-title">Регионы присутствия ЦОК АПК</h1>
+
+      <nav id="tabs-presence" class="mn-tabs pres-tabs"></nav>
+
+      <button id="hub-btn" class="mn-btn mn-hub" type="button">В Центр</button>
+
+      <div class="mn-pres-cap">Выбранный регион</div>
+
+      <section id="card-pres" class="mn-panel mn-pres"></section>
+
+      <div id="pres-foot" class="mn-pres-foot">Лаборатории показаны по населённым
+        пунктам, без подсчёта отдельных корпусов.</div>
+
+      <div class="pres-hint">Выберите регион, чтобы узнать больше.
+        Перетаскивайте карту для перемещения.</div>
+    </section>
+
+    <div id="demo-note" class="mn-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
     <div id="loading" class="loading">Загрузка данных…</div>
   </div>
 </div>

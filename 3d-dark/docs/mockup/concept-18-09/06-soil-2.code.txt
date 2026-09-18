@@ -1,0 +1,136 @@
+const imgAssetBefore = "http://localhost:3845/assets/d683f1ea4bb2a495a0bd75ad526603fcf70d65f8.png";
+const imgCodex1620260031511 = "http://localhost:3845/assets/911a3f50f0a4f8111480848b1d46fb8be98153d9.png";
+const imgExec55Dc4954E42D4B0B9B8BFd82B766Cb0D1 = "http://localhost:3845/assets/2fcb6bb508987ef9fa69583911e4cf0d904ca176.png";
+const imgCodex1620260140471 = "http://localhost:3845/assets/764ed2d63474d72584fc5f34ef412a4e0d48f6c6.png";
+
+export default function Component() {
+  return (
+    <div className="bg-[#0e191d] relative size-full" data-node-id="448:1659" data-name="05 · Восстановление земельного ресурса">
+      <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1048px] left-1/2 overflow-clip rounded-[32px] top-1/2 w-[1888px]" data-node-id="448:1660" data-name="Сравнение одного участка">
+        <div className="absolute h-[1080px] left-0 overflow-clip top-0 w-[1888px]" data-node-id="448:1661" data-name="До · обрезка по разделителю">
+          <div className="absolute h-[1126px] left-[-60px] overflow-clip top-[-46px] w-[2010px]" data-node-id="448:1662" data-name="Asset/before">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[99.94%] left-[0.01%] max-w-none top-[0.03%] w-[99.99%]" src={imgAssetBefore} />
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1086px] left-[calc(50%+0.5px)] top-1/2 w-[1959px]" data-node-id="448:1663" data-name="Изображение Codex 16 сент. 2026 г., 00_31_51 1">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260031511} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[50px] rounded-[36px] top-[172px] w-[554px]" data-node-id="448:1664">
+          <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[32px] relative rounded-[24px] shrink-0 w-full" data-node-id="448:1665" data-name="Grain/Panel">
+            <p className="h-[39px] leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[556px]" data-node-id="I448:1665;167:641">
+              Подобрать питание для почвы
+            </p>
+            <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[556px] whitespace-pre-wrap" data-node-id="I448:1665;167:642">
+              {`Посмотрите как меняется дозировка `}
+              <br aria-hidden />в зависимости от показателя
+            </p>
+          </div>
+          <div className="content-stretch flex gap-[8px] items-start relative shrink-0 w-full" data-node-id="448:1666">
+            <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] border border-[#d59229] border-solid content-stretch flex flex-[1_0_0] flex-col gap-[16px] items-center justify-center min-w-px pb-[20px] pt-[8px] px-[8px] relative rounded-[32px]" data-node-id="448:1667" data-name="Grain/Button">
+              <div className="bg-[rgba(23,37,44,0.2)] h-[186px] overflow-clip relative rounded-[28px] shrink-0 w-full" data-node-id="448:1669">
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[208px] left-1/2 top-[calc(50%+9px)] w-[310px]" data-node-id="448:1670" data-name="exec-55dc4954-e42d-4b0b-9b8b-fd82b766cb0d 1">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[553.39%] left-[-311.98%] max-w-none top-[-180.19%] w-[656.25%]" src={imgExec55Dc4954E42D4B0B9B8BFd82B766Cb0D1} />
+                  </div>
+                </div>
+                <div className="absolute bg-[#d59229] left-[209px] overflow-clip rounded-[999px] size-[29px] top-[15px]" data-node-id="448:1671">
+                  <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light leading-[28px] left-[4px] not-italic text-[24px] text-black top-[0.5px] whitespace-nowrap" data-node-id="448:1672">
+                    ✓
+                  </p>
+                </div>
+              </div>
+              <div className="content-stretch flex items-start justify-center px-[8px] relative shrink-0" data-node-id="448:1673">
+                <div className="content-stretch flex flex-col items-start pl-[8px] relative shrink-0" data-node-id="448:1674">
+                  <div className="[word-break:break-word] font-['Inter:Light'] font-light leading-[0] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1675">
+                    <p className="leading-[32px] mb-0 whitespace-pre">{`Минеральные `}</p>
+                    <p className="leading-[32px] whitespace-pre">удобрения</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-[1_0_0] flex-col gap-[16px] items-center justify-center min-w-px pb-[20px] pt-[8px] px-[8px] relative rounded-[32px]" data-node-id="448:1676" data-name="Grain/Button">
+              <div className="bg-[rgba(23,37,44,0.2)] h-[186px] overflow-clip relative rounded-[28px] shrink-0 w-full" data-node-id="448:1678">
+                <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[342px] left-1/2 top-1/2 w-[274px]" data-node-id="448:1679" data-name="Изображение Codex 16 сент. 2026 г., 01_40_47 1">
+                  <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260140471} />
+                </div>
+              </div>
+              <div className="content-stretch flex items-start justify-center px-[8px] relative shrink-0" data-node-id="448:1680">
+                <div className="content-stretch flex flex-col items-start pl-[8px] relative shrink-0" data-node-id="448:1681">
+                  <div className="[word-break:break-word] font-['Inter:Light'] font-light leading-[0] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] text-center whitespace-nowrap" data-node-id="448:1682">
+                    <p className="leading-[32px] mb-0 whitespace-pre">{`Побочные продукты `}</p>
+                    <p className="leading-[32px] whitespace-pre">животноводства</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-full" data-node-id="448:1683" data-name="Grain/Button">
+            <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1683;164:644">
+              Рассчитать дозу удобрений
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+          </div>
+        </div>
+        <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[1429px] p-[6px] rounded-[36px] top-[172px]" data-node-id="448:1684">
+          <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[32px] relative rounded-[24px] shrink-0 w-[399px]" data-node-id="448:1685" data-name="Grain/Panel">
+            <p className="h-[39px] leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[556px]" data-node-id="448:1686">
+              Доза удобрения
+            </p>
+            <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] whitespace-nowrap" data-node-id="448:1687">
+              Минеральное удобрение
+            </p>
+            <p className="[text-box-edge:cap_alphabetic] [text-box-trim:trim-both] leading-[96px] min-w-full relative shrink-0 text-[64px] text-[color:var(--grain-color-accent,#ddc195)] w-[min-content]" data-node-id="448:1688">
+              формула
+            </p>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[160px] items-start p-[32px] relative rounded-[24px] shrink-0 w-[399px]" data-node-id="448:1689" data-name="Grain/Panel">
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="448:1690">
+              Место для формулы,
+              <br aria-hidden />
+              подстановки значений
+              <br aria-hidden />и расчётной дозы.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-end left-[64px] top-[64px] w-[1792px]" data-node-id="448:1691">
+        <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col gap-[var(--grain-space-16,16px)] h-[108px] items-start min-w-px not-italic overflow-clip p-[var(--grain-space-0,0px)] relative" data-node-id="448:1692" data-name="Заголовок и разделы">
+          <p className="font-['Inter:Light'] font-light h-[30px] leading-[28px] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[1792px]" data-node-id="448:1693">
+            СТАНЦИЯ 1 · ПОЧВА И ОБЕСПЕЧЕНИЕ ПЛОДОРОДИЯ
+          </p>
+          <p className="font-['Inter:Regular'] font-normal leading-[48px] relative shrink-0 text-[42px] text-[color:var(--grain-color-accent,#ddc195)] uppercase w-[1792px]" data-node-id="448:1694">
+            Сохранение и восстановление земельного ресурса
+          </p>
+        </div>
+        <div className="content-stretch flex gap-[16px] h-[108px] items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[300px]" data-node-id="448:1696" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1696;164:647">
+            В Центр
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+      <div className="absolute content-stretch flex items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:1697" data-name="Grain/Navigation">
+        <div className="content-stretch flex gap-[16px] h-[108px] items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[440px]" data-node-id="448:1698" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1698;164:647">
+            ← Оценка плодородия
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="content-stretch flex gap-[16px] h-[108px] items-center justify-center p-[24px] relative rounded-[32px] shrink-0 w-[470px]" data-node-id="448:1700" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[32px]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1700;164:647">
+            Семена и посевы →
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+      <div className="absolute content-stretch flex gap-[var(--grain-space-8,8px)] h-[58px] items-center justify-center left-[64px] py-[var(--grain-space-16,16px)] rounded-[var(--grain-radius-16,16px)] top-[800px] w-[191px]" data-node-id="448:1704" data-name="Grain/Tab" />
+      <div className="absolute content-stretch flex gap-[var(--grain-space-8,8px)] h-[58px] items-center justify-center left-[990px] py-[var(--grain-space-16,16px)] rounded-[var(--grain-radius-16,16px)] top-[800px] w-[225px]" data-node-id="448:1705" data-name="Grain/Tab" />
+    </div>
+  );
+}

@@ -1,0 +1,194 @@
+const imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1 = "http://localhost:3845/assets/44c43498e49ca757a9289c0c4e9278264a6aadfc.png";
+const imgGRegionsUi = "http://localhost:3845/assets/ef96debdf8504cc64e7b47af07b7a5c0b4384084.png";
+const img = "http://localhost:3845/assets/40bb3605e2ec059effb21298567fd6204e3c046f.svg";
+const img1 = "http://localhost:3845/assets/44f2ca2846eb5d7ecd4ede852024e78c9cf6e772.svg";
+const img2 = "http://localhost:3845/assets/8a113f5895c40d0fde921c8bf6a185585381e316.svg";
+const img3 = "http://localhost:3845/assets/f072db8cec1bd09e16fe0066d7f5f9742cf49cc4.svg";
+const img4 = "http://localhost:3845/assets/c80b5c8585f8d6ab6ac953036f5bdb5b1cc30e41.svg";
+const img5 = "http://localhost:3845/assets/28fd9018d686bb193ef1eb517a2b8cedaf2ef6bf.svg";
+const img6 = "http://localhost:3845/assets/999392791d4983f4cb311656bfc530260a464fa9.svg";
+const img7 = "http://localhost:3845/assets/90fc58133ef31602a0d4e6576224457e4f106963.svg";
+const img8 = "http://localhost:3845/assets/5841be6b9e442b5801861e3a4a7b9de44b159388.svg";
+const img9 = "http://localhost:3845/assets/8e7414da9cb2dbcdee9f53cdd3c5fec7d310bbe0.svg";
+const img10 = "http://localhost:3845/assets/0cd03c63c40b59e3d73132833f6ab2b87bfc7d2e.svg";
+const img11 = "http://localhost:3845/assets/5494a127dc16405d39103c41de99701fbae11573.svg";
+const img12 = "http://localhost:3845/assets/6054645be545a12c84792f426ec4d76797315e3d.svg";
+const img13 = "http://localhost:3845/assets/5a28180b3508d7e3b338c0559e352aad9ee10fe4.svg";
+const img14 = "http://localhost:3845/assets/edcac6867718906adcd5aca630504f4ae6c1fe2e.svg";
+const img15 = "http://localhost:3845/assets/a9f60f10d30191da0cf1983f9bc2befc18ab26d1.svg";
+const img16 = "http://localhost:3845/assets/a5d27b68c9ea1eac32ea4a626f432c90eebf1236.svg";
+const img17 = "http://localhost:3845/assets/bdbee238e2b87b1da73dc9eb3d8fc58c533992c7.svg";
+const img18 = "http://localhost:3845/assets/516314625a0c3cb25456cf3868df0d322c4b487f.svg";
+const img19 = "http://localhost:3845/assets/96687b7f7761098183a462986d459369638b2daf.svg";
+const imgFrame = "http://localhost:3845/assets/fb14c1db4d79bac088782d5ceffdf9d4af3c2476.svg";
+const imgFrame1 = "http://localhost:3845/assets/1aba102d18977e39ed371bf1b8ba30e2823f2099.svg";
+const img20 = "http://localhost:3845/assets/f5dfb66bcc1cb074ff818eaa68363158c10c0ced.svg";
+
+export default function Component2V() {
+  return (
+    <div className="bg-[var(--grain-color-background,#17252c)] relative size-full" data-node-id="465:2500" data-name="2. Карта регионов присутствия · v02 · На проверке">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[var(--grain-radius-32,32px)] top-[16px] w-[1888px]" data-node-id="465:2501" data-name="Scene · рельеф, геометрия и UI">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute flex h-[1694px] items-center justify-center left-[calc(50%+21px)] top-[calc(50%-65px)] w-[2946px]" data-node-id="465:2502">
+          <div className="-scale-y-100 flex-none">
+            <div className="blur-[125px] h-[1694px] relative w-[2946px]" data-name="exec-d3a67c97-dde1-48dc-93d7-c1be9f8ccc2a 1">
+              <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <img alt="" className="absolute h-[99.92%] left-[0.03%] max-w-none top-[0.07%] w-[99.95%]" src={imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute h-[1144px] left-[-86px] opacity-50 top-[-48px] w-[2060px]" data-node-id="465:2503" data-name="G-REGIONS · рельеф без UI">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgGRegionsUi} />
+        </div>
+        <div className="absolute h-[1697.449px] left-[-204px] overflow-clip top-[-300px] w-[3058px]" data-node-id="465:2504" data-name="Карта · точная векторная геометрия">
+          <div className="absolute drop-shadow-[0px_0px_64.788px_rgba(0,0,0,0.5)] h-[1052.645px] left-[244.9px] top-[356.5px] w-[1939.758px]" data-node-id="465:2505" data-name="Регионы">
+            <div className="absolute h-[1052.645px] left-0 top-0 w-[1939.758px]" data-node-id="465:2506" data-name="Остальные регионы">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img} />
+            </div>
+            <div className="absolute h-[901.203px] left-[0.81px] top-[151.44px] w-[1745.555px]" data-node-id="465:2577" data-name="Регионы присутствия">
+              <div className="absolute inset-[-0.1%_0]">
+                <img alt="" className="block max-w-none size-full" src={img1} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute contents inset-[36.63%_35.99%_17.36%_7.89%]" data-node-id="465:2597" data-name="Лаборатории — населённые пункты">
+            <div className="absolute inset-[70.63%_64.09%_26.31%_34.22%]" data-node-id="465:2598" data-name="Лаборатория — Алтайский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img2} />
+            </div>
+            <div className="absolute inset-[62.19%_84.11%_34.76%_14.19%]" data-node-id="465:2603" data-name="Лаборатория — Астраханский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img3} />
+            </div>
+            <div className="absolute inset-[56.91%_84.04%_40.03%_14.27%]" data-node-id="465:2608" data-name="Лаборатория — Волгоградский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img4} />
+            </div>
+            <div className="absolute inset-[52.15%_86.97%_44.8%_11.33%]" data-node-id="465:2613" data-name="Лаборатория — Азовский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img5} />
+            </div>
+            <div className="absolute inset-[73.19%_48.75%_23.75%_49.55%]" data-node-id="465:2618" data-name="Лаборатория — Забайкальский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img6} />
+            </div>
+            <div className="absolute inset-[52.05%_89.48%_46.07%_9.47%]" data-node-id="465:2623" data-name="Лаборатория — Филиал в Кабардино-Балкарской Республике">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img7} />
+            </div>
+            <div className="absolute inset-[55.17%_89.3%_41.78%_9.01%]" data-node-id="465:2628" data-name="Лаборатория — Новороссийский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img8} />
+            </div>
+            <div className="absolute inset-[68.01%_59.26%_28.93%_39.04%]" data-node-id="465:2633" data-name="Лаборатория — Красноярский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img9} />
+            </div>
+            <div className="absolute inset-[52.88%_86.03%_44.07%_12.27%]" data-node-id="465:2638" data-name="Лаборатория — Юго-Западный филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img10} />
+            </div>
+            <div className="absolute inset-[45.57%_81.56%_51.37%_16.75%]" data-node-id="465:2643" data-name="Лаборатория — Филиал по г. Москве и Московской области">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img11} />
+            </div>
+            <div className="absolute inset-[65.25%_68.55%_31.7%_29.75%]" data-node-id="465:2648" data-name="Лаборатория — Омский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img12} />
+            </div>
+            <div className="absolute inset-[60.75%_77.94%_36.19%_20.36%]" data-node-id="465:2653" data-name="Лаборатория — Оренбургский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img13} />
+            </div>
+            <div className="absolute inset-[79.58%_35.99%_17.36%_62.31%]" data-node-id="465:2658" data-name="Лаборатория — Приморский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img14} />
+            </div>
+            <div className="absolute inset-[52.54%_77.97%_44.41%_20.33%]" data-node-id="465:2663" data-name="Лаборатория — Филиал в Республике Татарстан">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img15} />
+            </div>
+            <div className="absolute inset-[51.59%_90.41%_45.36%_7.89%]" data-node-id="465:2668" data-name="Лаборатория — Азово-Черноморский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img16} />
+            </div>
+            <div className="absolute inset-[54.5%_86.86%_42.45%_11.45%]" data-node-id="465:2673" data-name="Лаборатория — Донской филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img17} />
+            </div>
+            <div className="absolute inset-[36.63%_80.39%_60.32%_17.91%]" data-node-id="465:2678" data-name="Лаборатория — Санкт-Петербургский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img18} />
+            </div>
+            <div className="absolute inset-[58.64%_87.43%_38.31%_10.87%]" data-node-id="465:2683" data-name="Лаборатория — Северо-Кавказский филиал">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img19} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute h-[1048px] left-0 top-0 w-[1888px]" data-node-id="465:2688" data-name="UI · выноски, легенда, карточка">
+          <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[48px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[48px] whitespace-nowrap" data-node-id="465:2689">
+            РЕГИОНЫ ПРИСУТСТВИЯ ЦОК АПК
+          </p>
+          <div className="absolute backdrop-blur-[35px] bg-[#172c2a] content-stretch flex gap-[var(--grain-space-4,4px)] h-[64px] items-center left-[48px] p-[var(--grain-space-4,4px)] rounded-[var(--grain-radius-16,16px)] top-[120px] w-[680px]" data-node-id="465:2690" data-name="Grain/SegmentedSwitch · регионы присутствия">
+            <div className="content-stretch flex flex-[1_0_0] gap-[var(--grain-space-0,0px)] h-[56px] items-center justify-center min-w-px overflow-clip px-[var(--grain-space-16,16px)] py-[var(--grain-space-8,8px)] relative rounded-[var(--grain-radius-16,16px)]" data-node-id="I465:2690;393:693" data-name="Left">
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light h-[28px] leading-[28px] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-text,white)] text-center w-[302px]" data-node-id="I465:2690;393:694">
+                Госмониторинг зерна
+              </p>
+            </div>
+            <div className="bg-[var(--grain-color-panel,rgba(246,246,246,0.1))] content-stretch flex flex-[1_0_0] gap-[var(--grain-space-0,0px)] h-[56px] items-center justify-center min-w-px overflow-clip px-[var(--grain-space-16,16px)] py-[var(--grain-space-8,8px)] relative rounded-[var(--grain-radius-16,16px)]" data-node-id="I465:2690;393:695" data-name="Right">
+              <p className="[word-break:break-word] font-['Inter:Light'] font-light h-[28px] leading-[28px] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-text,white)] text-center w-[302px]" data-node-id="I465:2690;393:696">
+                Регионы присутствия
+              </p>
+            </div>
+          </div>
+          <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[var(--grain-color-panel,rgba(246,246,246,0.1))] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[16px] h-[620px] items-start left-[1370px] not-italic p-[32px] rounded-[var(--grain-radius-32,32px)] top-[238px] w-[470px]" data-node-id="465:2691" data-name="Grain/Panel · Московская область">
+            <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:2691;167:641">
+              Московская область
+            </p>
+            <div className="leading-[0] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full whitespace-pre-wrap" data-node-id="I465:2691;167:642">
+              <p className="leading-[28px] mb-0">Филиал по г. Москве</p>
+              <p className="leading-[28px] mb-0">и Московской области</p>
+              <p className="leading-[28px] mb-0">​</p>
+              <p className="leading-[28px] mb-0">Основные направления</p>
+              <p className="leading-[28px] mb-0">​</p>
+              <p className="leading-[28px] mb-0">• Качество и безопасность зерна</p>
+              <p className="leading-[28px] mb-0">{`  и продуктов его переработки`}</p>
+              <p className="leading-[28px] mb-0">• Пестициды и агрохимикаты</p>
+              <p className="leading-[28px] mb-0">• Карантин растений</p>
+              <p className="leading-[28px] mb-0">• Агрохимия, почвы и загрязнение земель</p>
+              <p className="leading-[28px] mb-0">• Семеноводство</p>
+              <p className="leading-[28px] mb-0">• Показатели качества воды</p>
+              <p className="leading-[28px] mb-0">• Побочные продукты животноводства</p>
+              <p className="leading-[28px] mb-0">• Обеззараживание и ветсанобработка</p>
+              <p className="leading-[28px]">• Повышение квалификации</p>
+            </div>
+          </div>
+          <div className="absolute content-stretch flex flex-col gap-[var(--grain-space-16,11.2px)] h-[133px] items-start left-[1778px] p-[var(--grain-space-0,0px)] top-[870px] w-[62.3px]" data-node-id="465:2692" data-name="Grain/Zoom">
+            <div className="backdrop-blur-[24.5px] bg-[var(--grain-color-panel,rgba(246,246,246,0.1))] content-stretch flex gap-[var(--grain-space-0,0px)] h-[60.9px] items-center justify-center p-[var(--grain-space-0,0px)] relative rounded-[var(--grain-radius-32,22.4px)] shrink-0 w-[62.3px]" data-node-id="I465:2692;172:650" data-name="Grain/IconButton">
+              <div className="content-stretch flex h-[33.6px] items-start relative shrink-0" data-node-id="I465:2692;172:650;165:641" data-name="Grain/Icon/Плюс">
+                <div className="relative shrink-0 size-[33.6px]" data-node-id="I465:2692;172:650;165:641;163:655" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame} />
+                </div>
+              </div>
+            </div>
+            <div className="backdrop-blur-[24.5px] bg-[var(--grain-color-panel,rgba(246,246,246,0.1))] content-stretch flex gap-[var(--grain-space-0,0px)] h-[60.9px] items-center justify-center p-[var(--grain-space-0,0px)] relative rounded-[var(--grain-radius-32,22.4px)] shrink-0 w-[62.3px]" data-node-id="I465:2692;172:654" data-name="Grain/IconButton">
+              <div className="content-stretch flex flex-col gap-[var(--grain-space-0,0px)] items-start p-[var(--grain-space-0,0px)] relative shrink-0 size-[33.6px]" data-node-id="I465:2692;172:654;165:641" data-name="Grain/Icon/Минус">
+                <div className="relative shrink-0 size-[33.6px]" data-node-id="I465:2692;172:654;165:641;172:643" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame1} />
+                </div>
+              </div>
+            </div>
+          </div>
+          <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[19.6px] left-[1402px] not-italic text-[14px] text-[color:var(--grain-color-accent,#ddc195)] top-[206px] tracking-[0.98px] whitespace-nowrap" data-node-id="465:2693">
+            ВЫБРАННЫЙ РЕГИОН
+          </p>
+          <div className="absolute h-[1048px] left-0 top-0 w-[1888px]" data-node-id="465:2694" data-name="Text">
+            <div className="absolute h-[1048px] left-0 top-0 w-[1888px]" data-node-id="465:2695" data-name="Выноски · линии">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={img20} />
+            </div>
+            <div className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[48px] leading-[0] left-[75px] not-italic text-[20px] text-[color:var(--grain-color-text,white)] text-shadow-[0px_1px_4px_rgba(0,10,8,0.9)] top-[416px] w-[220px]" data-node-id="465:2713">
+              <p className="leading-[24px] mb-0">Московская</p>
+              <p className="leading-[24px]">область</p>
+            </div>
+          </div>
+          <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[48px] leading-[28px] left-[48px] not-italic text-[20px] text-[color:var(--grain-color-text,white)] top-[982px] w-[1170px]" data-node-id="465:2735">
+            Выберите регион, чтобы узнать больше. Перетаскивайте карту для перемещения.
+          </p>
+          <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal h-[48px] leading-[19.6px] left-[1402px] not-italic text-[14px] text-[color:var(--grain-color-text,white)] top-[806px] w-[390px]" data-node-id="465:2736">
+            Лаборатории показаны по населённым пунктам, без подсчёта отдельных корпусов.
+          </p>
+        </div>
+        <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="465:2737" data-name="Grain/Button">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2737;164:647">
+            В Центр
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+    </div>
+  );
+}

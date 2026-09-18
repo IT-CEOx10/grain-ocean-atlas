@@ -1,25 +1,32 @@
 /* ===================================================================
-   Раздел 09 — «Мониторинг зерна РФ», экраны 23 и 24.
+   Раздел 09 — «Мониторинг зерна РФ».
 
    Раздел единого приложения app.html (обёртка #sec-monitoring); та же
    логика работает и отдельной страницей monitoring.html. С глобусом
-   и презентацией кода не делит: общие только util.js, переменные зелёной
-   темы из styles/app.css и настройки из config.json.
+   и презентацией кода не делит: общие только util.js, переменные темы
+   и настройки из config.json.
 
-   Что здесь:
-     - плоская карта России: 85 субъектов на холсте, заливка по объёму
-       обследования, касание открывает регион, зум кнопками, перетаскивание;
-     - экран 23: селектор года, поиск по регионам, «Всего по России»,
-       «Топ-10 регионов»;
-     - экран 24: фильтр вида пшеницы, «Объемы обследования», образец
-       зерна с точками показателей, «Классы зерна»;
-     - аттрактор: возврат на карту по таймауту из config.json.
+   Три экрана на одной подложке:
 
-   Данные — два файла, кода они не касаются:
+     scr-map        карта госмониторинга (экран 23): год, поиск,
+                    «Всего по России», «Топ-10 регионов», легенда;
+     scr-region     карточка выбранного региона (экран 24): валовой
+                    сбор, обследовано, классы зерна;
+     scr-presence   «Регионы присутствия ЦОК АПК» — второй таб: та же
+                    карта, подсвечены регионы с филиалами и точки
+                    лабораторий, справа карточка филиала.
+
+   Карта одна на два экрана: холст во весь кадр 1920x1080, панели лежат
+   поверх и размывают её под собой. Страна вписывается не в весь холст,
+   а в прямоугольник FIT — свой на каждом экране, чтобы её не закрывала
+   колонка панелей.
+
+   Данные — три файла, кода они не касаются:
      assets/geo/russia-regions.json  контуры субъектов (tools/make_regions.py)
      data/monitoring.json            цифры мониторинга (tools/make_monitoring.py)
+     data/presence.json              филиалы и лаборатории ЦОК АПК
 
-   ЦИФРЫ ДЕМОНСТРАЦИОННЫЕ. Об этом написано внизу обоих экранов, и это
+   ЦИФРЫ ДЕМОНСТРАЦИОННЫЕ. Об этом написано внизу экранов, и это
    не должно потеряться при правках.
    =================================================================== */
 (function (global) {
@@ -35,35 +42,49 @@
 
   var CFG = { attractorTimeoutSec: 90 };
 
-  var MAP_W = 1300, MAP_H = 706;       // размер холста карты в координатах 1920x1080
+  var MAP_W = 1888, MAP_H = 1048;      // холст во всю карточку кадра (1920x1080 минус 16 по краям)
   var ZOOM_MIN = 1, ZOOM_MAX = 3.6, ZOOM_STEP = 1.45;
   var TAP_SLOP = 7;                    // сколько пикселей можно проехать, чтобы это был тап
 
-  /* Тёплая шкала заливки: от приглушённого к золотому.
-     Ключи — доля от максимума за год после сжатия (см. tone). */
-  var SCALE = [
-    [0.00, [34, 66, 59]],
-    [0.28, [74, 92, 66]],
-    [0.58, [143, 128, 70]],
-    [0.82, [202, 165, 86]],
-    [1.00, [246, 206, 120]]
-  ];
-  var NO_DATA = 'rgba(255,255,255,.045)';   // где пшеницу не возделывают
-  var BORDER = 'rgba(217,179,106,.30)';
-  var BORDER_HOT = '#F0D79B';
+  /* Куда вписывается страна: [x0, y0, x1, y1] в координатах кадра.
+     На карте госмониторинга слева колонка панелей, на регионах
+     присутствия карта занимает почти весь кадр. Числа сняты с кадров
+     docs/mockup/concept-18-09. */
+  var FIT = {
+    map: [612, 256, 1880, 936],
+    presence: [44, 184, 1884, 996]
+  };
 
-  /* Показатели на образце зерна. x, y — доли кадра 640x640;
-     кадр квадратный и картинка тоже, так что доли совпадают с самой
-     фотографией: точки стоят на зерне, а не на краю чашки. */
-  var DOTS = [
-    { key: 'moisture', x: 0.28, y: 0.47, dec: 1, name: 'Влажность', unit: '%',
-      text: 'Сколько в зерне воды. Выше 14 % партию нужно сушить, иначе она согреется при хранении.' },
-    { key: 'gluten', x: 0.44, y: 0.66, dec: 1, name: 'Клейковина', unit: '%',
-      text: 'Белковый каркас теста. Чем её больше, тем выше класс зерна и лучше хлеб.' },
-    { key: 'nature', x: 0.63, y: 0.45, dec: 0, name: 'Натура', unit: 'г/л',
-      text: 'Масса зерна в мерном литре. Полновесное зерно тяжелее, и муки из него выходит больше.' },
-    { key: 'vitreous', x: 0.68, y: 0.68, dec: 0, name: 'Стекловидность', unit: '%',
-      text: 'Доля стекловидных зёрен на срезе. Такое зерно твёрже и даёт крупку при помоле.' }
+  /* Заливка карты — ровно три цвета из легенды кадра: зелёный там, где
+     есть данные по сбору, золотой у регионов с сильной пшеницей, серый
+     там, где госмониторинг не проводится. Оттенков по объёму в макете
+     нет: объёмы читаются в списке «Топ-10» и в подписи под пальцем. */
+  var C_DATA = [36, 79, 40];           // #244f28
+  var C_STRONG = [230, 180, 22];       // #e6b416
+  var C_NONE = [42, 53, 51];           // #2a3533
+  var FILL_ALPHA = 0.92;               // сквозь заливку чуть видно фактуру фона
+
+  /* «Сильная пшеница»: в данных отдельного признака нет, поэтому
+     берём ближайшее, что есть, — долю 2 класса не ниже порога.
+     Настоящий признак должен прийти от заказчика. */
+  var STRONG_CLASS2 = 2.0;
+
+  var BORDER = 'rgba(229,199,115,.55)';
+  var BORDER_HOT = '#F6E8C8';
+
+  /* Экран «Регионы присутствия»: подсвеченные регионы, остальные тише. */
+  var PRES_ON = [31, 111, 82];
+  var PRES_OFF = [19, 66, 51];
+  var PRES_PICK = [230, 180, 47];
+  var LAB_DOT = '#F6E3BB';
+
+  /* Метки-цифры вокруг цилиндра на экране региона: кружок и подпись
+     над ним, координаты из кадра 24-region. Первая переключает вид
+     пшеницы, остальные подсвечивают панель, о которой говорят. */
+  var MARKS = [
+    { n: 1, label: 'Культура', x: 614, y: 302, lx: 642, ly: 266, lw: 136, act: 'kind' },
+    { n: 2, label: 'Объём', x: 516, y: 572, lx: 544, ly: 534, lw: 136, act: 'vol' },
+    { n: 3, label: 'Классы', x: 1180, y: 584, lx: 1208, ly: 548, lw: 100, act: 'cls' }
   ];
 
   var KINDS = [
@@ -71,31 +92,46 @@
     { key: 'durum', label: 'Твёрдая пшеница' }
   ];
 
-  var SAMPLE_IMG = 'assets/photos/lab-sample.webp';
-  var SAMPLE_BOX = 700;                // сторона кадра с образцом, px макета
-  var POP_W = 246, POP_H = 150;        // карточка показателя
+  var TABS = [
+    { key: 'grain', label: 'Госмониторинг зерна' },
+    { key: 'presence', label: 'Регионы присутствия' }
+  ];
+
+  var SCENE_IMG = 'assets/photos/concept/mon-region-scene.webp';
+
+  /* Проекция контуров: Альберса, как в tools/make_regions.py. Точки
+     лабораторий лежат в файле в градусах, здесь переводим их в те же
+     единицы, в которых лежат контуры (0,4 км на единицу).
+     ORIGIN — сдвиг рамки страны в ноль, сделанный при подготовке
+     контуров; если контуры пересобрать с другими параметрами,
+     эти два числа нужно пересчитать (см. README). */
+  var ORIGIN = [-11367, -8675];
 
   /* ------------------------------ состояние ------------------------------ */
 
-  var geo = null, mon = null;
+  var geo = null, mon = null, pres = null;
   var byId = {};                       // код региона -> запись данных
   var shapes = [];                     // {id, name, path, bbox, c}
   var year = null;
   var kind = 'soft';
   var regionId = null;                 // открытый регион (экран 24)
+  var presId = null;                   // выбранный регион присутствия
+  var presOf = {};                     // код субъекта -> код записи о присутствии
+  var labs = [];                       // {id, name, x, y} — точки лабораторий
   var query = '';
   var hits = null;                     // результат поиска: код региона -> true
   var hoverId = null;
-  var screen = 'map';
+  var screen = 'map';                  // map | region | presence
+  var tab = 'grain';                   // какой таб выбран
 
-  var view = { z: 1, cx: 0, cy: 0, k0: 1 };
+  var view = { z: 1, cx: 0, cy: 0, k0: 1, ox: 960, oy: 540 };
   var anim = null;                     // плавный переход зума
   var need = false;                    // карту нужно перерисовать
   var ctx = null, dpr = 1, stageScale = 1;
-  var openDot = null;
   var idleTimer = null, idleOff = false;
   var frames = 0, fps = 0, fpsT = 0;
   var live = true;                     // раздел на экране (в app.html — не всегда)
+  var litTimer = null;
 
   /* --------------------------- масштаб под окно --------------------------- */
 
@@ -127,6 +163,10 @@
     return U.fmtVolume(v >= 100 ? v : Math.round(v * 10) / 10);
   }
 
+  function dec1(v) {
+    return v == null || isNaN(v) ? '—' : v.toFixed(1).replace('.', ',');
+  }
+
   /** Запись региона за выбранный год и вид пшеницы. */
   function rec(id, k, y) {
     var r = byId[id];
@@ -140,42 +180,34 @@
     return b ? b.surveyed : 0;
   }
 
-  /* ------------------------------ шкала цвета ------------------------------ */
-
-  var maxVol = 1;
-
-  function tone(v) {
-    // корень сжимает разрыв между Ростовской областью и остальными:
-    // без него вся страна была бы одного тусклого тона
-    return Math.pow(Math.min(1, v / maxVol), 0.38);
+  /** Сильная пшеница: доля 2 класса не ниже порога (см. STRONG_CLASS2). */
+  function isStrong(id) {
+    var b = rec(id, 'soft');
+    return !!(b && b.classes && b.classes[0] >= STRONG_CLASS2);
   }
 
-  function scaleColor(t) {
-    for (var i = 1; i < SCALE.length; i++) {
-      if (t <= SCALE[i][0] || i === SCALE.length - 1) {
-        var a = SCALE[i - 1], b = SCALE[i];
-        var f = (t - a[0]) / (b[0] - a[0] || 1);
-        f = f < 0 ? 0 : (f > 1 ? 1 : f);
-        return [
-          Math.round(a[1][0] + (b[1][0] - a[1][0]) * f),
-          Math.round(a[1][1] + (b[1][1] - a[1][1]) * f),
-          Math.round(a[1][2] + (b[1][2] - a[1][2]) * f)
-        ];
-      }
-    }
-    return SCALE[0][1];
+  /* ------------------------------ цвет региона ------------------------------ */
+
+  var maxVol = 1;                      // нужен полоскам в списке «Топ-10»
+
+  function rgb(c) {
+    return 'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')';
+  }
+
+  function lighten(c, k) {
+    return [c[0] + (255 - c[0]) * k, c[1] + (255 - c[1]) * k, c[2] + (255 - c[2]) * k];
   }
 
   function fillFor(id, hot) {
-    var v = volume(id);
-    if (v <= 0) return NO_DATA;
-    var c = scaleColor(tone(v));
-    if (hot) {                                     // под пальцем — светлее
-      c = [c[0] + (255 - c[0]) * 0.30,
-           c[1] + (255 - c[1]) * 0.28,
-           c[2] + (255 - c[2]) * 0.22];
+    var c;
+    if (screen === 'presence' || tab === 'presence') {
+      var here = presOf[id];
+      c = here ? (here === presId ? PRES_PICK : PRES_ON) : PRES_OFF;
+      return rgb(hot && here ? lighten(c, 0.22) : c);
     }
-    return 'rgb(' + Math.round(c[0]) + ',' + Math.round(c[1]) + ',' + Math.round(c[2]) + ')';
+    if (volume(id) <= 0) c = C_NONE;
+    else c = isStrong(id) ? C_STRONG : C_DATA;
+    return rgb(hot ? lighten(c, 0.26) : c);
   }
 
   /* ------------------------------ контуры ------------------------------ */
@@ -203,18 +235,69 @@
     });
   }
 
+  /* --------------------------- точки лабораторий ---------------------------
+     Равновеликая коническая проекция Альберса — та же, что в
+     tools/make_regions.py, параметры берутся из самого файла контуров. */
+
+  function project(lon, lat) {
+    var pr = (geo && geo.projection) || {};
+    var lon0 = pr.lon0 == null ? 100 : pr.lon0;
+    var lat0 = pr.lat0 == null ? 56 : pr.lat0;
+    var lat1 = pr.lat1 == null ? 52 : pr.lat1;
+    var lat2 = pr.lat2 == null ? 64 : pr.lat2;
+    var unit = pr.unitKm || 0.4;
+    var D = Math.PI / 180, R = 6371.0;
+    var n = (Math.sin(lat1 * D) + Math.sin(lat2 * D)) / 2;
+    var C = Math.cos(lat1 * D) * Math.cos(lat1 * D) + 2 * n * Math.sin(lat1 * D);
+    var rho0 = Math.sqrt(C - 2 * n * Math.sin(lat0 * D)) / n;
+    var d = lon - lon0;
+    while (d > 180) d -= 360;
+    while (d <= -180) d += 360;
+    var theta = n * d * D;
+    var v = C - 2 * n * Math.sin(lat * D);
+    var rho = Math.sqrt(v > 0 ? v : 0) / n;
+    var x = rho * Math.sin(theta) * R;
+    var y = -(rho0 - rho * Math.cos(theta)) * R;
+    return [Math.round(x / unit) - ORIGIN[0], Math.round(y / unit) - ORIGIN[1]];
+  }
+
+  /** Точки лабораторий и таблица «субъект -> запись о присутствии».
+      Поле also нужно городам федерального значения: Москва лежит внутри
+      Московской области отдельным субъектом, а филиал у них один. */
+  function buildLabs() {
+    labs = [];
+    presOf = {};
+    if (!pres || !pres.regions) return;
+    Object.keys(pres.regions).forEach(function (id) {
+      var r = pres.regions[id];
+      presOf[id] = id;
+      (r.also || []).forEach(function (a) { presOf[a] = id; });
+      (r.points || []).forEach(function (p) {
+        var xy = project(p.lon, p.lat);
+        labs.push({ id: id, name: p.name, x: xy[0], y: xy[1] });
+      });
+    });
+  }
+
   /* ------------------------------ вид карты ------------------------------ */
 
+  function fitRect() {
+    return FIT[screen === 'presence' ? 'presence' : 'map'];
+  }
+
   function clampView() {
-    var k = view.k0 * view.z;
-    var halfW = MAP_W / 2 / k, halfH = MAP_H / 2 / k;
+    var k = view.k0 * view.z, r = fitRect();
+    var halfW = (r[2] - r[0]) / 2 / k, halfH = (r[3] - r[1]) / 2 / k;
     var W = geo.box[0], H = geo.box[1];
-    view.cx = W * k <= MAP_W ? W / 2 : U.clamp(view.cx, halfW, W - halfW);
-    view.cy = H * k <= MAP_H ? H / 2 : U.clamp(view.cy, halfH, H - halfH);
+    view.cx = W * k <= r[2] - r[0] ? W / 2 : U.clamp(view.cx, halfW, W - halfW);
+    view.cy = H * k <= r[3] - r[1] ? H / 2 : U.clamp(view.cy, halfH, H - halfH);
   }
 
   function resetView() {
-    view.k0 = Math.min(MAP_W / geo.box[0], MAP_H / geo.box[1]) * 0.98;
+    var r = fitRect();
+    view.k0 = Math.min((r[2] - r[0]) / geo.box[0], (r[3] - r[1]) / geo.box[1]) * 0.98;
+    view.ox = (r[0] + r[2]) / 2;
+    view.oy = (r[1] + r[3]) / 2;
     view.z = 1;
     view.cx = geo.box[0] / 2;
     view.cy = geo.box[1] / 2;
@@ -226,13 +309,13 @@
   function applyTransform() {
     var k = view.k0 * view.z * dpr;
     ctx.setTransform(k, 0, 0, k,
-      MAP_W * dpr / 2 - view.cx * k,
-      MAP_H * dpr / 2 - view.cy * k);
+      view.ox * dpr - view.cx * k,
+      view.oy * dpr - view.cy * k);
   }
 
   function toCanvas(wx, wy) {
     var k = view.k0 * view.z;
-    return [MAP_W / 2 + (wx - view.cx) * k, MAP_H / 2 + (wy - view.cy) * k];
+    return [view.ox + (wx - view.cx) * k, view.oy + (wy - view.cy) * k];
   }
 
   function zoomTo(z, cx, cy) {
@@ -247,6 +330,14 @@
     need = true;
   }
 
+  /** Приблизить карту к региону, не открывая карточку: нужно для показа
+      и снимков экрана (параметр адреса ?at=UA-43&zoom=3). */
+  function focusOn(id, z) {
+    var s = shapes.filter(function (x) { return x.id === id; })[0];
+    if (!s) return;
+    zoomTo(z || 2.4, s.c[0], s.c[1]);
+  }
+
   /* ------------------------------ отрисовка ------------------------------ */
 
   function draw() {
@@ -256,13 +347,16 @@
     applyTransform();
 
     var k = view.k0 * view.z;
+    var onPres = screen === 'presence';
     ctx.lineJoin = 'round';
 
     for (var i = 0; i < shapes.length; i++) {
       var s = shapes[i];
-      var dim = hits && !hits[s.id];
-      var hot = s.id === hoverId || s.id === regionId;
-      ctx.globalAlpha = dim ? 0.28 : 1;
+      var dim = !onPres && hits && !hits[s.id];
+      var hot = s.id === hoverId || (!onPres && s.id === regionId) ||
+        (onPres && presOf[s.id] === presId);
+      // заливка чуть прозрачная: сквозь неё видна фактура фона, как в макете
+      ctx.globalAlpha = dim ? 0.26 : FILL_ALPHA;
       ctx.fillStyle = fillFor(s.id, hot);
       ctx.fill(s.path, 'evenodd');
       ctx.lineWidth = (hot ? 2.0 : 0.9) / k;
@@ -274,12 +368,33 @@
     ctx.globalAlpha = 1;
     for (var j = 0; j < shapes.length; j++) {
       var t = shapes[j];
-      if (t.id !== hoverId && t.id !== regionId && !(hits && hits[t.id])) continue;
+      var mark = t.id === hoverId ||
+        (onPres ? presOf[t.id] === presId : (t.id === regionId || (hits && hits[t.id])));
+      if (!mark) continue;
       ctx.lineWidth = 2.0 / k;
       ctx.strokeStyle = BORDER_HOT;
       ctx.stroke(t.path);
     }
+
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (onPres) drawLabs();
+  }
+
+  /** Светящиеся точки лабораторий поверх карты. */
+  function drawLabs() {
+    for (var i = 0; i < labs.length; i++) {
+      var p = toCanvas(labs[i].x, labs[i].y);
+      var x = p[0] * dpr, y = p[1] * dpr;
+      if (x < -40 || y < -40 || x > MAP_W * dpr + 40 || y > MAP_H * dpr + 40) continue;
+      var r = 22 * dpr;
+      var g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(246,227,187,.55)');
+      g.addColorStop(1, 'rgba(246,227,187,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, 6.283); ctx.fill();
+      ctx.fillStyle = LAB_DOT;
+      ctx.beginPath(); ctx.arc(x, y, 4.2 * dpr, 0, 6.283); ctx.fill();
+    }
   }
 
   var rafId = 0;                       // 0 — цикл не крутится
@@ -309,7 +424,7 @@
       need = true;
       if (t >= 1) anim = null;
     }
-    if (need) { need = false; draw(); }
+    if (need) { need = false; draw(); placeCall(); }
     frames++;
     if (now - fpsT > 1000) { fps = frames * 1000 / (now - fpsT); frames = 0; fpsT = now; }
   }
@@ -321,8 +436,8 @@
       попадания в контур силами самого браузера. */
   function pick(px, py) {
     var k = view.k0 * view.z;
-    var wx = view.cx + (px - MAP_W / 2) / k;
-    var wy = view.cy + (py - MAP_H / 2) / k;
+    var wx = view.cx + (px - view.ox) / k;
+    var wy = view.cy + (py - view.oy) / k;
     var pad = 2 / k;
     applyTransform();
     var x = px * dpr, y = py * dpr;
@@ -334,13 +449,53 @@
     return null;
   }
 
+  /* ------------------------------ табы ------------------------------ */
+
+  function drawTabs() {
+    ['tabs-map', 'tabs-presence'].forEach(function (boxId) {
+      var box = $(boxId);
+      if (!box) return;
+      box.textContent = '';
+      TABS.forEach(function (t) {
+        var b = el('button', 'mn-tab' + (t.key === tab ? ' is-on' : ''), t.label);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          resetIdle();
+          setTab(t.key);
+        });
+        box.appendChild(b);
+      });
+    });
+  }
+
+  function setTab(key) {
+    if (tab === key) {
+      // из карточки региона таб «Госмониторинг зерна» возвращает на карту
+      if (key === 'grain' && screen !== 'map') backToMap();
+      return;
+    }
+    tab = key;
+    drawTabs();
+    if (key === 'presence') {
+      setHover(null);
+      show('presence');
+      resetView();
+      if (!presId) selectPresence(pres && pres.start);
+      drawPresence();
+    } else {
+      show('map');
+      resetView();
+    }
+    need = true;
+  }
+
   /* ------------------------------ левая колонка ------------------------------ */
 
   function drawYears() {
     var box = $('years');
     box.textContent = '';
     mon.years.forEach(function (y) {
-      var b = el('button', 'mon-year' + (y === year ? ' is-active' : ''), String(y));
+      var b = el('button', 'mn-year' + (y === year ? ' is-on' : ''), String(y));
       b.type = 'button';
       b.addEventListener('click', function () {
         resetIdle();
@@ -350,28 +505,42 @@
         drawYears();
         drawTotal();
         drawTop();
+        drawHead();
         if (regionId) drawRegion();
+        setUrl();
         need = true;
       });
       box.appendChild(b);
     });
   }
 
+  function drawHead() {
+    // заголовок в две строки, как в кадре: «ГОСМОНИТОРИНГ ЗЕРНА / ПШЕНИЦЫ 2026»
+    $('map-title').textContent = 'Госмониторинг зерна\nпшеницы ' + year;
+    $('reg-eyebrow').textContent = 'Госмониторинг пшеницы · ' + year;
+  }
+
+  /** Крупное число с единицей и подписью под ним. */
+  function bigNum(box, value, unit, note) {
+    box.textContent = '';
+    var n = el('div', 'mn-num', value);
+    if (unit) n.appendChild(el('i', null, unit));
+    box.appendChild(n);
+    if (note) box.appendChild(el('div', 'mn-note', note));
+  }
+
   function drawTotal() {
     var r = mon.russia[String(year)] || {};
-    var box = $('total-body');
-    box.textContent = '';
-    [
-      ['Обследовано зерна', fmt1(r.surveyed), 'тыс. т'],
-      ['Соответствует требованиям', (r.compliance != null ? String(r.compliance).replace('.', ',') : '—'), '%'],
-      ['Исследовано проб', fmt1(r.samples), 'тыс.']
-    ].forEach(function (row) {
-      var n = el('div', 'm-item');
-      n.appendChild(el('div', 'cap', row[0]));
-      var v = el('div', 'val', row[1]);
-      v.appendChild(el('i', null, row[2]));
-      n.appendChild(v);
-      box.appendChild(n);
+    bigNum($('total-body'), fmt1(r.surveyed), 'тыс. т',
+      'обследовано зерна урожая ' + year + ' · демоданные');
+
+    var tiles = $('total-tiles');
+    tiles.textContent = '';
+    [[dec1(r.compliance), '%', 'соответствует требованиям'],
+     [fmt1(r.samples), 'тыс.', 'исследовано проб']].forEach(function (t) {
+      var n = el('div', 'mn-tile');
+      bigNum(n, t[0], t[1], t[2]);
+      tiles.appendChild(n);
     });
   }
 
@@ -410,18 +579,34 @@
       box.appendChild(el('div', 't-empty', 'Ничего не нашлось. Проверьте название региона.'));
       return;
     }
+    var top = volume(arr[0].id) || 1;
+    var bars = [];
     arr.forEach(function (s, i) {
-      var row = el('div', 't-row' + (s.id === hoverId ? ' is-hot' : ''));
-      row.appendChild(el('span', 'rk', String(i + 1)));
-      row.appendChild(el('span', 'nm', s.name));
-      row.appendChild(el('span', 'vl', fmt1(volume(s.id))));
+      // строка кадра: слева плашка с номером, справа название, объём и полоска
+      var row = el('button', 't-row' + (s.id === hoverId ? ' is-hot' : ''));
+      row.type = 'button';
+      row.appendChild(el('span', 't-rk', String(i + 1)));
+      var main = el('div', 't-main');
+      var line = el('div', 't-line');
+      line.appendChild(el('span', 'nm', s.name));
+      var v = volume(s.id);
+      line.appendChild(el('span', 'vl', v > 0 ? fmt1(v) + ' тыс. т'
+        : (byId[s.id] ? 'нет данных' : 'нет госмониторинга')));
+      main.appendChild(line);
+      var bar = el('div', 't-bar');
+      var fill = el('i');
+      bar.appendChild(fill);
+      main.appendChild(bar);
+      row.appendChild(main);
+      bars.push([fill, v / top]);
       row.addEventListener('click', function () { resetIdle(); openRegion(s.id); });
       row.addEventListener('pointerenter', function () { setHover(s.id); });
       row.addEventListener('pointerleave', function () { setHover(null); });
       box.appendChild(row);
     });
-    var top = mon.russia[String(year)];
-    $('legend-hi').textContent = top && top.surveyed ? fmt1(maxVol) + ' тыс. т' : 'много';
+    setTimeout(function () {
+      bars.forEach(function (b) { b[0].style.width = (b[1] > 0 ? Math.max(3, b[1] * 100) : 0) + '%'; });
+    }, 30);
   }
 
   function setHover(id) {
@@ -432,17 +617,24 @@
     var s = id && shapes.filter(function (x) { return x.id === id; })[0];
     if (!s) { tip.classList.remove('is-on'); }
     else {
-      var v = volume(id);
       tip.textContent = s.name;
-      if (v > 0) {
-        var b = el('b', null, fmt1(v) + ' тыс. т');
-        tip.appendChild(b);
+      if (screen === 'presence') {
+        tip.appendChild(el('b', null, presOf[id] ? 'есть филиал' : 'нет данных'));
       } else {
-        tip.appendChild(el('b', null, 'нет данных'));
+        var v = volume(id);
+        tip.appendChild(el('b', null, v > 0 ? fmt1(v) + ' тыс. т'
+          : (byId[id] ? 'нет данных' : 'нет госмониторинга')));
       }
-      var p = toCanvas(s.c[0], s.c[1]);
-      tip.style.left = U.clamp(p[0], 90, MAP_W - 90) + 'px';
-      tip.style.top = U.clamp(p[1], 44, MAP_H) + 'px';
+      var p2 = toCanvas(s.c[0], s.c[1]);
+      // Подсказка лежит под панелями, поэтому целиком держим её в свободном
+      // поле карты: правее левой колонки (на присутствии — левее карточки
+      // региона) и ниже шапки. Ширину меряем после подстановки текста.
+      var half = tip.offsetWidth / 2, th = tip.offsetHeight;
+      var box = screen === 'presence'
+        ? { l: 24, r: 1346, t: 190 }
+        : { l: 602, r: MAP_W - 24, t: 300 };
+      tip.style.left = U.clamp(p2[0], box.l + half, Math.max(box.l + half, box.r - half)) + 'px';
+      tip.style.top = U.clamp(p2[1], box.t + th * 1.4, MAP_H - 40) + 'px';
       tip.classList.add('is-on');
     }
     // подсветить строку списка
@@ -461,200 +653,167 @@
     return out;
   }
 
-  function drawKinds() {
-    var have = kindsAvailable(regionId);
-    var box = $('kinds');
+  function kindLabel() {
+    return kind === 'durum' ? 'Твёрдая пшеница' : 'Мягкая пшеница';
+  }
+
+  /** Метки-цифры вокруг цилиндра: кружок и подпись над ним. */
+  function drawMarks() {
+    var box = $('marks');
     box.textContent = '';
-    KINDS.forEach(function (k) {
-      var cls = 'mon-kind' + (k.key === kind ? ' is-active' : '') + (have[k.key] ? '' : ' is-off');
-      var b = el('button', cls, k.label);
+    var have = kindsAvailable(regionId);
+    MARKS.forEach(function (m) {
+      var off = m.act === 'kind' && !(have.soft && have.durum);
+      var lab = el('div', 'mn-mark-lab', m.label);
+      lab.style.left = m.lx + 'px';
+      lab.style.top = m.ly + 'px';
+      lab.style.width = m.lw + 'px';
+      if (off) lab.style.opacity = '.45';
+      box.appendChild(lab);
+
+      var b = el('button', 'mn-mark' + (off ? ' is-off' : ''), String(m.n));
       b.type = 'button';
-      b.title = have[k.key] ? '' : 'В этом регионе не возделывается';
+      b.style.left = m.x + 'px';
+      b.style.top = m.y + 'px';
+      b.title = m.act === 'kind'
+        ? (off ? 'В этом регионе возделывают только мягкую пшеницу' : 'Сменить вид пшеницы')
+        : m.label;
       b.addEventListener('click', function () {
         resetIdle();
-        if (kind === k.key) return;
-        kind = k.key;
-        drawKinds();
-        drawRegion();
+        if (m.act === 'kind') {
+          kind = kind === 'soft' ? 'durum' : 'soft';
+          drawRegion();
+          setUrl();
+          return;
+        }
+        lit(m.act === 'vol' ? ['card-gross', 'card-surv'] : ['card-cls']);
+        Array.prototype.forEach.call(box.children, function (n) { n.classList.remove('is-on'); });
+        b.classList.add('is-on');
       });
       box.appendChild(b);
     });
+  }
+
+  /** Подсветить панель, о которой говорит метка. */
+  function lit(ids) {
+    if (litTimer) clearTimeout(litTimer);
+    ['card-gross', 'card-surv', 'card-cls'].forEach(function (id) {
+      $(id).classList.toggle('is-lit', ids.indexOf(id) >= 0);
+    });
+    litTimer = setTimeout(function () {
+      ['card-gross', 'card-surv', 'card-cls'].forEach(function (id) {
+        $(id).classList.remove('is-lit');
+      });
+    }, 2600);
   }
 
   function drawRegion() {
     var s = shapes.filter(function (x) { return x.id === regionId; })[0];
     if (!s) return;
     $('reg-title').textContent = s.name;
-    $('reg-eyebrow').textContent = 'Госмониторинг пшеницы РФ · ' + year;
+    drawHead();
+    drawMarks();
 
     var b = rec(regionId, kind);
-    var alt = b ? null : rec(regionId, 'soft');
-    if (!b) b = alt;                       // выбранный вид не сеют — показываем мягкую
-    if (!b) { drawEmptyRegion(s); return; }
+    if (!b) { kind = 'soft'; b = rec(regionId, 'soft'); }
+    if (!b) { drawEmptyRegion(); return; }
 
-    // объёмы
-    var vol = $('vol-body');
-    vol.textContent = '';
-    [['Валовой сбор', fmt1(b.gross), 'тыс. т'],
-     ['Обследовано', fmt1(b.surveyed), 'тыс. т']].forEach(function (row) {
-      var n = el('div', 'm-item');
-      n.appendChild(el('div', 'cap', row[0]));
-      var v = el('div', 'val', row[1]);
-      v.appendChild(el('i', null, row[2]));
-      n.appendChild(v);
-      vol.appendChild(n);
-    });
+    $('reg-sub').textContent = kindLabel() + '  ·  Демонстрационные данные';
+
+    bigNum($('gross-body'), fmt1(b.gross), 'тыс. т', 'Урожай ' + year + ' · демоданные');
     var share = b.gross > 0 ? Math.round(b.surveyed / b.gross * 100) : 0;
-    var cap = el('div', 'm-item');
-    cap.appendChild(el('div', 'cap', 'Охват обследованием — ' + share + ' % валового сбора'));
-    var bar = el('div', 'v-bar');
-    var fill = el('i');
-    bar.appendChild(fill);
-    cap.appendChild(bar);
-    vol.appendChild(cap);
-    setTimeout(function () { fill.style.width = share + '%'; }, 30);
+    bigNum($('surv-body'), fmt1(b.surveyed), 'тыс. т',
+      share + ' % валового сбора · демо');
 
-    // классы
+    // классы: название, объём в тоннах от обследованного и доля.
+    // Полосок в кадре нет — только числа.
+    $('cls-sub').textContent = 'Доля от обследованного объёма\n' +
+      fmt1(b.surveyed) + ' тыс. т · демоданные';
+    $('cls-foot').style.display = '';
     var cls = $('cls-body');
     cls.textContent = '';
-    var bars = [];
     b.classes.forEach(function (p, i) {
       var row = el('div', 'c-row');
-      var top = el('div', 'c-top');
-      top.appendChild(el('span', null, (i + 2) + ' класс'));
-      top.appendChild(el('b', null, p.toFixed(1).replace('.', ',') + ' %'));
-      row.appendChild(top);
-      var cb = el('div', 'c-bar');
-      var ci = el('i');
-      cb.appendChild(ci);
-      row.appendChild(cb);
+      var name = el('div', 'c-name');
+      name.appendChild(el('b', null, 'Класс ' + (i + 2)));
+      name.appendChild(el('span', null, fmt1(b.surveyed * p / 100) + ' тыс. т'));
+      row.appendChild(name);
+      // мелкие доли округляются до десятых, крупные — до целых процентов
+      row.appendChild(el('div', 'c-pct',
+        (p < 10 ? dec1(p) : String(Math.round(p))) + ' %'));
       cls.appendChild(row);
-      bars.push([ci, p]);
     });
-    cls.appendChild(el('div', 'c-date', 'Актуально на ' + (b.updated || '—')));
-    // полоска меряется от самого большого класса, а не от 100 %:
-    // иначе при долях 2 / 36 / 51 / 10 три из четырёх строк —
-    // еле заметные обрубки
-    var top = Math.max.apply(null, b.classes) || 1;
-    setTimeout(function () {
-      bars.forEach(function (x) {
-        x[0].style.width = Math.max(2, x[1] / top * 100) + '%';
-      });
-    }, 30);
-
-    drawYearChart();
-    drawQual(b);
-    drawDots(b);
   }
 
-  /** Столбики «обследовано по годам» — заодно второй способ сменить год. */
-  function drawYearChart() {
-    var box = $('hist-body');
-    box.textContent = '';
-    var vals = mon.years.map(function (y) {
-      var b = rec(regionId, kind, y) || rec(regionId, 'soft', y);
-      return b ? b.surveyed : 0;
-    });
-    var top = Math.max.apply(null, vals) || 1;
-    var chart = el('div', 'y-chart');
-    mon.years.forEach(function (y, i) {
-      var col = el('div', 'y-col' + (y === year ? ' is-active' : ''));
-      var bar = el('i', 'b');
-      bar.style.height = Math.max(3, Math.round(vals[i] / top * 92)) + 'px';
-      col.appendChild(bar);
-      col.appendChild(el('span', 'l', String(y)));
-      col.addEventListener('click', function () {
-        resetIdle();
-        if (y === year) return;
-        year = y;
-        recalcMax();
-        drawYears();
-        drawTotal();
-        drawTop();
-        drawRegion();
-        setUrl();
-        need = true;
-      });
-      chart.appendChild(col);
-    });
-    box.appendChild(chart);
-  }
-
-  function drawEmptyRegion(s) {
-    $('vol-body').textContent = '';
-    var n = el('div', 'm-item');
-    n.appendChild(el('div', 'cap', 'В ' + year + ' году пшеница в этом регионе ' +
-      'не возделывалась в объёмах, попадающих в госмониторинг.'));
-    $('vol-body').appendChild(n);
+  function drawEmptyRegion() {
+    // Разные случаи: субъекта вовсе нет в data/monitoring.json —
+    // госмониторинг там не проводится; есть, но без записи за год —
+    // пшеницу в этом году не возделывали.
+    var noMon = !byId[regionId];
+    var note = noMon ? 'Госмониторинг не проводится' : 'Данных за ' + year + ' год нет';
+    $('reg-sub').textContent = noMon
+      ? 'Госмониторинг в этом регионе не проводится'
+      : 'Пшеница в этом регионе не возделывалась · демоданные';
+    bigNum($('gross-body'), '—', '', note);
+    bigNum($('surv-body'), '—', '', note);
+    $('cls-sub').textContent = note;
     $('cls-body').textContent = '';
-    $('cls-body').appendChild(el('div', 'c-date', 'Данных за ' + year + ' год нет'));
-    $('qual-body').textContent = '';
-    $('hist-body').textContent = '';
-    $('dots').textContent = '';
-    openDot = null;
+    $('cls-foot').style.display = 'none';
   }
 
-  function drawQual(b) {
-    var q = $('qual-body');
-    q.textContent = '';
-    var n = el('div', 'm-item');
-    n.appendChild(el('div', 'cap', 'Соответствует требованиям'));
-    var v = el('div', 'val', b.compliance.toFixed(1).replace('.', ','));
-    v.appendChild(el('i', null, '% обследованного зерна'));
-    n.appendChild(v);
-    q.appendChild(n);
-    var s = el('div', 'c-date', 'Исследовано проб: ' + fmt1(b.samples) + ' тыс.');
-    s.style.marginTop = '10px';
-    q.appendChild(s);
+  /* --------------------- экран «Регионы присутствия» --------------------- */
+
+  function selectPresence(id) {
+    id = id && presOf[id];
+    if (!id) return;
+    presId = id;
+    drawPresence();
+    placeCall();
+    need = true;
   }
 
-  function drawDots(b) {
-    var box = $('dots');
+  function drawPresence() {
+    var box = $('card-pres');
     box.textContent = '';
-    openDot = null;
-    DOTS.forEach(function (d) {
-      var n = el('button', 'm-dot');
-      n.type = 'button';
-      n.style.left = (d.x * 100) + '%';
-      n.style.top = (d.y * 100) + '%';
-      n.title = d.name;
-      n.appendChild(el('i', 'lab', d.name));
-      n.addEventListener('click', function (e) {
-        e.stopPropagation();
-        resetIdle();
-        toggleDot(d, b, n);
-      });
-      box.appendChild(n);
-    });
+    var p = presId && pres && pres.regions[presId];
+    if (!p) {
+      box.appendChild(el('div', 'mn-pres-body',
+        'Выберите подсвеченный регион на карте.'));
+      return;
+    }
+    box.appendChild(el('h2', 'mn-pres-name', p.name));
+    // в кадре филиал и направления — один текстовый блок с пустыми строками
+    var lines = [];
+    if (p.branch) lines.push(p.branch);
+    if (p.areas && p.areas.length) {
+      lines.push('', 'Основные направления', '');
+      p.areas.forEach(function (a) { lines.push('• ' + a); });
+    }
+    box.appendChild(el('div', 'mn-pres-body', lines.join('\n')));
+    if ((!p.areas || !p.areas.length) && p.todo) {
+      box.appendChild(el('div', 'mn-pres-todo', p.todo));
+    }
+    if (pres.note) $('pres-foot').textContent = pres.note;
   }
 
-  function toggleDot(d, b, node) {
-    var old = $('dots').querySelector('.m-pop');
-    if (old) old.remove();
-    Array.prototype.forEach.call($('dots').children, function (n) {
-      n.classList.remove('is-on');
-      n.classList.remove('is-quiet');
-    });
-    if (openDot === d.key) { openDot = null; return; }
-    openDot = d.key;
-    node.classList.add('is-on');
-    // остальные точки гасим: карточка показателя всё равно ложится поверх них
-    Array.prototype.forEach.call($('dots').children, function (n) {
-      if (n !== node) n.classList.add('is-quiet');
-    });
-
-    var pop = el('div', 'm-pop');
-    pop.appendChild(el('div', 'pk', d.name));
-    var v = el('div', 'pv', b[d.key].toFixed(d.dec).replace('.', ','));
-    v.appendChild(el('i', null, d.unit));
-    pop.appendChild(v);
-    pop.appendChild(el('div', 'pt', d.text));
-    // карточка встаёт со свободной стороны точки и не вылезает за кадр
-    var right = d.x < 0.55;
-    var cx = d.x * SAMPLE_BOX, cy = d.y * SAMPLE_BOX;
-    pop.style.left = U.clamp(right ? cx + 64 : cx - 64 - POP_W, 0, SAMPLE_BOX - POP_W) + 'px';
-    pop.style.top = U.clamp(cy - 56, 0, SAMPLE_BOX - POP_H) + 'px';
-    $('dots').appendChild(pop);
+  /** Выноска с названием у выбранного региона: подпись и линия к контуру. */
+  function placeCall() {
+    var call = $('map-call');
+    if (!call) return;
+    var p = screen === 'presence' && presId && pres && pres.regions[presId];
+    var s = p && shapes.filter(function (x) { return x.id === presId; })[0];
+    if (!s) { call.classList.remove('is-on'); return; }
+    var c = toCanvas(s.c[0], s.c[1]);
+    var right = c[0] < 360;                 // регион у левого края — подпись справа
+    var left = U.clamp(right ? c[0] + 70 : c[0] - 320, 24, MAP_W - 300);
+    call.classList.toggle('is-right', right);
+    call.style.left = left + 'px';
+    call.style.top = U.clamp(c[1] - 60, 80, MAP_H - 140) + 'px';
+    // линия от подписи к контуру региона
+    var line = call.querySelector('i');
+    if (line) line.style.width = Math.max(40, right ? left - c[0] : c[0] - left) + 'px';
+    $('call-name').textContent = p.name;
+    call.classList.add('is-on');
   }
 
   /* ------------------------------ переходы ------------------------------ */
@@ -663,18 +822,22 @@
     screen = name;
     $('scr-map').classList.toggle('is-on', name === 'map');
     $('scr-region').classList.toggle('is-on', name === 'region');
+    $('scr-presence').classList.toggle('is-on', name === 'presence');
     // класс состояния — на обёртке раздела, а не на body: в едином
-    // приложении body общий на все три раздела
+    // приложении body общий на все разделы
+    ROOT.classList.toggle('on-map', name === 'map');
     ROOT.classList.toggle('on-region', name === 'region');
-    $('back-map').style.display = name === 'region' ? '' : 'none';
+    ROOT.classList.toggle('on-presence', name === 'presence');
+    if (name !== 'presence') $('map-call').classList.remove('is-on');
     setUrl();
   }
 
   function openRegion(id) {
-    if (!byId[id]) return;
+    // карточка открывается и у субъекта без данных: в data/monitoring.json
+    // его может не быть вовсе (например, там не проводится госмониторинг)
+    if (!shapes.some(function (s) { return s.id === id; })) return;
     regionId = id;
     if (!rec(id, kind)) kind = 'soft';
-    drawKinds();
     drawRegion();
     show('region');
     need = true;
@@ -682,14 +845,20 @@
 
   function backToMap() {
     regionId = null;
+    tab = 'grain';
+    drawTabs();
     show('map');
     setHover(null);
+    resetView();
     need = true;
   }
 
   function setUrl() {
     var p = { year: year };
-    if (screen === 'region' && regionId) {
+    if (screen === 'presence') {
+      p.view = 'presence';
+      if (presId) p.region = presId;
+    } else if (screen === 'region' && regionId) {
       p.region = regionId;
       if (kind !== 'soft') p.kind = kind;
     }
@@ -722,8 +891,8 @@
     drawYears();
     drawTotal();
     drawTop();
+    drawHead();
     backToMap();
-    resetView();
     resetIdle();
   }
 
@@ -772,7 +941,8 @@
       var p = local(e);
       if (drag && drag.moved <= TAP_SLOP) {
         var id = pick(p[0], p[1]);
-        if (id) openRegion(id);
+        if (id && screen === 'presence') selectPresence(id);
+        else if (id && screen === 'map') openRegion(id);
       }
       drag = null;
     });
@@ -786,6 +956,10 @@
     $('zoom-out').addEventListener('click', function () {
       resetIdle();
       zoomTo(view.z / ZOOM_STEP);
+    });
+    $('zoom-reset').addEventListener('click', function () {
+      resetIdle();
+      resetView();
     });
   }
 
@@ -807,31 +981,6 @@
     if (c.textMuted) root.setProperty('--muted', c.textMuted);
   }
 
-  /* Зерно на фоне — тот же приём, что на остальных экранах стенда. */
-  function drawStars(colors) {
-    var c = $('stars');
-    if (!c) return;
-    var dot = (colors && colors.stars) || '150,205,190';
-    var glow = (colors && colors.starGlow) || '130,215,195';
-    c.width = 1920; c.height = 1080;
-    var g = c.getContext('2d');
-    for (var i = 0; i < 620; i++) {
-      var x = Math.random() * 1920, y = Math.random() * 1080;
-      var r = Math.random() * 1.1 + 0.2, a = Math.random() * 0.36 + 0.04;
-      g.fillStyle = 'rgba(' + dot + ',' + a.toFixed(3) + ')';
-      g.beginPath(); g.arc(x, y, r, 0, 6.283); g.fill();
-    }
-    for (var j = 0; j < 20; j++) {
-      var gx = Math.random() * 1920, gy = Math.random() * 1080;
-      var gr = Math.random() * 190 + 90;
-      var rad = g.createRadialGradient(gx, gy, 0, gx, gy, gr);
-      rad.addColorStop(0, 'rgba(' + glow + ',.05)');
-      rad.addColorStop(1, 'rgba(' + glow + ',0)');
-      g.fillStyle = rad;
-      g.beginPath(); g.arc(gx, gy, gr, 0, 6.283); g.fill();
-    }
-  }
-
   function fail(msg) {
     $('loading').textContent = msg;
     $('loading').classList.remove('hidden');
@@ -841,28 +990,35 @@
   function boot(active) {
     live = active !== false;
     ctx = $('map').getContext('2d');
-    $('sample-img').src = U.asset(SAMPLE_IMG);
+    $('scene-img').src = U.asset(SCENE_IMG);
 
     return U.loadJSON('inline-config', 'config.json').then(function (cfg) {
       CFG = cfg || CFG;
       var green = (CFG.themes && CFG.themes.green) || {};
       applyColors(green.colors);
-      drawStars(green.colors);
-    }).catch(function () {
-      drawStars(null);
+    }).catch(function () { /* без конфига живём со значениями по умолчанию */
     }).then(function () {
       return Promise.all([
         U.loadJSON('inline-regions', 'assets/geo/russia-regions.json'),
-        U.loadJSON('inline-monitoring', 'data/monitoring.json')
+        U.loadJSON('inline-monitoring', 'data/monitoring.json'),
+        // без файла филиалов второй таб просто пустой — раздел работает
+        U.loadJSON('inline-presence', 'data/presence.json').catch(function (e) {
+          if (global.console) {
+            console.warn('Не загрузить data/presence.json — вкладка ' +
+              '«Регионы присутствия» будет пустой:', e);
+          }
+          return { regions: {} };
+        })
       ]);
     }).then(function (res) {
       geo = res[0];
       mon = res[1];
+      pres = res[2];
       mon.regions.forEach(function (r) { byId[r.id] = r; });
 
       buildShapes();
+      buildLabs();
       fitStage();
-      resetView();
 
       var q = U.query('monitoring');
       if (q.idle === '0') idleOff = true;
@@ -872,7 +1028,9 @@
       if (q.kind === 'durum') kind = 'durum';
       recalcMax();
 
+      drawTabs();
       drawYears();
+      drawHead();
       drawTotal();
       if (q.q) { setQuery(q.q); $('search').value = q.q; }
       drawTop();
@@ -886,23 +1044,18 @@
       });
       $('search').addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
-        var arr = listed();
-        if (arr.length) openRegion(arr[0].id);
+        openFirst();
       });
+      $('search-go').addEventListener('click', function () { resetIdle(); openFirst(); });
       $('back-map').addEventListener('click', function () { resetIdle(); backToMap(); });
-      $('home-btn').addEventListener('click', function () {
-        U.goSection('story', { screen: 'start' });
+      $('globe-btn').addEventListener('click', function () { U.goSection('globe'); });
+      $('hub-btn').addEventListener('click', function () {
+        U.goSection('story', { screen: 'hub' });
       });
-      $('sample').addEventListener('click', function () {
-        var open = $('dots').querySelector('.m-pop');
-        if (open) {
-          open.remove();
-          openDot = null;
-          Array.prototype.forEach.call($('dots').children, function (n) {
-            n.classList.remove('is-on');
-            n.classList.remove('is-quiet');
-          });
-        }
+      ['home-btn', 'home-btn-reg'].forEach(function (id) {
+        $(id).addEventListener('click', function () {
+          U.goSection('story', { screen: 'start' });
+        });
       });
 
       global.addEventListener('resize', fitStage);
@@ -910,14 +1063,30 @@
         document.addEventListener(ev, resetIdle, { passive: true });
       });
 
-      if (q.region && byId[q.region]) openRegion(q.region);
-      else show('map');
-      if (q.zoom) zoomTo(parseFloat(q.zoom));
+      // что открыть при старте: карта, карточка региона или регионы присутствия
+      if (q.view === 'presence') {
+        tab = 'presence';
+        drawTabs();
+        show('presence');
+        selectPresence(q.region || pres.start);
+        if (!presId) drawPresence();
+      } else if (q.region) {
+        // openRegion сам проверит, есть ли такой контур: субъекта может
+        // не быть в цифрах мониторинга, но карточка всё равно открывается
+        show('map');
+        openRegion(q.region);
+      } else {
+        show('map');
+      }
+      resetView();
+      if (q.at) focusOn(q.at, parseFloat(q.zoom));
+      else if (q.zoom) zoomTo(parseFloat(q.zoom));
 
       resetIdle();
       $('loading').classList.add('hidden');
       // раздел, поднятый в фоне, один раз рисуется и замирает до показа
       draw();
+      placeCall();
       need = false;
       if (live) startLoop();
       U.revealPage();
@@ -927,10 +1096,19 @@
     });
   }
 
+  /** Enter или кнопка «Искать»: открыть первое совпадение. */
+  function openFirst() {
+    var arr = listed();
+    if (arr.length) openRegion(arr[0].id);
+  }
+
   /* Для показа и отладки: MonScreen.open('RU-ROS'), MonScreen.stats() */
   global.MonScreen = {
     open: openRegion,
     back: backToMap,
+    focus: focusOn,
+    tab: setTab,
+    presence: selectPresence,
     /** Точка региона в координатах страницы — для скриптов и автотестов. */
     point: function (id) {
       var s = shapes.filter(function (x) { return x.id === id; })[0];
@@ -945,7 +1123,8 @@
     stats: function () {
       return { fps: Math.round(fps), dpr: dpr, regions: shapes.length,
                year: year, zoom: Math.round(view.z * 100) / 100,
-               screen: screen, region: regionId, running: !!rafId };
+               screen: screen, tab: tab, region: regionId, presence: presId,
+               labs: labs.length, running: !!rafId };
     }
   };
 

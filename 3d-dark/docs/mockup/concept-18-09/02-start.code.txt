@@ -1,0 +1,129 @@
+const imgAkarIconsArrowRight = "http://localhost:3845/assets/984430c6f2db1f3bf36ec2ec7da1331a75740fdf.svg";
+const imgExecF3A6Db2B6Bd648A89D7053Fddd96725B11 = "http://localhost:3845/assets/4265130b2bbfb60e87cdf54e9d0ea8020ac860c4.png";
+const imgCodex1620260146321 = "http://localhost:3845/assets/b6ef0acff36486d59cae00e037c826870808e054.png";
+const imgCodex1620260145211 = "http://localhost:3845/assets/9964469e6ee73fa4a992c1fe52244b01afe8f9f3.png";
+const imgImage93 = "http://localhost:3845/assets/5c13cae9b0f584d489a436eb8990b91764bb799e.png";
+const imgCodex1620260145331 = "http://localhost:3845/assets/f433187f8f2c0cf5c75508d6ea8ae62bac8ff8c3.png";
+const imgChatGptImage1520261359051 = "http://localhost:3845/assets/4b2f27972f429f8c2bc4d821271a1af4b2d7583a.png";
+
+function AkarIconsArrowRight({ className }: { className?: string }) {
+  return (
+    <div className={className || "relative size-[24px]"} data-node-id="441:806" data-name="akar-icons:arrow-right">
+      <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgAkarIconsArrowRight} />
+    </div>
+  );
+}
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="465:2361" data-name="01 · Главное меню">
+      <div className="absolute bg-[#09211f] h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="465:2362" data-name="01 · Единая предметная сцена">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1063px] left-1/2 top-[calc(50%+0.5px)] w-[1888px]" data-node-id="465:2363" data-name="exec-f3a6db2b-6bd6-48a8-9d70-53fddd96725b (1) 1">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgExecF3A6Db2B6Bd648A89D7053Fddd96725B11} />
+        </div>
+        <div className="absolute content-stretch flex flex-col gap-[4px] items-start left-[48px] top-[695px]" data-node-id="465:2364" data-name="Путь зерна · описание и вход">
+          <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[32px] relative rounded-[24px] shrink-0 w-[478px]" data-node-id="465:2365" data-name="Grain/Panel">
+            <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:2365;167:641">
+              Путь зерна
+            </p>
+            <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I465:2365;167:642">
+              Узнайте, как выращивают, проверяют и используют зерно
+            </p>
+          </div>
+          <div className="border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-full" data-node-id="465:2366" data-name="Grain/Button">
+            <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2366;164:644">
+              Пройти путь
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+          </div>
+        </div>
+        <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1540px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[48px] w-[300px]" data-node-id="465:2367" data-name="Grain/Button">
+          <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:2367;164:647">
+            Выход
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="absolute backdrop-blur-[35px] content-stretch flex gap-[8px] items-start p-[6px] right-[48px] rounded-[36px] top-[714px]" data-node-id="465:2368" data-name="Открытая информация">
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[16px] h-[274px] items-start p-[8px] relative rounded-[24px] shrink-0 w-[353px]" data-node-id="465:2369" data-name="Grain/Button">
+            <div className="bg-[#17252c] h-[186px] overflow-clip relative rounded-[28px] shrink-0 w-full" data-node-id="465:2371">
+              <div className="absolute h-[250px] left-0 top-[-24px] w-[444px]" data-node-id="465:2372" data-name="Изображение Codex 16 сент. 2026 г., 01_46_32 1">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260146321} />
+              </div>
+              <div className="absolute h-[193px] left-0 top-[-4px] w-[343px]" data-node-id="465:2373" data-name="Изображение Codex 16 сент. 2026 г., 01_45_21 1">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260145211} />
+              </div>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start justify-center relative shrink-0" data-node-id="465:2374">
+              <div className="[word-break:break-word] content-stretch flex flex-col items-start not-italic pl-[8px] relative shrink-0 whitespace-nowrap" data-node-id="465:2375">
+                <p className="font-['Inter:Light'] font-light leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)]" data-node-id="465:2376">
+                  Мониторинг зерна РФ
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))]" data-node-id="465:2377">{`Узнайте больше `}</p>
+              </div>
+              <div className="content-stretch flex items-center p-[16px] relative rounded-[999px] shrink-0" data-node-id="465:2378" data-name="icon">
+                <div aria-hidden className="absolute bg-[rgba(255,255,255,0.05)] inset-0 pointer-events-none rounded-[999px]" />
+                <AkarIconsArrowRight className="relative shrink-0 size-[24px]" />
+                <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+              </div>
+            </div>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[16px] h-[274px] items-start p-[8px] relative rounded-[24px] shrink-0 w-[334px]" data-node-id="465:2380" data-name="Grain/Button">
+            <div className="bg-[#17252c] h-[186px] overflow-clip relative rounded-[28px] shrink-0 w-full" data-node-id="465:2382">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[202px] left-1/2 top-1/2 w-[366px]" data-node-id="465:2383" data-name="image 93">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage93} />
+              </div>
+              <div className="absolute h-[192px] left-[-12px] top-[-3px] w-[342px]" data-node-id="465:2384" data-name="Изображение Codex 16 сент. 2026 г., 01_45_33 1">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgCodex1620260145331} />
+              </div>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start justify-center relative shrink-0" data-node-id="465:2385">
+              <div className="[word-break:break-word] content-stretch flex flex-col items-start not-italic pl-[8px] relative shrink-0 whitespace-nowrap" data-node-id="465:2386">
+                <p className="font-['Inter:Light'] font-light leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)]" data-node-id="465:2387">
+                  Маршруты экспорта
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))]" data-node-id="465:2388">{`Узнайте больше `}</p>
+              </div>
+              <div className="content-stretch flex items-center p-[16px] relative rounded-[999px] shrink-0" data-node-id="465:2389" data-name="icon">
+                <div aria-hidden className="absolute bg-[rgba(255,255,255,0.05)] inset-0 pointer-events-none rounded-[999px]" />
+                <AkarIconsArrowRight className="relative shrink-0 size-[24px]" />
+                <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+              </div>
+            </div>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[16px] h-[274px] items-start p-[8px] relative rounded-[24px] shrink-0 w-[351px]" data-node-id="465:2391" data-name="Grain/Button">
+            <div className="bg-[#17252c] h-[186px] overflow-clip relative rounded-[28px] shrink-0 w-full" data-node-id="465:2393">
+              <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[202px] left-[calc(50%+0.5px)] top-1/2 w-[366px]" data-node-id="465:2394" data-name="image 93">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage93} />
+              </div>
+              <div className="absolute h-[205px] left-[-30px] top-[-4px] w-[365px]" data-node-id="465:2395" data-name="ChatGPT Image 15 сент. 2026 г., 13_59_05 1">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImage1520261359051} />
+              </div>
+            </div>
+            <div className="content-stretch flex gap-[16px] items-start justify-center relative shrink-0" data-node-id="465:2396">
+              <div className="[word-break:break-word] content-stretch flex flex-col items-start not-italic pl-[8px] relative shrink-0 whitespace-nowrap" data-node-id="465:2397">
+                <p className="font-['Inter:Light'] font-light leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)]" data-node-id="465:2398">
+                  Регионы присутствия
+                </p>
+                <p className="font-['Inter:Regular'] font-normal leading-[19.6px] relative shrink-0 text-[14px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))]" data-node-id="465:2399">{`Узнайте больше `}</p>
+              </div>
+              <div className="content-stretch flex items-center p-[16px] relative rounded-[999px] shrink-0" data-node-id="465:2400" data-name="icon">
+                <div aria-hidden className="absolute bg-[rgba(255,255,255,0.05)] inset-0 pointer-events-none rounded-[999px]" />
+                <AkarIconsArrowRight className="relative shrink-0 size-[24px]" />
+                <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[0] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[64px] w-[1700px]" data-node-id="465:2402">
+        <p className="leading-[48px] mb-0">ПУТЬ ЗЕРНА: ОТ ПОЧВЫ</p>
+        <p className="leading-[48px]">ДО МИРОВОГО РЫНКА</p>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light leading-[32px] left-[64px] not-italic text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[183px] whitespace-nowrap" data-node-id="465:2403">
+        ЦОК АПК — надёжный партнёр на этом пути
+      </p>
+    </div>
+  );
+}

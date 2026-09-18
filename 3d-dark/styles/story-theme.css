@@ -61,42 +61,47 @@
    шрифт и цвета, а соседние разделы стенда остаются нетронутыми. */
 
 #sec-story {
-  /* шкала раскладки */
+  /* шкала раскладки — значения с выгрузки Figma 18.09 (.code.txt) */
   --sc-edge: 64px;               /* отступ интерфейса от края экрана */
   --sc-pad: 32px;                /* внутренний отступ панели */
   --sc-gap: 16px;                /* шаг между строками и панелями */
   --sc-r: 24px;                  /* радиус панели */
-  --sc-btn-h: 108px;             /* высота кнопки (в макетах именно такая) */
+  --sc-r-btn: 32px;              /* радиус кнопки, метки, плитки меню */
+  --sc-btn-h: 108px;             /* высота кнопки */
   --sc-col-l: 434px;             /* левая колонка панелей */
   --sc-col-r: 440px;             /* правая колонка панелей */
+  --sc-nav-w: 480px;             /* кнопка навигации снизу */
 
   /* цвета */
-  --sc-bg: #17252C;              /* фон экрана */
-  --sc-gold: #DDC195;            /* акцент: заголовки и главная кнопка */
-  --sc-text: #F2F5F4;
-  --sc-muted: #9FB0AE;
-  --sc-dim: #7C8E8A;
+  --sc-bg: #141d23;              /* фон страницы за скруглённым кадром */
+  --sc-gold: #DDC195;            /* акцент: заголовки экранов */
+  --sc-text: #FFFFFF;
+  --sc-muted: rgba(255, 255, 255, .7);
+  --sc-dim: rgba(255, 255, 255, .5);
 
-  /* Стекло. Панель осветляет сцену под собой примерно на 10 %
-     и к низу становится прозрачнее — так снято с кадров макетов.
-     Кнопки почти прозрачные: на кадрах они не светлее фона,
-     их держит только тонкая светлая обводка. */
-  --sc-glass: linear-gradient(180deg, rgba(255, 255, 255, .125),
-    rgba(255, 255, 255, .06));
-  --sc-glass-soft: rgba(255, 255, 255, .05);
+  /* Стекло по киту: панель — светлая заливка 10 % и размытие 35,
+     кнопка — тёмно-зелёная заливка 20 % и размытие 20. Обводки нет:
+     форму держит двойное внутреннее свечение. */
+  --sc-glass: rgba(246, 246, 246, .1);
+  --sc-glass-soft: rgba(246, 246, 246, .06);
   --sc-glass-line: rgba(255, 255, 255, .12);
-  --sc-btn-bg: rgba(255, 255, 255, .04);
+  --sc-blur: blur(35px);
+  --sc-btn-bg: rgba(15, 40, 28, .2);
+  --sc-btn-blur: blur(20px);
+  --sc-btn-glow: inset 0 0 4px rgba(255, 255, 255, .25),
+    inset 0 0 35px rgba(255, 255, 255, .15);
   --sc-btn-line: rgba(255, 255, 255, .16);
-  --sc-blur: blur(70px);
 
   /* золотая кнопка: плотная заливка со свечением по краю изнутри */
   --sc-gold-bg: #855812;
-  --sc-gold-glow: inset 0 0 0 1px rgba(246, 226, 189, .45),
-    inset 0 0 30px rgba(233, 196, 135, .55);
+  --sc-gold-glow: inset 0 0 4px #FFDDA7, inset 0 0 35px #F5D197;
 
-  /* выбранная метка на сцене — голубоватое стекло */
-  --sc-pick: rgba(150, 205, 230, .20);
+  /* выбранный объект: голубоватое стекло со своим свечением */
+  --sc-pick: rgba(34, 79, 107, .5);
+  --sc-pick-glow: inset 0 0 4px #CDDAEF, inset 0 0 35px #88CBED;
   --sc-pick-line: rgba(168, 214, 236, .55);
+  /* невыбранный сегмент меню и метки */
+  --sc-dark: rgba(15, 40, 28, .45);
 
   /* шкала «Оценка показателя» и плашки-статусы: зелёное — в норме,
      красноватое — превышение. Цвета сняты с кадра 05-soil-1. */
@@ -144,7 +149,7 @@
 
 /* На отдельной странице story.html фон страницы тоже должен быть
    новым: там за пределами #card видна подложка body. */
-body.story-screen { background: #17252C; }
+body.story-screen { background: var(--sc-bg, #141D23); }
 
 /* ---------------------------- шапка экрана ----------------------------
    Надзаголовок капсом, крупный заголовок золотом, подзаголовок.
@@ -153,20 +158,22 @@ body.story-screen { background: #17252C; }
 #sec-story .sc-head {
   position: absolute;
   left: var(--sc-edge);
-  top: 63px;
+  top: var(--sc-edge);
   z-index: 5;
-  max-width: 1440px;
+  /* ширина строки заголовка в макетах — 1400 px: длинные названия
+     не должны переноситься там, где в Figma они в одну строку */
+  width: 1400px;
 }
 
-/* Заголовок с надзаголовком опускается чуть ниже: так в макетах
-   станций, где над названием стоит строка «СТАНЦИЯ 1 · …». */
-#sec-story .sc-eyebrow + .sc-title { margin-top: 12px; }
+/* Надзаголовок стоит на 64, заголовок под ним на 110 — так в выгрузке
+   Figma. Без надзаголовка заголовок сам начинается с 64. */
+#sec-story .sc-eyebrow + .sc-title { margin-top: 18px; }
 
 #sec-story .sc-eyebrow {
-  margin: 0 0 10px;
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: .12em;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
   text-transform: uppercase;
   color: var(--sc-muted);
 }
@@ -174,9 +181,8 @@ body.story-screen { background: #17252C; }
 #sec-story .sc-title {
   margin: 0;
   font-size: 42px;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 48px;
-  letter-spacing: .01em;
   text-transform: uppercase;
   color: var(--sc-gold);
   /* переносы строк в заголовках расставлены вручную, как в макетах */
@@ -184,10 +190,11 @@ body.story-screen { background: #17252C; }
 }
 
 #sec-story .sc-sub {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 28px;
+  white-space: pre-line;
   color: var(--sc-muted);
 }
 
@@ -200,20 +207,20 @@ body.story-screen { background: #17252C; }
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
   height: var(--sc-btn-h);
-  padding: 0 28px;
-  border-radius: 999px;
+  padding: 0 24px;
+  border-radius: var(--sc-r-btn);
   background: var(--sc-btn-bg);
-  -webkit-backdrop-filter: var(--sc-blur);
-  backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-btn-line);
+  -webkit-backdrop-filter: var(--sc-btn-blur);
+  backdrop-filter: var(--sc-btn-blur);
+  box-shadow: var(--sc-btn-glow);
   color: var(--sc-text);
   font-family: var(--body);
   font-size: 24px;
-  font-weight: 400;
-  line-height: 1.2;
+  font-weight: 300;
+  line-height: 32px;
   text-align: center;
   transition: background .18s ease, box-shadow .18s ease;
 }
@@ -221,11 +228,14 @@ body.story-screen { background: #17252C; }
   background: rgba(255, 255, 255, .16);
 }
 
+/* Золотая — главная кнопка экрана. Форма другая: полная скруглённость
+   и тонкая светлая обводка поверх плотной заливки. */
 #sec-story .sc-btn.is-gold {
+  border-radius: 999px;
   background: var(--sc-gold-bg);
-  box-shadow: var(--sc-gold-glow);
+  box-shadow: var(--sc-gold-glow), inset 0 0 0 1px rgba(255, 255, 255, .2);
   color: #FFFFFF;
-  font-weight: 500;
+  font-weight: 300;
 }
 #sec-story .sc-btn.is-gold:active {
   background: #6F4A0E;
@@ -241,7 +251,6 @@ body.story-screen { background: #17252C; }
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
   color: var(--sc-text);
 }
 
@@ -249,30 +258,34 @@ body.story-screen { background: #17252C; }
   margin: 0;
   /* переносы строк в заголовках панелей расставлены вручную, как в макетах */
   white-space: pre-line;
-  font-size: 30px;
-  font-weight: 400;
-  line-height: 36px;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
   color: var(--sc-text);
 }
 
+/* Панель, у которой в макете текст шире колонки и не переносится
+   (кадр 09, «Фитосанитарный мониторинг»): строки остаются как набраны. */
+#sec-story .sc-panel.is-nowrap .sc-panel-t,
+#sec-story .sc-panel.is-nowrap .sc-panel-sub { white-space: pre; }
+
 #sec-story .sc-panel-cap {
-  margin: 0 0 12px;
-  font-size: 16px;
+  margin: 0 0 26px;
+  font-size: 14px;
   font-weight: 400;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  color: var(--sc-dim);
+  line-height: 19.6px;
+  color: var(--sc-muted);
 }
 
 #sec-story .sc-panel-p {
-  margin: 20px 0 0;
+  margin: 26px 0 0;
   white-space: pre-line;
   font-size: 24px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 32px;
   color: var(--sc-muted);
 }
-#sec-story .sc-panel-t + .sc-panel-p { margin-top: 24px; }
+#sec-story .sc-panel-t + .sc-panel-p { margin-top: 26px; }
 /* панель из одного абзаца: текст прижат к верхнему отступу */
 #sec-story .sc-panel-p:first-child { margin-top: 0; }
 
@@ -331,13 +344,19 @@ body.story-screen { background: #17252C; }
 
 /* подзаголовок под названием панели: тише заголовка, но крупнее пометки */
 #sec-story .sc-panel-sub {
-  margin: 12px 0 0;
+  margin: 26px 0 0;
   white-space: pre-line;
-  font-size: 20px;
-  font-weight: 400;
-  line-height: 28px;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
   color: var(--sc-muted);
 }
+#sec-story .sc-panel-cap + .sc-panel-sub,
+#sec-story .sc-panel-t.is-small { margin-top: 0; }
+/* панель-подпись: заголовок в размер обычного текста (кадр 07) */
+#sec-story .sc-panel-t.is-small { font-size: 24px; line-height: 32px; }
+/* подзаголовок экрана меню крупнее обычного */
+#sec-story .sc-sub.is-big { font-size: 24px; line-height: 32px; }
 
 /* крупное слово-значение (панель «Доза удобрения») */
 #sec-story .sc-big {
@@ -394,11 +413,11 @@ body.story-screen { background: #17252C; }
   align-items: center;
   padding: 0 18px;
   min-height: 80px;
-  border-radius: 22px;
-  background: var(--sc-glass-soft);
-  -webkit-backdrop-filter: var(--sc-blur);
-  backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  border-radius: var(--sc-r-btn);
+  background: var(--sc-dark);
+  -webkit-backdrop-filter: var(--sc-btn-blur);
+  backdrop-filter: var(--sc-btn-blur);
+  box-shadow: var(--sc-btn-glow);
   color: var(--sc-text);
   font-family: var(--body);
   font-size: 22px;
@@ -412,10 +431,8 @@ body.story-screen { background: #17252C; }
 #sec-story .sc-grid.is-tall .sc-pick { min-height: 102px; padding: 0 26px; }
 
 #sec-story .sc-pick.is-on {
-  background: linear-gradient(180deg, rgba(178, 216, 238, .34),
-    rgba(148, 194, 220, .14));
-  box-shadow: inset 0 0 0 1px rgba(200, 230, 246, .55),
-    0 0 26px rgba(150, 205, 230, .22);
+  background: var(--sc-pick);
+  box-shadow: var(--sc-pick-glow);
   color: #FFFFFF;
 }
 
@@ -425,33 +442,31 @@ body.story-screen { background: #17252C; }
   align-items: flex-start;
   /* значок сверху, подпись прижата к низу — так в макете */
   justify-content: space-between;
-  padding: 30px;
-  min-height: 146px;
+  padding: var(--sc-pad);
+  min-height: 171px;
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  box-shadow: none;
   text-align: left;
-  font-size: 17px;
-  line-height: 22px;
+  font-size: 14px;
+  line-height: 19.6px;
   color: var(--sc-muted);
+}
+#sec-story .sc-grid.is-ico .sc-pick.is-on {
+  background: var(--sc-pick);
+  box-shadow: var(--sc-pick-glow);
 }
 #sec-story .sc-pick-ico {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  margin-bottom: 22px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .08);
+  width: 41px;
+  height: 41px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .05);
 }
-#sec-story .sc-pick-ico svg {
-  width: 22px;
-  height: 22px;
-  fill: none;
-  stroke: var(--sc-text);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
+#sec-story .sc-pick-ico img { display: block; width: 25px; height: 25px; }
 #sec-story .sc-pick.is-on .sc-pick-ico { background: rgba(255, 255, 255, .20); }
 
 /* ---------------------------- ползунок ----------------------------
@@ -809,10 +824,11 @@ body.story-screen { background: #17252C; }
 #sec-story .sc-tabs {
   display: inline-flex;
   padding: 6px;
-  border-radius: 18px;
-  background: var(--sc-glass-soft);
-  -webkit-backdrop-filter: var(--sc-blur);
-  backdrop-filter: var(--sc-blur);
+  border-radius: var(--sc-r-btn);
+  background: var(--sc-dark);
+  -webkit-backdrop-filter: var(--sc-btn-blur);
+  backdrop-filter: var(--sc-btn-blur);
+  box-shadow: var(--sc-btn-glow);
 }
 
 #sec-story .sc-tab {
@@ -827,7 +843,8 @@ body.story-screen { background: #17252C; }
   transition: background .18s ease, color .18s ease;
 }
 #sec-story .sc-tab.is-on {
-  background: rgba(255, 255, 255, .12);
+  background: var(--sc-pick);
+  box-shadow: var(--sc-pick-glow);
   color: var(--sc-text);
 }
 
@@ -840,20 +857,19 @@ body.story-screen { background: #17252C; }
   z-index: 4;
   display: flex;
   align-items: center;
-  gap: 14px;
-  height: 72px;
-  padding: 0 28px 0 12px;
-  border-radius: 999px;
-  background: var(--sc-glass);
-  -webkit-backdrop-filter: var(--sc-blur);
-  backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  gap: 16px;
+  height: 65px;
+  padding: 0 16px;
+  border-radius: var(--sc-r-btn);
+  background: var(--sc-dark);
+  -webkit-backdrop-filter: var(--sc-btn-blur);
+  backdrop-filter: var(--sc-btn-blur);
+  box-shadow: var(--sc-btn-glow);
   color: var(--sc-text);
   font-family: var(--body);
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 400;
   white-space: nowrap;
-  transform: translate(-50%, -50%);
   transition: background .18s ease, box-shadow .18s ease;
 }
 
@@ -862,23 +878,44 @@ body.story-screen { background: #17252C; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, .10);
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 400;
   color: var(--sc-text);
 }
 
 #sec-story .sc-marker.is-on {
   background: var(--sc-pick);
-  box-shadow: inset 0 0 0 1px var(--sc-pick-line),
-    0 0 28px rgba(150, 205, 230, .25);
+  box-shadow: var(--sc-pick-glow);
 }
-#sec-story .sc-marker.is-on .sc-marker-n {
-  background: rgba(255, 255, 255, .22);
-  color: #FFFFFF;
+
+/* чипы продуктов на столе (кадр 19): кегль 24/28,8, высота 64,
+   боковые отступы 24, радиус 32 и светлое стекло с размытием 22,5 */
+#sec-story .sc-marker-prod {
+  gap: 16px;
+  height: 64px;
+  padding: 0 24px;
+  border-radius: var(--sc-r-btn);
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: blur(22.5px);
+  backdrop-filter: blur(22.5px);
+  font-size: 24px;
+  line-height: 28.8px;
+}
+
+/* чипы кормового маршрута (кадры 16): тот же крупный чип, подпись
+   слева и в две строки, ширина по макету */
+#sec-story .sc-marker-feed {
+  height: auto;
+  min-height: 64px;
+  min-width: 236px;
+  padding: 8px 24px;
+  justify-content: flex-start;
+  text-align: left;
+  white-space: pre-line;
 }
 
 /* линии между станциями рисуются SVG поверх сцены */
@@ -903,10 +940,10 @@ body.story-screen { background: #17252C; }
   position: absolute;
   bottom: var(--sc-edge);
   z-index: 5;
-  width: var(--sc-col-l);
+  width: var(--sc-nav-w);
 }
 #sec-story .sc-nav-back { left: var(--sc-edge); }
-#sec-story .sc-nav-next { right: var(--sc-edge); width: var(--sc-col-r); }
+#sec-story .sc-nav-next { right: var(--sc-edge); }
 
 /* ---------------- экраны в прежней раскладке ----------------
    Станции ещё не переверстаны под новый дизайн, но шрифт и цвета
@@ -918,4 +955,663 @@ body.story-screen { background: #17252C; }
   background: rgba(255, 255, 255, .12);
   color: var(--sc-text);
   box-shadow: none;
+}
+
+/* ===================================================================
+   Детали экранов второй очереди
+
+   Хранение (девять шагов), развилка маршрутов, продовольственный
+   и кормовой маршруты, экспорт и финал. Порядок разделов: кнопка
+   в панели → пары «название — пояснение» → полоски долей → шаги 01–03
+   → карточка-снимок → плитка со значением → переключатель → выпадающий
+   список → меню шагов → подсказки на сцене → карточки маршрутов →
+   надпись-заглушка → шторка сравнения → окно поверх экрана.
+   =================================================================== */
+
+/* кнопка внутри панели (например «Посмотреть пакет») */
+#sec-story .sc-panel-btn { margin-top: 28px; }
+
+/* пары «название — пояснение» столбиком: сопроводительные документы */
+#sec-story .sc-leads2 { margin-top: 24px; }
+#sec-story .sc-lead2 { margin-top: 26px; }
+#sec-story .sc-lead2:first-child { margin-top: 0; }
+#sec-story .sc-lead2-k {
+  font-size: 24px;
+  line-height: 32px;
+  color: var(--sc-text);
+}
+#sec-story .sc-lead2-v {
+  margin-top: 2px;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+
+/* полоски долей: несоответствия за сезон */
+#sec-story .sc-bars {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+#sec-story .sc-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 20px;
+  line-height: 26px;
+}
+#sec-story .sc-bar-k { flex: none; width: 190px; color: var(--sc-muted); }
+#sec-story .sc-bar-track {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .12);
+  overflow: hidden;
+}
+#sec-story .sc-bar-track i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--sc-gold);
+}
+#sec-story .sc-bar-v { flex: none; width: 76px; text-align: right; }
+
+/* шаги 01–03 отдельными плашками (контроль экспорта) */
+#sec-story .sc-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#sec-story .sc-step {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  height: 138px;
+  padding: 0 var(--sc-pad);
+  border-radius: var(--sc-r);
+  background: var(--sc-glass-soft);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+/* последний шаг в макете подсвечен: на нём останавливается рассказ */
+#sec-story .sc-step.is-on { background: var(--sc-glass); }
+#sec-story .sc-step-n {
+  flex: none;
+  width: 92px;
+  font-size: 54px;
+  font-weight: 300;
+  line-height: 58px;
+  color: var(--sc-text);
+}
+#sec-story .sc-step-k {
+  font-size: 24px;
+  line-height: 32px;
+  color: var(--sc-text);
+}
+#sec-story .sc-step-v {
+  margin-top: 2px;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+
+/* карточка с одним снимком: «увеличенный фрагмент» на хранении */
+#sec-story .sc-shot {
+  flex: none;
+  border-radius: var(--sc-r);
+  background: var(--sc-glass-soft);
+  overflow: hidden;
+}
+#sec-story .sc-shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* плитка со значением: «Жир 3,2 %» на кормовом маршруте */
+#sec-story .sc-stats { display: flex; gap: 8px; }
+#sec-story .sc-stat {
+  flex: 1;
+  padding: 24px var(--sc-pad) 22px;
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-stat-k {
+  font-size: 26px;
+  line-height: 34px;
+  color: var(--sc-text);
+}
+#sec-story .sc-stat-v {
+  margin-top: 8px;
+  font-size: 52px;
+  font-weight: 300;
+  line-height: 56px;
+  color: var(--sc-text);
+}
+#sec-story .sc-stat-u {
+  margin-left: 8px;
+  font-size: 20px;
+  color: var(--sc-muted);
+}
+#sec-story .sc-stat-note {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--sc-dim);
+}
+
+/* переключатель «До / После» под снимком */
+#sec-story .sc-toggle {
+  display: flex;
+  border-radius: 18px;
+  background: var(--sc-glass-soft);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  overflow: hidden;
+}
+#sec-story .sc-toggle-b {
+  flex: 1;
+  height: 66px;
+  background: none;
+  color: var(--sc-muted);
+  font-family: var(--body);
+  font-size: 22px;
+  transition: background .18s ease, color .18s ease;
+}
+#sec-story .sc-toggle-b.is-on {
+  background: rgba(255, 255, 255, .12);
+  color: var(--sc-text);
+}
+
+/* выпадающий выбор страны: плашка и золотая круглая стрелка */
+#sec-story .sc-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#sec-story .sc-select-head {
+  height: 58px;
+  padding: 0 30px;
+  border-radius: 999px;
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  color: var(--sc-text);
+  font-family: var(--body);
+  font-size: 20px;
+}
+#sec-story .sc-select-go {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--sc-gold-bg);
+  box-shadow: var(--sc-gold-glow);
+  color: #FFFFFF;
+  font-size: 18px;
+}
+#sec-story .sc-select-menu {
+  position: absolute;
+  left: 0;
+  top: 66px;
+  z-index: 2;
+  width: 320px;
+  padding: 8px;
+  border-radius: 20px;
+  background: rgba(24, 38, 44, .92);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-select-i {
+  display: block;
+  width: 100%;
+  height: 56px;
+  padding: 0 22px;
+  border-radius: 14px;
+  background: none;
+  color: var(--sc-muted);
+  font-family: var(--body);
+  font-size: 20px;
+  text-align: left;
+}
+#sec-story .sc-select-i.is-on {
+  background: rgba(255, 255, 255, .12);
+  color: var(--sc-text);
+}
+
+/* ---------------- меню шагов подготовки зернохранилища ----------------
+   Четыре раздела: пройденные с зелёной галочкой, текущий — голубым
+   стеклом, как выбранная метка на сцене. */
+
+#sec-story .sc-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 16px;
+}
+#sec-story .sc-menu-i {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-radius: var(--sc-r-btn);
+  background: var(--sc-dark);
+  -webkit-backdrop-filter: var(--sc-btn-blur);
+  backdrop-filter: var(--sc-btn-blur);
+  box-shadow: var(--sc-btn-glow);
+  color: var(--sc-text);
+  font-family: var(--body);
+  text-align: left;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+#sec-story .sc-menu-t { flex: 1; min-width: 0; }
+#sec-story .sc-menu-k {
+  font-size: 24px;
+  line-height: 28.8px;
+  color: var(--sc-text);
+}
+#sec-story .sc-menu-v {
+  font-size: 14px;
+  line-height: 19.6px;
+  color: var(--sc-muted);
+}
+/* пройденный раздел: зелёная заливка и галочка */
+#sec-story .sc-menu-i.is-done {
+  background: rgba(26, 66, 47, .6);
+  box-shadow: inset 0 0 4px rgba(173, 233, 199, .35),
+    inset 0 0 35px rgba(95, 191, 143, .25);
+}
+#sec-story .sc-menu-ok {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--sc-ok-text);
+  color: var(--sc-ok-text);
+  font-size: 16px;
+}
+#sec-story .sc-menu-i.is-on {
+  background: var(--sc-pick);
+  box-shadow: var(--sc-pick-glow);
+}
+
+/* ------------------- подсказки и касания на сцене -------------------
+   «Горячее» место на ангаре: рамка появляется только на выбранном,
+   в покое место прозрачное — подсветку нарисовали дизайнеры прямо
+   на кадре. Плашка-подсказка повторяет ту, что на кадре, и ложится
+   ровно поверх неё. */
+
+#sec-story .sc-spot {
+  position: absolute;
+  z-index: 4;
+  border-radius: 12px;
+  background: none;
+  box-shadow: inset 0 0 0 2px rgba(226, 190, 118, 0);
+  transition: box-shadow .2s ease;
+}
+#sec-story .sc-spot.is-round { border-radius: 50%; }
+#sec-story .sc-spot.is-on {
+  box-shadow: inset 0 0 0 2px rgba(240, 214, 160, .9),
+    0 0 28px rgba(226, 190, 118, .45);
+}
+
+#sec-story .sc-chip {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: #E9D2A9;
+  color: #2A3A2E;
+  font-size: 20px;
+  line-height: 26px;
+  white-space: nowrap;
+}
+
+/* метка без номера: продукты на столе и кормовой маршрут */
+#sec-story .sc-marker-flat {
+  height: auto;
+  min-height: 48px;
+  padding: 10px 20px;
+  border-radius: var(--sc-r-btn);
+  font-size: 20px;
+  line-height: 28px;
+  white-space: pre-line;
+}
+
+/* ------------------- три карточки маршрута (кадр 15) ------------------- */
+
+#sec-story .sc-picks3 {
+  position: absolute;
+  left: var(--sc-edge);
+  right: var(--sc-edge);
+  top: 230px;
+  height: 654px;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 654px;
+  gap: 12px;
+}
+#sec-story .sc-pick3 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--sc-pad);
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-pick3-t {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--sc-text);
+}
+#sec-story .sc-pick3-p {
+  margin: 12px 0 0;
+  white-space: pre-line;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+/* Снимок заполняет карточку, заголовок и кнопка лежат поверх него —
+   так в макете. */
+#sec-story .sc-pick3-pic {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+#sec-story .sc-pick3-pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#sec-story .sc-pick3-t,
+#sec-story .sc-pick3-p,
+#sec-story .sc-pick3 .sc-btn { position: relative; z-index: 1; }
+#sec-story .sc-pick3 .sc-btn { margin-top: auto; }
+
+/* ------------------------- надпись-заглушка ------------------------- */
+
+#sec-story .sc-hero {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 470px;
+  z-index: 5;
+  font-size: 74px;
+  font-weight: 300;
+  line-height: 80px;
+  letter-spacing: .01em;
+  text-align: center;
+  color: var(--sc-gold);
+}
+
+/* --------------------- шторка сравнения (кадр 07) --------------------- */
+
+#sec-story .sc-curtain { touch-action: none; cursor: ew-resize; }
+#sec-story .sc-curtain-l { position: absolute; inset: 0; }
+#sec-story .sc-curtain-l img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+/* кадра здорового зерна дизайнеры не давали: рамка того же размера */
+#sec-story .sc-curtain-l.is-stub {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60px;
+  border-radius: var(--sc-r);
+  background: rgba(16, 32, 30, .72);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14);
+  color: var(--sc-dim);
+  font-size: 20px;
+  line-height: 28px;
+  text-align: center;
+}
+
+/* ---------------------- окно поверх экрана ---------------------- */
+
+#sec-story .sc-over {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(9, 18, 22, .68);
+}
+#sec-story .sc-over-panel {
+  width: 720px;
+  padding: 48px;
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-over-panel .sc-btn { margin-top: 32px; }
+
+/* ---------------- статус-плашка: предупреждение и точка ---------------- */
+
+#sec-story .sc-status.is-warn {
+  background: rgba(78, 62, 26, .55);
+  box-shadow: inset 0 0 0 1px rgba(226, 190, 118, .42);
+  color: #E3C182;
+}
+/* вариант с точкой вместо знака — так на кадрах хранения */
+#sec-story .sc-status.is-dot {
+  align-items: center;
+  padding: 24px var(--sc-pad);
+  background: rgba(255, 255, 255, .04);
+  box-shadow: inset 0 0 0 1px rgba(95, 191, 143, .45);
+  font-size: 22px;
+}
+#sec-story .sc-status.is-dot.is-warn {
+  box-shadow: inset 0 0 0 1px rgba(226, 190, 118, .5);
+}
+#sec-story .sc-status.is-dot .sc-status-m {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* ---------------- табы новой раскладки: ровные столбцы ---------------- */
+
+#sec-story .sc-tabs-slot .sc-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 1040px;
+  padding: 4px;
+  border-radius: 20px;
+}
+#sec-story .sc-tabs-slot .sc-tab {
+  height: 56px;
+  padding: 0 12px;
+  border-radius: 16px;
+}
+
+/* ползунок во всю ширину панели и подписи по делениям */
+#sec-story .sc-panel.is-slim { padding: 26px var(--sc-pad) 24px; }
+#sec-story .sc-slider.is-wide { margin-top: 0; }
+#sec-story .sc-slider.is-wide .sc-slider-top { font-size: 24px; line-height: 32px; }
+#sec-story .sc-slider.is-wide .sc-track { margin-top: 18px; }
+#sec-story .sc-ends span.is-on { color: var(--sc-text); }
+
+/* ---------------- панель ключевых показателей (Центр) ----------------
+   Заголовок мельче обычного, строки — плашка с номером и плашка
+   со значением, как в выгрузке Figma. */
+
+#sec-story .sc-panel.is-metrics .sc-panel-t {
+  font-size: 22px;
+  line-height: 28.6px;
+}
+#sec-story .sc-panel.is-metrics .sc-rows { margin-top: 18px; gap: 4px; }
+#sec-story .sc-panel.is-metrics .sc-row {
+  gap: 4px;
+  height: 48px;
+  padding: 0;
+  background: none;
+}
+#sec-story .sc-panel.is-metrics .sc-row-n {
+  width: 51px;
+  height: 48px;
+  line-height: 48px;
+  border-radius: 16px;
+  background: var(--sc-glass);
+  font-size: 14px;
+}
+#sec-story .sc-panel.is-metrics .sc-row-k {
+  height: 48px;
+  padding: 0 0 0 18px;
+  border-radius: 16px 0 0 16px;
+  background: var(--sc-glass);
+  line-height: 48px;
+  font-size: 14px;
+}
+#sec-story .sc-panel.is-metrics .sc-row-v {
+  height: 48px;
+  padding: 0 18px 0 0;
+  border-radius: 0 16px 16px 0;
+  background: var(--sc-glass);
+  line-height: 48px;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* --------- слой-подсветка на сцене (пол, решётка, поток воздуха) --------- */
+
+#sec-story .sc-mark {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+}
+#sec-story .sc-mark img { display: block; width: 100%; height: 100%; }
+
+/* предмет на сцене: таблетка препарата, скруглённый кусок снимка */
+#sec-story .sc-fig.is-item {
+  border-radius: 12px;
+  overflow: hidden;
+  transform: rotate(-4deg);
+}
+#sec-story .sc-fig.is-item img { object-fit: cover; }
+
+/* ------------------------- переключатель «До / После» ------------------------- */
+
+#sec-story .sc-toggle {
+  height: 64px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #172C2A;
+  box-shadow: none;
+}
+#sec-story .sc-toggle-b {
+  height: 56px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+}
+#sec-story .sc-toggle-b.is-on { background: var(--sc-glass); color: var(--sc-text); }
+
+/* табы продовольственного маршрута: ровные столбцы на тёмной подложке */
+#sec-story .sc-tabs-slot { top: 188px; }
+#sec-story .sc-tabs-slot .sc-tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 1040px;
+  height: 64px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #172C2A;
+  box-shadow: none;
+}
+#sec-story .sc-tabs-slot .sc-tab {
+  height: 56px;
+  padding: 0 12px;
+  border-radius: 16px;
+  font-size: 20px;
+  font-weight: 300;
+}
+#sec-story .sc-tabs-slot .sc-tab.is-on {
+  background: var(--sc-glass);
+  box-shadow: none;
+}
+
+/* надпись-заглушка биотопливного маршрута */
+#sec-story .sc-hero {
+  top: 541px;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 72px;
+}
+
+/* --------------------- шторка сравнения: два кадра ---------------------
+   Снизу зерно с внешними повреждениями, сверху целое; верхний слой
+   обрезается по ручке. Оба кадра — прозрачные PNG из выгрузки Figma. */
+
+#sec-story .sc-curtain-l.is-stub {
+  /* если второго кадра нет, заглушка повторяет форму первого:
+     та же картинка, приглушённая, с пометкой */
+  background: none;
+  box-shadow: none;
+}
+
+/* три карточки маршрута: размеры с выгрузки Figma */
+#sec-story .sc-picks3 {
+  top: 230px;
+  height: 654px;
+  gap: 12px;
+}
+#sec-story .sc-pick3-t { font-size: 32px; line-height: 38.4px; }
+#sec-story .sc-pick3-p { margin-top: 16px; font-size: 24px; line-height: 32px; }
+#sec-story .sc-pick3 .sc-btn { height: 108px; }
+
+/* статус-плашка хранения: обычная панель, цветная точка и текст */
+#sec-story .sc-status.is-dot {
+  align-items: center;
+  gap: 16px;
+  padding: 26px var(--sc-pad);
+  border-radius: var(--sc-r);
+  background: var(--sc-glass);
+  box-shadow: none;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--sc-ok-text);
+}
+#sec-story .sc-status.is-dot.is-warn { color: var(--sc-gold); }
+
+/* верхний слой шторки нарисован в своём размере внутри блока */
+#sec-story .sc-curtain-l img.is-at {
+  position: absolute;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }

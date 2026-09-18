@@ -8,18 +8,18 @@
    Что здесь:
      - движок: реестр экранов, переход с затуханием, история для «назад»;
      - раскладки — новый экран добавляется описанием в справочнике,
-       а не вёрсткой:
-         scene   основная по макетам «Design concept 17.09»: сцена во весь
-                 экран, поверх неё плавающие панели, метки и навигация;
+       а не вёрсткой. Их осталось две, обе по макетам
+       «Design concept 17.09»:
+         scene   основная: сцена во весь экран, поверх неё плавающие
+                 панели, метки и навигация;
          intro   заставка: коллаж, заголовок, касание в любом месте;
-         station, wide, hero — прежние раскладки. Они остались у экранов,
-                 которые ещё не переверстаны под новый дизайн, и уйдут
-                 по мере перевода экранов на scene;
-     - интерактивы экранов (виджеты) — словарь WIDGETS;
-     - заглушки изображений: пока путь к файлу пуст, рисуется рамка
-       с подписью, что за кадр тут будет;
+     - детали раскладки scene: панели, кнопки, табы, метки, ползунки,
+       шкалы, меню шагов, карточки-снимки — собираются по описанию
+       экрана, ручной разметки в HTML нет нигде;
+     - блоки, зависящие от выбора или шага, — словарь SLOTS;
      - аттрактор: возврат на первый экран по таймауту из config.json;
-     - адрес ?screen=<id> открывает нужный экран сразу.
+     - адрес ?screen=<id> открывает нужный экран сразу,
+       ?sel= и ?tab= — сразу в нужном состоянии.
 
    Раздел единого приложения app.html (обёртка #sec-story); та же логика
    работает и отдельной страницей story.html.
@@ -50,92 +50,24 @@
   var busy = false;
 
   /* =================================================================
-     Заглушка изображения
+     Состояние экрана: вкладка, выбор, шаг
 
-     Единый компонент на все экраны. Если у кадра задан путь (img),
-     показывается сам файл; пока путь пуст — опрятная рамка с иконкой
-     и подписью, что за кадр тут будет.
-
-     Поле fit кадра говорит, как снимок ложится в отведённое место:
-     пусто — широкая сцена обрезается по месту (object-fit: cover),
-     'contain' — предметный снимок с прозрачным фоном виден целиком
-     и лежит на подложке в цвете темы.
+     Экраны с несколькими состояниями держат его в двух полях:
+     st.tab — вкладка или состояние сцены, st.sel — выбранный объект
+     (элемент почвы, продукт, страна) или номер шага на хранении.
+     Оба приходят и из адреса: ?tab= и ?sel=.
      ================================================================= */
-
-  function stub(p, cls) {
-    var box = el('div', 'stub ' + (cls || ''));
-    if (!p) return box;
-    if (p.img) {
-      box.classList.add('has-img');
-      if (p.fit) box.classList.add('is-' + p.fit);
-      var im = new Image();
-      im.src = U.asset(p.img);
-      im.alt = p.cap || '';
-      box.appendChild(im);
-      return box;
-    }
-    box.appendChild(el('span', 'stub-tag', p.tag || 'фото'));
-    var ic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    ic.setAttribute('viewBox', '0 0 24 24');
-    ic.innerHTML = p.tag === 'видео'
-      ? '<rect x="2.5" y="5" width="19" height="14" rx="3"></rect>' +
-        '<path d="M10.2 9.4l5 2.6-5 2.6z"></path>'
-      : '<rect x="2.5" y="4.5" width="19" height="15" rx="3"></rect>' +
-        '<circle cx="8.4" cy="9.6" r="1.7"></circle>' +
-        '<path d="M3.4 17.4l4.9-4.6 3.6 3.3 3.5-3.9 5.2 5.2"></path>';
-    box.appendChild(ic);
-    box.appendChild(el('div', 'stub-cap', p.cap || ''));
-    return box;
-  }
-
-  /* =================================================================
-     Карточки правой колонки
-     ================================================================= */
-
-  function cardEl(c) {
-    var n = el('section', 'st-card' + (c.small ? ' is-small' : '') +
-      (c.active ? ' is-active' : ''));
-    if (c.title) n.appendChild(el('h3', 'st-card-t', c.title));
-    if (c.pic) {
-      var ph = stub(c.pic, 'stub-in-card');
-      n.appendChild(ph);
-    }
-    if (c.text) n.appendChild(el('p', 'st-card-p', c.text));
-    if (c.items) {
-      var ul = el('ul', 'st-list');
-      c.items.forEach(function (t) { ul.appendChild(el('li', null, t)); });
-      n.appendChild(ul);
-    }
-    if (c.rows) {
-      var rt = el('div', 'st-rows');
-      c.rows.forEach(function (r) {
-        var row = el('div', 'st-row');
-        row.appendChild(el('span', 'k', r[0]));
-        row.appendChild(el('span', 'v', r[1]));
-        rt.appendChild(row);
-      });
-      n.appendChild(rt);
-    }
-    if (c.chips) {
-      var ch = el('div', 'st-chips');
-      c.chips.forEach(function (t) { ch.appendChild(el('span', 'st-chip', t)); });
-      n.appendChild(ch);
-    }
-    if (c.note) n.appendChild(el('div', 'st-note', c.note));
-    if (c.button) n.appendChild(button(c.button, 'st-btn is-primary st-card-btn'));
-    if (c.slot) n.setAttribute('data-slot', c.slot);
-    return n;
-  }
 
   /**
    * Кнопка:
    *   to     — переход на экран презентации (или 'back');
    *   link   — уход в другой раздел стенда: 'globe' — экран глобуса
-   *            «Маршруты экспорта». Адрес и затемнение — U.goSection;
+   *            «Маршруты экспорта», 'monitoring' — карта мониторинга.
+   *            Адрес и затемнение — U.goSection;
    *   action — поведение самого экрана из словаря ACTIONS.
    */
   function button(b, cls) {
-    var n = el('button', cls || 'st-btn', b.label);
+    var n = el('button', cls || 'sc-btn', b.label);
     n.type = 'button';
     n.addEventListener('click', function () {
       resetIdle();
@@ -147,10 +79,6 @@
     return n;
   }
 
-  /* =================================================================
-     Сборка карточек экрана: постоянные + зависящие от выбора/вкладки
-     ================================================================= */
-
   function tabKey() { return st.tab || cur.defaultTab; }
   function selKey() { return st.sel != null ? st.sel : cur.defaultSel; }
 
@@ -159,156 +87,38 @@
     return list[0];
   }
 
-  /* Карточки, которые собираются из справочников по выбору на экране.
-     Тексты всё равно живут в story-content.js — здесь только сборка. */
-  var DYNAMIC = {
-    product: function () {
-      var p = find(C.products, selKey());
-      return [
-        { title: p.name, text: p.text },
-        { title: 'Показатели безопасности', items: p.safety }
-      ];
+  /** Экран 13: текущий шаг подготовки зернохранилища (1…9). */
+  function storeStep() {
+    var n = parseInt(selKey(), 10);
+    if (!(n >= 1 && n <= C.storeSteps.length)) n = 1;
+    return C.storeSteps[n - 1];
+  }
+
+  /** Экран 16: выбранная вкладка продовольственного маршрута. */
+  function foodTab() { return find(C.food, tabKey()); }
+
+  /** Экран 17: состояние кормового маршрута — корм или животное. */
+  function feedState() { return C.feed[tabKey()] || C.feed.feed; }
+
+  /* Кадр сцены: общий, по вкладке или по шагу. Имя вместо объекта —
+     ссылка на справочник (см. поля sceneByTab и sceneBySel). */
+  var SCENES = {
+    store: function () { return { pic: C.storeScenes[storeStep().scene] }; },
+    food: function () {
+      var f = foodTab();
+      return { pic: C.pic(f.name, f.img, 'фото', '', f.at) };
+    },
+    feed: function () {
+      var s = feedState();
+      return { pic: C.pic(s.title, s.img, 'фото', '', s.at) };
     }
   };
 
-  function cardsFor(scr) {
-    var out = [];
-    if (DYNAMIC[scr.id]) out = out.concat(DYNAMIC[scr.id]());
-    if (scr.cardsBySel) out = out.concat(scr.cardsBySel[selKey()] || []);
-    if (scr.cardsByTab) out = out.concat(scr.cardsByTab[tabKey()] || []);
-    if (scr.cards) out = out.concat(scr.cards);
-    // на экране 8 подсвечивается карточка выбранной зоны поля
-    return out.map(function (c) {
-      if (!c.key) return c;
-      var copy = {}; for (var k in c) copy[k] = c[k];
-      copy.active = c.key === selKey();
-      return copy;
-    });
-  }
-
   function sceneFor(scr) {
+    var name = scr.sceneBySel || scr.sceneByTab;
+    if (typeof name === 'string') return SCENES[name] ? SCENES[name]() : {};
     if (scr.sceneByTab) return scr.sceneByTab[tabKey()] || {};
     return scr.scene || {};
-  }
-
-  /* =================================================================
-     Раскладки
-     ================================================================= */
-
-  function head(scr) {
-    var h = el('header', 'st-head');
-    if (scr.eyebrow) h.appendChild(el('div', 'st-eyebrow', scr.eyebrow));
-    h.appendChild(el('h1', 'st-title', scr.title));
-    if (scr.sub) h.appendChild(el('div', 'st-sub', scr.sub));
-    return h;
-  }
-
-  function tabsEl(scr) {
-    if (!scr.tabs) return null;
-    var box = el('nav', 'st-tabs');
-    scr.tabs.forEach(function (t) {
-      var on = t.to ? t.to === scr.id : (t.tab === tabKey());
-      var b = el('button', 'st-tab' + (on ? ' is-on' : ''), t.label);
-      b.type = 'button';
-      b.addEventListener('click', function () {
-        resetIdle();
-        if (t.to && t.to !== scr.id) go(t.to);
-        else if (t.tab) { st.tab = t.tab; rerender(); }
-      });
-      box.appendChild(b);
-    });
-    return box;
-  }
-
-  function navEl(scr) {
-    var n = scr.nav;
-    var box = el('nav', 'st-nav');
-    ['back', 'center', 'next'].forEach(function (slot) {
-      var cell = el('div', 'st-nav-' + slot);
-      var b = n && n[slot];
-      if (b) {
-        if (b.text) cell.appendChild(el('div', 'st-nav-text', b.text));
-        else cell.appendChild(button(b, 'st-btn' + (b.primary ? ' is-primary' : '')));
-      }
-      box.appendChild(cell);
-    });
-    return box;
-  }
-
-  /** Типовая станция: шапка, табы, сцена слева, карточки справа, навигация. */
-  function renderStation(scr, root) {
-    root.appendChild(head(scr));
-    var tabs = tabsEl(scr);
-    if (tabs) root.appendChild(tabs);
-
-    var body = el('div', 'st-body' + (tabs ? '' : ' no-tabs') +
-      (scr.layout === 'wide' ? ' is-wide' : ''));
-    var scene = el('section', 'st-scene');
-    renderScene(scr, scene);
-    body.appendChild(scene);
-
-    if (scr.layout !== 'wide') {
-      var col = el('aside', 'st-cards');
-      cardsFor(scr).forEach(function (c) { col.appendChild(cardEl(c)); });
-      body.appendChild(col);
-    }
-    root.appendChild(body);
-    root.appendChild(navEl(scr));
-  }
-
-  function renderScene(scr, box) {
-    var sc = sceneFor(scr);
-    if (sc.widget && WIDGETS[sc.widget]) { WIDGETS[sc.widget](box, sc, scr); return; }
-    if (sc.cards) {
-      box.classList.add('is-panels');
-      sc.cards.forEach(function (c) { box.appendChild(cardEl(c)); });
-      return;
-    }
-    if (sc.pic) {
-      box.appendChild(stub(sc.pic, 'stub-fill'));
-      if (sc.hint) box.appendChild(el('div', 'st-hint', sc.hint));
-    }
-  }
-
-  /** Первый, финальный и служебные экраны: крупный кадр и кнопки. */
-  function renderHero(scr, root) {
-    if (scr.hero) {                       // экран 1: кадр во весь экран
-      root.classList.add('is-cover');
-      root.appendChild(stub(scr.scene.pic, 'stub-cover'));
-      var wrap = el('div', 'hero-cover');
-      wrap.appendChild(el('h1', 'hero-title', scr.title));
-      wrap.appendChild(el('div', 'hero-hint', scr.sub));
-      root.appendChild(wrap);
-      // касание в любом месте ведёт дальше; слушатель висит на своём слое,
-      // а не на #view — иначе он пережил бы смену экрана
-      var tap = el('button', 'hero-tap');
-      tap.type = 'button';
-      tap.setAttribute('aria-label', scr.sub || 'Дальше');
-      tap.addEventListener('click', function () { resetIdle(); go(scr.tapTo); });
-      root.appendChild(tap);
-      return;
-    }
-
-    root.appendChild(head(scr));
-    var body = el('div', 'st-body hero-body');
-    if (scr.scene && scr.scene.pic) {
-      var scene = el('section', 'st-scene');
-      scene.appendChild(stub(scr.scene.pic, 'stub-fill'));
-      body.appendChild(scene);
-    } else {
-      body.classList.add('is-center');
-    }
-    var col = el('aside', 'st-cards');
-    (scr.cards || []).forEach(function (c) { col.appendChild(cardEl(c)); });
-    if (scr.actions) {
-      var acts = el('div', 'hero-actions');
-      scr.actions.forEach(function (a) {
-        acts.appendChild(button(a, 'st-btn is-wide' + (a.primary ? ' is-primary' : '')));
-      });
-      col.appendChild(acts);
-    }
-    body.appendChild(col);
-    root.appendChild(body);
   }
 
   /* =================================================================
@@ -324,14 +134,25 @@
        markers:  [{ key, n, label, x, y, to }]  метки на объектах сцены
        links:    ['M … L …']              линии между метками (SVG)
        tiles:    [{ name, sub, img, … }]  плитки переходов (экран меню)
+       boxes:    [{ at, items }]          блоки по координатам кадра
+       tabsFrom: 'food'                   табы из справочника
+       overlay:  'store' | 'feed'         метки и подсказки на сцене
+       picks3:   'routes'                 три карточки во весь экран
+       hero:     'Раздел в разработке'    крупная надпись по центру
        nav:      { back, next }           навигация снизу
+       navWidth: [528, 556]               ширина кнопок навигации
 
      Элемент колонки — панель ({ title, text, rows, note }), кнопка
      ({ label, to|link|action, gold: true }) или блок, который движок
      собирает сам по выбору на экране ({ dyn: 'station' }).
      ================================================================= */
 
-  /** Картинка-сцена во весь экран. */
+  /**
+   * Картинка-сцена. Лежит в скруглённом блоке 1888x1048 (отступ 16 px
+   * от краёв экрана). Поле at кадра — его место внутри этого блока
+   * [слева, сверху, ширина, высота] в числах выгрузки Figma; без него
+   * кадр просто обрезается по месту.
+   */
   function sceneLayer(scr) {
     var p = sceneFor(scr).pic || null;
     var box = el('div', 'sc-scene' + (p && p.fit === 'contain' ? ' is-contain' : ''));
@@ -339,6 +160,13 @@
       var im = new Image();
       im.src = U.asset(p.img);
       im.alt = p.cap || '';
+      if (p.at) {
+        im.className = 'is-at';
+        im.style.left = p.at[0] + 'px';
+        im.style.top = p.at[1] + 'px';
+        im.style.width = p.at[2] + 'px';
+        im.style.height = p.at[3] + 'px';
+      }
       box.appendChild(im);
     }
     return box;
@@ -349,7 +177,9 @@
     var h = el('header', 'sc-head');
     if (scr.eyebrow) h.appendChild(el('div', 'sc-eyebrow', scr.eyebrow));
     if (scr.title) h.appendChild(el('h1', 'sc-title', scr.title));
-    if (scr.sub) h.appendChild(el('div', 'sc-sub', scr.sub));
+    // подзаголовок может зависеть от состояния сцены (кормовой маршрут)
+    var sub = scr.subByTab ? (C[scr.subByTab][tabKey()] || {}).sub : scr.sub;
+    if (sub) h.appendChild(el('div', 'sc-sub' + (scr.subBig ? ' is-big' : ''), sub));
     return h;
   }
 
@@ -357,7 +187,7 @@
   function panelEl(p) {
     var n = el('section', 'sc-panel' + (p.cls ? ' ' + p.cls : ''));
     if (p.cap) n.appendChild(el('div', 'sc-panel-cap', p.cap));
-    if (p.title) n.appendChild(el('h3', 'sc-panel-t', p.title));
+    if (p.title) n.appendChild(el('h3', 'sc-panel-t' + (p.small ? ' is-small' : ''), p.title));
     if (p.sub) n.appendChild(el('div', 'sc-panel-sub', p.sub));
     if (p.text) n.appendChild(el('p', 'sc-panel-p', p.text));
     if (p.big) n.appendChild(el('div', 'sc-big', p.big));
@@ -379,8 +209,22 @@
         n.appendChild(line);
       });
     }
+    /* пары «название — пояснение» столбиком: сопроводительные
+       документы на экране 21 */
+    if (p.leads2) {
+      var lb = el('div', 'sc-leads2');
+      p.leads2.forEach(function (d) {
+        var row = el('div', 'sc-lead2');
+        row.appendChild(el('div', 'sc-lead2-k', d[0]));
+        row.appendChild(el('div', 'sc-lead2-v', d[1]));
+        lb.appendChild(row);
+      });
+      n.appendChild(lb);
+    }
+    if (p.bars) n.appendChild(barsEl(C[p.bars]));
     if (p.grid) n.appendChild(gridEl(p.grid));
-    if (p.slider) n.appendChild(sliderEl(SLIDERS[p.slider]()));
+    if (p.slider) n.appendChild(sliderEl(
+      typeof p.slider === 'string' ? SLIDERS[p.slider]() : p.slider));
     if (p.gauge) n.appendChild(gaugeEl(GAUGES[p.gauge]()));
     if (p.rows) {
       var rt = el('div', 'sc-rows');
@@ -394,7 +238,119 @@
       n.appendChild(rt);
     }
     if (p.note) n.appendChild(el('div', 'sc-note', p.note));
+    if (p.button) n.appendChild(button(p.button,
+      'sc-btn sc-panel-btn' + (p.button.gold ? ' is-gold' : '')));
     return n;
+  }
+
+  /** Полоски долей: несоответствия за сезон (экран приёмки). */
+  function barsEl(list) {
+    var box = el('div', 'sc-bars');
+    var max = 0;
+    list.forEach(function (m) { max = Math.max(max, m.value); });
+    list.forEach(function (m) {
+      var row = el('div', 'sc-bar');
+      row.appendChild(el('span', 'sc-bar-k', m.name));
+      var track = el('span', 'sc-bar-track');
+      var fill = el('i');
+      fill.style.width = Math.round(m.value / max * 100) + '%';
+      track.appendChild(fill);
+      row.appendChild(track);
+      row.appendChild(el('span', 'sc-bar-v',
+        String(m.value).replace('.', ',') + ' %'));
+      box.appendChild(row);
+    });
+    return box;
+  }
+
+  /** Шаги 01–03 отдельными плашками (экран контроля экспорта). */
+  function stepsEl(list) {
+    var box = el('div', 'sc-steps');
+    list.forEach(function (s, i) {
+      var row = el('div', 'sc-step' + (i === list.length - 1 ? ' is-on' : ''));
+      row.appendChild(el('span', 'sc-step-n', '0' + (i + 1)));
+      var t = el('div', 'sc-step-t');
+      t.appendChild(el('div', 'sc-step-k', s[0]));
+      t.appendChild(el('div', 'sc-step-v', s[1]));
+      row.appendChild(t);
+      box.appendChild(row);
+    });
+    return box;
+  }
+
+  /** Стеклянная карточка с одним снимком: «увеличенный фрагмент». */
+  function shotEl(s) {
+    var box = el('div', 'sc-shot');
+    if (s.h) box.style.height = s.h + 'px';
+    var im = new Image();
+    im.src = U.asset(s.img);
+    im.alt = s.cap || '';
+    box.appendChild(im);
+    return box;
+  }
+
+  /** Плитка со значением: «Жир 3,2 %» на кормовом маршруте. */
+  function statEl(s) {
+    var n = el('div', 'sc-stat');
+    n.appendChild(el('div', 'sc-stat-k', s.name));
+    var v = el('div', 'sc-stat-v', s.value);
+    v.appendChild(el('span', 'sc-stat-u', s.unit));
+    n.appendChild(v);
+    if (s.note) n.appendChild(el('div', 'sc-stat-note', s.note));
+    return n;
+  }
+
+  /**
+   * Переключатель из двух-трёх сегментов внутри панели: «До / После».
+   * Выбранный сегмент светлее, золото по киту тут не используется.
+   */
+  function toggleEl(t) {
+    var box = el('div', 'sc-toggle');
+    t.items.forEach(function (label, i) {
+      var b = el('button', 'sc-toggle-b' + (i === t.at ? ' is-on' : ''), label);
+      b.type = 'button';
+      b.addEventListener('click', function () { resetIdle(); t.on(i); });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /**
+   * Выпадающий выбор страны: плашка с названием и золотая круглая
+   * кнопка-стрелка. Список раскрывается по касанию любой из двух.
+   */
+  function selectEl(name) {
+    var list = C[name];
+    var box = el('div', 'sc-select' + (st.open ? ' is-open' : ''));
+    var cur2 = find(list, selKey());
+
+    var head = el('button', 'sc-select-head', cur2.name);
+    head.type = 'button';
+    var arrow = el('button', 'sc-select-go', '▾');
+    arrow.type = 'button';
+    function toggle() { resetIdle(); st.open = !st.open; rerender(); }
+    head.addEventListener('click', toggle);
+    arrow.addEventListener('click', toggle);
+    box.appendChild(head);
+    box.appendChild(arrow);
+
+    if (st.open) {
+      var menu = el('div', 'sc-select-menu');
+      list.forEach(function (it) {
+        var b = el('button', 'sc-select-i' + (it.key === cur2.key ? ' is-on' : ''),
+          it.name);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          resetIdle();
+          st.sel = it.key;
+          st.open = false;
+          rerender();
+        });
+        menu.appendChild(b);
+      });
+      box.appendChild(menu);
+    }
+    return box;
   }
 
   /* =================================================================
@@ -405,26 +361,24 @@
      в справочнике; ручной разметки в HTML нет нигде.
      ================================================================= */
 
-  /* Иконки плиток — тонкие контуры, как в UI KIT. Рисуем сами:
-     картинок под них дизайнеры не давали. */
+  /* Иконки плиток — svg из выгрузки Figma. Пути пишутся целиком:
+     tools/build_dist.py ищет в коде готовые строки «assets/…»,
+     склейка из кусков ему не видна. */
   var ICONS = {
-    flask: '<path d="M9.4 3h5.2"/><path d="M10.6 3v6.3l-5 9a2 2 0 0 0 1.8 3h9.2a2 2 0 0 0 1.8-3l-5-9V3"/>' +
-           '<path d="M8.3 15.2h7.4"/>',
-    fungus: '<path d="M3.8 11a8.2 8.2 0 0 1 16.4 0z"/><path d="M10.2 11v6.9a1.8 1.8 0 0 0 3.6 0V11"/>',
-    drop: '<path d="M12 3.4c3.3 3.7 5.3 6.5 5.3 9.2a5.3 5.3 0 1 1-10.6 0c0-2.7 2-5.5 5.3-9.2z"/>',
-    gene: '<circle cx="12" cy="12" r="8.4"/><path d="M9.2 7.4c0 4.6 5.6 4.6 5.6 9.2"/>' +
-          '<path d="M14.8 7.4c0 4.6-5.6 4.6-5.6 9.2"/><path d="M9.7 10.2h4.6"/><path d="M9.7 13.8h4.6"/>',
-    bug: '<path d="M8.1 9a3.9 3.9 0 0 1 7.8 0v3.3a3.9 3.9 0 0 1-7.8 0z"/><path d="M9.7 6.5 8.5 4.8"/>' +
-         '<path d="M14.3 6.5 15.5 4.8"/><path d="M8.1 10.4H4.7"/><path d="M15.9 10.4h3.4"/>' +
-         '<path d="M8.4 13.6 5.6 15.4"/><path d="M15.6 13.6l2.8 1.8"/><path d="M12 12.4v4.4"/>'
+    science: 'assets/concept/svg/ico-science.svg',
+    mushroom: 'assets/concept/svg/ico-mushroom.svg',
+    drop: 'assets/concept/svg/ico-drop.svg',
+    eco: 'assets/concept/svg/ico-eco.svg',
+    ant: 'assets/concept/svg/ico-ant.svg'
   };
 
   function iconEl(name) {
     var box = el('span', 'sc-pick-ico');
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 24 24');
-    svg.innerHTML = ICONS[name] || '';
-    box.appendChild(svg);
+    if (!ICONS[name]) return box;
+    var im = new Image();
+    im.src = U.asset(ICONS[name]);
+    im.alt = '';
+    box.appendChild(im);
     return box;
   }
 
@@ -465,10 +419,10 @@
   var STEPS = 1000;
 
   function sliderEl(s) {
-    var box = el('div', 'sc-slider');
+    var box = el('div', 'sc-slider' + (s.wide ? ' is-wide' : ''));
     var top = el('div', 'sc-slider-top');
     top.appendChild(el('span', null, s.label));
-    var unit = el('span', 'sc-slider-unit', s.unit);
+    var unit = el('span', 'sc-slider-unit', s.unit || '');
     top.appendChild(unit);
     box.appendChild(top);
 
@@ -487,15 +441,26 @@
     track.appendChild(input);
     box.appendChild(track);
 
+    /* Подписи под дорожкой: две по краям или три-четыре по делениям —
+       в макетах продовольственного маршрута их три. */
+    var labels = s.marks || [s.left || 'Минимум', s.right || 'Максимум'];
     var ends = el('div', 'sc-ends');
-    ends.appendChild(el('span', null, s.left || 'Минимум'));
-    ends.appendChild(el('span', null, s.right || 'Максимум'));
+    var marks = labels.map(function (t) {
+      var n = el('span', null, t);
+      ends.appendChild(n);
+      return n;
+    });
     box.appendChild(ends);
 
     function put() {
-      var p = input.value / STEPS * 100;
+      var part = input.value / STEPS;
+      var p = part * 100;
       fill.style.width = p + '%';
       knob.style.left = p + '%';
+      if (marks.length > 2) {
+        var at = Math.round(part * (marks.length - 1));
+        marks.forEach(function (n, i) { n.classList.toggle('is-on', i === at); });
+      }
     }
     input.addEventListener('input', function () {
       resetIdle();
@@ -542,8 +507,9 @@
 
   /** Плашка-статус: зелёная — всё в норме, красноватая — превышение. */
   function statusEl(s) {
-    var n = el('div', 'sc-status' + (s.bad ? ' is-bad' : ''));
-    n.appendChild(el('span', 'sc-status-m', s.bad ? '!' : '✓'));
+    var kind = s.bad ? ' is-bad' : (s.warn ? ' is-warn' : '');
+    var n = el('div', 'sc-status' + kind + (s.dot ? ' is-dot' : ''));
+    n.appendChild(el('span', 'sc-status-m', s.dot ? '' : (s.bad ? '!' : '✓')));
     n.appendChild(el('span', null, s.text));
     st.status = n;
     return n;
@@ -615,21 +581,92 @@
       var n = el('div', 'sc-cap' + (c.count ? ' sc-count' : ''), c.text || '');
       n.style.left = c.x + 'px';
       n.style.top = c.y + 'px';
-      if (c.count) st.countEl = n;
+      if (c.w) n.style.width = c.w + 'px';
+      if (c.right) n.style.textAlign = 'right';
+      if (c.count) {
+        st.countEl = n;
+        // в макете счётчика нет: показываем его после первой находки
+        n.style.display = 'none';
+      }
       root.appendChild(n);
     });
   }
 
-  /** Делитель на предметном снимке (две половины зерна). */
-  function splitEl(scr, root) {
-    var s = scr.split;
-    var n = el('div', 'sc-split');
-    n.style.left = s.x + 'px';
-    n.style.top = s.y + 'px';
-    n.style.height = s.h + 'px';
-    n.appendChild(el('i', null, '◄ ►'));
-    n.firstChild.style.top = s.knob + 'px';
-    root.appendChild(n);
+  /**
+   * Шторка сравнения на предметном снимке (экран 7, зерно).
+   *
+   * Снизу лежит кадр «с внешними повреждениями», сверху — «здоровое»
+   * состояние, обрезанное по ручке. Ручку тянут пальцем или мышью;
+   * доля запоминается в st.wipe, чтобы перерисовка экрана её не сбила.
+   */
+  function curtainEl(scr, root) {
+    var c = scr.curtain;
+    if (st.wipe == null) st.wipe = c.x;
+
+    var box = el('div', 'sc-fig sc-curtain');
+    box.style.left = c.at[0] + 'px';
+    box.style.top = c.at[1] + 'px';
+    box.style.width = c.at[2] + 'px';
+    box.style.height = c.at[3] + 'px';
+
+    var base = el('div', 'sc-curtain-l');
+    var im = new Image();
+    im.src = U.asset(c.img);
+    im.alt = c.cap || '';
+    base.appendChild(im);
+    box.appendChild(base);
+
+    /* Верхний слой. Кадра здорового зерна дизайнеры не давали:
+       пока там рамка-заглушка того же размера. */
+    var top = el('div', 'sc-curtain-l is-top');
+    if (c.top.img) {
+      var im2 = new Image();
+      im2.src = U.asset(c.top.img);
+      im2.alt = c.top.cap || '';
+      if (c.top.at) {
+        im2.className = 'is-at';
+        im2.style.left = c.top.at[0] + 'px';
+        im2.style.top = c.top.at[1] + 'px';
+        im2.style.width = c.top.at[2] + 'px';
+        im2.style.height = c.top.at[3] + 'px';
+      }
+      top.appendChild(im2);
+    } else {
+      top.classList.add('is-stub');
+      top.appendChild(el('span', null, c.top.cap));
+    }
+    box.appendChild(top);
+    root.appendChild(box);
+
+    var line = el('div', 'sc-split');
+    line.style.top = c.y + 'px';
+    line.style.height = c.h + 'px';
+    var knob = el('i', null, '◄ ►');
+    knob.style.top = c.knob + 'px';
+    line.appendChild(knob);
+    root.appendChild(line);
+
+    function put(p) {
+      st.wipe = U.clamp(p, 6, 94);
+      top.style.clipPath = 'inset(0 ' + (100 - st.wipe) + '% 0 0)';
+      top.style.webkitClipPath = top.style.clipPath;
+      line.style.left = (c.at[0] + c.at[2] * st.wipe / 100) + 'px';
+    }
+    put(st.wipe);
+
+    /* Тянуть можно за всю картинку: на сенсорной панели попасть
+       в тонкую линию пальцем неудобно. */
+    var down = false;
+    function at(e) {
+      var r = box.getBoundingClientRect();
+      put((e.clientX - r.left) / r.width * 100);
+    }
+    box.addEventListener('pointerdown', function (e) {
+      down = true; box.setPointerCapture(e.pointerId); at(e); resetIdle();
+    });
+    box.addEventListener('pointermove', function (e) { if (down) at(e); });
+    box.addEventListener('pointerup', function () { down = false; });
+    box.addEventListener('pointercancel', function () { down = false; });
   }
 
   /**
@@ -661,6 +698,7 @@
   function countWeeds(total) {
     var n = 0;
     for (var k in st.found) if (st.found[k]) n++;
+    st.countEl.style.display = n ? '' : 'none';
     st.countEl.textContent = 'Найдено ' + n + ' из ' + total;
     st.countEl.classList.toggle('is-done', n === total);
   }
@@ -679,13 +717,147 @@
     });
   }
 
+  /* ------------------- детали экрана хранения (13) -------------------
+     Меню разделов слева, подсказки и «горячие» места прямо на ангаре.
+     Всё собирается по текущему шагу из C.storeSteps. */
+
+  /** Меню из четырёх разделов: пройденные с галочкой, текущий подсвечен. */
+  function menuEl() {
+    var step = storeStep();
+    var cur2 = step.sec;
+    var passed = true;                   // разделы до текущего пройдены
+    var box = el('nav', 'sc-menu');
+    C.storeMenu.forEach(function (m) {
+      if (m.key === cur2) passed = false;
+      var on = m.key === cur2 && !step.done;
+      var done = step.done || passed;    // на последнем шаге пройдены все
+      var b = el('button', 'sc-menu-i' + (on ? ' is-on' : '') +
+        (done ? ' is-done' : ''));
+      b.type = 'button';
+      var t = el('div', 'sc-menu-t');
+      t.appendChild(el('div', 'sc-menu-k', m.name));
+      t.appendChild(el('div', 'sc-menu-v', m.sub));
+      b.appendChild(t);
+      if (done) b.appendChild(el('span', 'sc-menu-ok', '✓'));
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.sel = String(m.from);
+        st.spot = null;
+        rerender();
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /** Подсказка-плашка и «горячие» места на ангаре. */
+  function storeOverlay(root) {
+    var step = storeStep();
+    if (step.marker) {
+      var m = el('div', 'sc-marker is-on');
+      m.style.left = step.marker.x + 'px';
+      m.style.top = step.marker.y + 'px';
+      m.appendChild(el('span', 'sc-marker-n', String(step.marker.n)));
+      m.appendChild(el('span', 'sc-marker-t', step.marker.label));
+      root.appendChild(m);
+    }
+    /* Подсветки пола, решётки и поток воздуха дизайнеры отдали
+       отдельными svg — кладём их по координатам кадра. */
+    (step.marks || []).forEach(function (m) {
+      var n = el('div', 'sc-mark');
+      n.style.left = m.at[0] + 'px';
+      n.style.top = m.at[1] + 'px';
+      n.style.width = m.at[2] + 'px';
+      n.style.height = m.at[3] + 'px';
+      var im = new Image();
+      im.src = U.asset(m.img);
+      im.alt = '';
+      n.appendChild(im);
+      root.appendChild(n);
+    });
+    (step.figs || []).forEach(function (f) {
+      var n = el('div', 'sc-fig' + (f.cls ? ' ' + f.cls : ''));
+      n.style.left = f.at[0] + 'px';
+      n.style.top = f.at[1] + 'px';
+      n.style.width = f.at[2] + 'px';
+      n.style.height = f.at[3] + 'px';
+      var im2 = new Image();
+      im2.src = U.asset(f.img);
+      im2.alt = '';
+      n.appendChild(im2);
+      root.appendChild(n);
+    });
+    (step.spots || []).forEach(function (s) {
+      var b = el('button', 'sc-spot' + (s.round ? ' is-round' : '') +
+        (st.spot === s.key ? ' is-on' : ''));
+      b.type = 'button';
+      b.style.left = s.at[0] + 'px';
+      b.style.top = s.at[1] + 'px';
+      b.style.width = s.at[2] + 'px';
+      b.style.height = s.at[3] + 'px';
+      b.addEventListener('click', function () { resetIdle(); ACTIONS.storeSpot(s.key); });
+      root.appendChild(b);
+    });
+    if (step.chip) {
+      var c = step.chip;
+      var n = el('div', 'sc-chip', st.done ? c.done : c.text);
+      n.style.left = c.at[0] + 'px';
+      n.style.top = c.at[1] + 'px';
+      n.style.minWidth = c.at[2] + 'px';
+      n.style.height = c.at[3] + 'px';
+      root.appendChild(n);
+    }
+  }
+
+  /** Метки-чипы кормового маршрута: выбор меняет карточку справа. */
+  function feedOverlay(root) {
+    var s = feedState();
+    var sel = st.sel != null ? st.sel : s.sel;
+    s.marks.forEach(function (m) {
+      var b = el('button', 'sc-marker sc-marker-prod sc-marker-feed' +
+        (sel === m.key ? ' is-on' : ''));
+      b.type = 'button';
+      b.style.left = m.x + 'px';
+      b.style.top = m.y + 'px';
+      b.appendChild(el('span', 'sc-marker-t', m.label));
+      b.addEventListener('click', function () { resetIdle(); st.sel = m.key; rerender(); });
+      root.appendChild(b);
+    });
+  }
+
+  var OVERLAYS = { store: storeOverlay, feed: feedOverlay };
+
+  /**
+   * Три карточки маршрута во всю высоту экрана (кадр 15). У каждой
+   * своя золотая кнопка: так в макете, правило «одна золотая кнопка
+   * на экран» здесь не действует.
+   */
+  function picks3El(name) {
+    var box = el('div', 'sc-picks3');
+    C[name].forEach(function (r) {
+      var card = el('section', 'sc-pick3');
+      card.appendChild(el('h3', 'sc-pick3-t', r.title));
+      card.appendChild(el('p', 'sc-pick3-p', r.text));
+      var ph = el('div', 'sc-pick3-pic');
+      var im = new Image();
+      im.src = U.asset(r.img);
+      im.alt = r.title;
+      ph.appendChild(im);
+      card.appendChild(ph);
+      card.appendChild(button({ label: 'Выбрать маршрут', to: r.to },
+        'sc-btn is-gold'));
+      box.appendChild(card);
+    });
+    return box;
+  }
+
   /* Блоки, которые зависят от выбора на экране: тексты всё равно лежат
-     в справочнике, здесь только сборка (как DYNAMIC для карточек). */
+     в справочнике, здесь только сборка. */
   var SLOTS = {
-    /** Центр: панель «О станции» — про выбранную метку. */
+    /** Центр: панель «Об этапе» — про выбранную метку. */
     station: function () {
       var s = find(C.stations, selKey());
-      return panelEl({ title: 'О станции', text: s.hint });
+      return panelEl({ title: 'Об этапе', text: s.hint });
     },
     /** Центр: золотая кнопка «Начать с почвы →» / «Открыть станцию →». */
     stationBtn: function () {
@@ -737,6 +909,8 @@
 
     /* --- экран 9: две кнопки под подсказкой. Золотая — та, которой
            стоит воспользоваться дальше; вторая стеклянная. --- */
+    /* На изометрии обе кнопки золотые — так в кадре. Нажатая кнопка
+       становится стеклянной: видно, какое состояние сейчас открыто. */
     weedBtnSelf: function () {
       var on = tabKey() === 'photo';
       return button({ label: on ? 'Смотрим' : 'Посмотреть самостоятельно',
@@ -745,7 +919,104 @@
     weedBtnDrone: function () {
       var on = tabKey() === 'drone';
       return button({ label: on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
-        action: 'weedDrone' }, 'sc-btn' + (tabKey() === 'photo' ? ' is-gold' : ''));
+        action: 'weedDrone' }, 'sc-btn' + (on ? '' : ' is-gold'));
+    },
+
+    /* --- экран 13: подготовка зернохранилища, девять шагов --- */
+
+    storeHead: function () {
+      var s = storeStep();
+      return panelEl({ title: s.title, sub: s.sub });
+    },
+    storeMenu: function () { return menuEl(); },
+    storeBtn: function () {
+      var s = storeStep();
+      var label = (st.before && s.btnBack) ? s.btnBack : s.btn;
+      return button({ label: label, action: 'storeNext' }, 'sc-btn is-gold');
+    },
+    storeCard: function () {
+      var s = storeStep();
+      return panelEl({ cap: s.cap,
+        title: st.before && s.cardBefore ? s.cardBefore : s.card,
+        text: s.text });
+    },
+    storeShot: function () {
+      var s = storeStep();
+      return shotEl(st.before && s.shotBefore ? s.shotBefore : s.shot);
+    },
+    /** Под снимком: пояснение, плашка-статус или переключатель «До / После». */
+    storeFoot: function () {
+      var s = storeStep();
+      if (s.toggle) {
+        return toggleEl({ items: s.toggle, at: st.before ? 0 : 1,
+          on: function (i) { st.before = i === 0; rerender(); } });
+      }
+      if (s.status) {
+        var ok = st.done && s.status.done;
+        return statusEl({ dot: true, warn: s.status.warn && !ok,
+          text: ok ? s.status.done : s.status.text });
+      }
+      if (!s.note) return el('div');
+      return panelEl({ text: s.note });
+    },
+
+    /* --- экран 16: продовольственный маршрут --- */
+
+    foodAbout: function () {
+      var f = foodTab();
+      return panelEl({ title: f.title, text: f.text });
+    },
+    foodCheck: function () {
+      var f = foodTab();
+      return panelEl({ title: 'Что оценивают', text: f.check });
+    },
+    foodSlider: function () {
+      var f = foodTab();
+      if (st.level == null) st.level = 0.86;   // ручка справа, как в макете
+      return panelEl({ cls: 'is-slim', slider: {
+        label: f.slider, marks: f.marks, value: st.level, wide: true,
+        on: function (v) { st.level = v; }
+      } });
+    },
+    foodNext: function () {
+      var f = foodTab();
+      return button(f.next.to ? { label: f.next.label, to: f.next.to }
+        : { label: f.next.label, action: 'foodNext' }, 'sc-btn');
+    },
+
+    /* --- экран 17: кормовой маршрут, два состояния --- */
+
+    feedAbout: function () {
+      var s = feedState();
+      return panelEl({ title: s.title, text: s.text });
+    },
+    feedCheck: function () {
+      var s = feedState();
+      return panelEl({ title: s.check, text: s.checkText });
+    },
+    feedStats: function () {
+      var row = el('div', 'sc-stats');
+      C.feedStats.forEach(function (x) { row.appendChild(statEl(x)); });
+      return row;
+    },
+    feedNext: function () {
+      var s = feedState();
+      return button(s.next.to ? { label: s.next.label, to: s.next.to }
+        : { label: s.next.label, action: 'feedNext' }, 'sc-btn');
+    },
+
+    /* --- экран 19: карточка выбранного продукта --- */
+    productCard: function () {
+      var p = find(C.products, selKey());
+      return panelEl({ title: 'Выбран продукт · ' + p.name.toLowerCase(),
+        text: C.productText.lead });
+    },
+
+    /* --- экран 21: требования выбранной страны --- */
+    countryCard: function () {
+      var c = find(C.countries, selKey());
+      return panelEl({ title: 'Требования\nнаправления', text: c.text,
+        note: 'Точный перечень требований предоставит заказчик' });
     }
   };
 
@@ -753,16 +1024,19 @@
     if (item.dyn) return SLOTS[item.dyn] ? SLOTS[item.dyn]() : el('div');
     if (item.label) return button(item, 'sc-btn' + (item.gold ? ' is-gold' : ''));
     if (item.picks) return picksEl(item.picks);
+    if (item.select) return selectEl(item.select);
+    if (item.steps) return stepsEl(item.steps);
+    if (item.shot) return shotEl(item.shot);
     if (item.grid && !item.title) return gridEl(item.grid);
     return panelEl(item);
   }
 
   /** Колонка панелей слева или справа; at: 'top' (по умолчанию) или 'bottom'. */
-  function colEl(spec, side) {
+  function colEl(spec, side, top) {
     var box = el('div', 'sc-col is-' + side + ' is-' + (spec.at || 'top') +
       (spec.hasNav ? ' has-nav' : ''));
     if (spec.width) box.style.width = spec.width + 'px';
-    if (spec.top) box.style.top = spec.top + 'px';
+    if (top || spec.top) box.style.top = (top || spec.top) + 'px';
     if (spec.gap != null) box.style.gap = spec.gap + 'px';
     (spec.items || []).forEach(function (item) { box.appendChild(slotEl(item)); });
     return box;
@@ -836,10 +1110,14 @@
     'soil-2': function () { st.dose = null; }
   };
 
-  /** Метки-чипы на объектах сцены. Координаты — в пикселях кадра 1920x1080. */
+  /**
+   * Метки-чипы на объектах сцены. Координаты — левый верхний угол чипа
+   * в пикселях кадра 1920x1080. markerCls задаёт вид чипов на экране.
+   */
   function markersEl(scr, root) {
     scr.markers.forEach(function (m) {
-      var b = el('button', 'sc-marker' + (selKey() === m.key ? ' is-on' : ''));
+      var b = el('button', 'sc-marker' + (scr.markerCls ? ' ' + scr.markerCls : '') +
+        (selKey() === m.key ? ' is-on' : ''));
       b.type = 'button';
       b.style.left = m.x + 'px';
       b.style.top = m.y + 'px';
@@ -875,6 +1153,7 @@
     scr.tiles.forEach(function (t) {
       var b = el('button', 'sc-tile');
       b.type = 'button';
+      if (t.w) b.style.width = t.w + 'px';
       var ph = el('div', 'sc-tile-pic');
       if (t.img) {
         var im = new Image();
@@ -902,13 +1181,34 @@
 
   /** Навигация новой раскладки: «← Назад» слева, «Вперёд →» справа. */
   function navSceneEl(scr, root) {
-    ['back', 'next'].forEach(function (slot) {
+    ['back', 'next'].forEach(function (slot, i) {
       var b = scr.nav && scr.nav[slot];
       if (!b) return;
       var cell = el('div', 'sc-nav-' + slot);
-      cell.appendChild(button(b, 'sc-btn' + (b.gold ? ' is-gold' : '')));
+      if (scr.navWidth) cell.style.width = scr.navWidth[i] + 'px';
+      cell.appendChild(b.dyn ? SLOTS[b.dyn]()
+        : button(b, 'sc-btn' + (b.gold ? ' is-gold' : '')));
       root.appendChild(cell);
     });
+  }
+
+  /** Табы под шапкой: список берётся из справочника (tabsFrom). */
+  function tabsSceneEl(scr) {
+    var slot = el('div', 'sc-tabs-slot');
+    var box = el('nav', 'sc-tabs');
+    C[scr.tabsFrom].forEach(function (t) {
+      var b = el('button', 'sc-tab' + (t.key === tabKey() ? ' is-on' : ''), t.name);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.tab = t.key;
+        st.level = null;
+        rerender();
+      });
+      box.appendChild(b);
+    });
+    slot.appendChild(box);
+    return slot;
   }
 
   /** Экран по макетам: сцена во весь экран и плавающие панели поверх. */
@@ -919,20 +1219,25 @@
       root.appendChild(el('div', 'sc-shade is-' + scr.shade.split(' ').join(' is-')));
     }
     if (scr.figs) figsEl(scr, root);
-    if (scr.split) splitEl(scr, root);
+    if (scr.curtain) curtainEl(scr, root);
     if (scr.caps) capsEl(scr, root);
     if (scr.links) root.appendChild(linksEl(scr));
     if (scr.markers) markersEl(scr, root);
     if (scr.radios) radiosEl(scr, root);
+    if (scr.overlay && OVERLAYS[scr.overlay]) OVERLAYS[scr.overlay](root);
     if (scr.weedsByTab && scr.weedsByTab[tabKey()]) weedsEl(scr.weedsByTab[tabKey()], root);
     if (scr.title || scr.eyebrow) root.appendChild(headEl(scr));
+    if (scr.hero) root.appendChild(el('div', 'sc-hero', scr.hero));
+    if (scr.tabsFrom) root.appendChild(tabsSceneEl(scr));
     if (scr.topRight) {
       var top = el('div', 'sc-top');
       top.appendChild(button(scr.topRight, 'sc-btn'));
       root.appendChild(top);
     }
+    if (scr.picks3) root.appendChild(picks3El(scr.picks3));
     if (scr.left) root.appendChild(colEl(scr.left, 'left'));
-    if (scr.right) root.appendChild(colEl(scr.right, 'right'));
+    if (scr.right) root.appendChild(colEl(scr.right, 'right',
+      scr.rightByTab && scr.rightByTab[tabKey()]));
     if (scr.boxes) boxesEl(scr, root);
     if (scr.tiles) root.appendChild(tilesEl(scr));
     if (scr.nav) navSceneEl(scr, root);
@@ -941,6 +1246,13 @@
   /** Заставка: коллаж, заголовок, подпись, касание в любом месте. */
   function renderIntro(scr, root) {
     var cover = el('div', 'sc-cover');
+    if (scr.scene && scr.scene.pic && scr.scene.pic.img) {
+      var bg = new Image();
+      bg.className = 'sc-cover-bg';
+      bg.src = U.asset(scr.scene.pic.img);
+      bg.alt = '';
+      cover.appendChild(bg);
+    }
     if (scr.collage && scr.collage.img) {
       var box = el('div', 'sc-collage');
       var im = new Image();
@@ -961,213 +1273,6 @@
     tap.addEventListener('click', function () { resetIdle(); go(scr.tapTo); });
     root.appendChild(tap);
   }
-
-  /* =================================================================
-     Интерактивы экранов
-     ================================================================= */
-
-  var WIDGETS = {
-
-    /* --- экран 10: рост → уборка → собранное зерно --- */
-    chain: function (box, sc) {
-      box.classList.add('is-widget');
-      var row = el('div', 'chain-row');
-      sc.pics.forEach(function (p, i) {
-        if (i) row.appendChild(el('div', 'chain-arrow', '→'));
-        var cell = el('div', 'chain-cell');
-        cell.appendChild(stub(p, 'stub-fill'));
-        // подпись нужна только под настоящим кадром: на заглушке
-        // она и так написана внутри рамки
-        if (p.img && p.cap) cell.appendChild(el('div', 'chain-cap', p.cap));
-        row.appendChild(cell);
-      });
-      box.appendChild(row);
-      if (sc.note) box.appendChild(el('div', 'chain-note', sc.note));
-    },
-
-    /* --- экраны 13 и 20: кадр и три шага --- */
-    steps: function (box, sc) {
-      box.classList.add('is-widget');
-      box.appendChild(stub(sc.pic, 'stub-fill'));
-      var row = el('div', 'steps-row');
-      st.stepEls = [];
-      sc.steps.forEach(function (t, i) {
-        var s = el('div', 'step');
-        s.appendChild(el('span', 'step-n', '0' + (i + 1)));
-        s.appendChild(el('span', 'step-t', t));
-        st.stepEls.push(s);
-        row.appendChild(s);
-        if (i < sc.steps.length - 1) row.appendChild(el('div', 'step-arrow', '→'));
-      });
-      box.appendChild(row);
-    },
-
-    /* --- экран 14: несоответствия за сезон --- */
-    mismatchChart: function (box, sc) {
-      box.classList.add('is-widget');
-      box.appendChild(el('div', 'st-scene-t', sc.hint));
-      var max = 0;
-      C.mismatch.forEach(function (m) { max = Math.max(max, m.value); });
-      var wrap = el('div', 'chart');
-      C.mismatch.forEach(function (m) {
-        var r = el('div', 'chart-row');
-        r.appendChild(el('span', 'chart-k', m.name));
-        var track = el('span', 'chart-track');
-        var fill = el('i');
-        fill.style.width = Math.round(m.value / max * 100) + '%';
-        track.appendChild(fill);
-        r.appendChild(track);
-        r.appendChild(el('span', 'chart-v',
-          String(m.value).replace('.', ',') + ' %'));
-        wrap.appendChild(r);
-      });
-      box.appendChild(wrap);
-      box.appendChild(el('div', 'st-note', 'Демонстрационные значения'));
-      box.appendChild(el('div', 'chart-total', 'Доля несоответствующих партий: … %'));
-    },
-
-    /* --- экран 15: три маршрута переработки --- */
-    routes: function (box, sc) {
-      box.classList.add('is-widget', 'is-routes');
-      var row = el('div', 'routes-row');
-      sc.routes.forEach(function (r) {
-        var col = el('div', 'route-col');
-        col.appendChild(stub(r.pic, 'stub-fill'));
-        var card = el('div', 'st-card');
-        card.appendChild(el('h3', 'st-card-t', r.title));
-        card.appendChild(el('p', 'st-card-p', r.text));
-        card.appendChild(button({ label: 'Открыть маршрут', to: r.to },
-          'st-btn is-primary st-card-btn'));
-        col.appendChild(card);
-        row.appendChild(col);
-      });
-      box.appendChild(row);
-    },
-
-    /* --- экран 16: ползунок качества муки ---
-       Пять кадров пробной выпечки лежат стопкой друг на друге.
-       Ползунок ходит непрерывно (0…1000), а не по пяти делениям:
-       положение между делениями плавно переводит один кадр в другой.
-       Верхние кадры проявляются поверх нижних, поэтому в середине
-       перехода сквозь стопку ничего не просвечивает. */
-    flourSlider: function (box, sc) {
-      box.classList.add('is-widget');
-      var lv = C.flourLevels;
-      var last = lv.length - 1;
-      var STEPS = 1000;                    // делений у ползунка
-      if (st.flour == null) st.flour = Math.round(STEPS * 2 / last);
-
-      var stage = el('div', 'flour-stage');
-      var layers = lv.map(function (l, i) {
-        var im = new Image();
-        im.className = 'flour-frame';
-        im.src = U.asset(l.img);
-        im.alt = l.name;
-        if (i) im.style.opacity = 0;
-        stage.appendChild(im);
-        return im;
-      });
-      box.appendChild(stage);
-
-      var sl = el('div', 'sf-slider');
-      sl.appendChild(el('div', 'sf-slider-t', sc.hint));
-      var row = el('div', 'sf-slider-row');
-      row.appendChild(el('span', 'sf-end', 'Хуже'));
-      var input = el('input', 'st-range');
-      input.type = 'range'; input.min = 0; input.max = STEPS;
-      input.step = 1; input.value = st.flour;
-      row.appendChild(input);
-      row.appendChild(el('span', 'sf-end', 'Лучше'));
-      sl.appendChild(row);
-
-      var scale = el('div', 'flour-scale');
-      var bar = el('div', 'flour-bar');
-      var fill = el('i');
-      bar.appendChild(fill);
-      scale.appendChild(bar);
-      var lab = el('div', 'flour-label');
-      var note = el('div', 'flour-sub');
-      scale.appendChild(lab);
-      scale.appendChild(note);
-      sl.appendChild(scale);
-
-      function upd() {
-        var pos = st.flour / STEPS * last;          // 0…4 с дробной частью
-        layers.forEach(function (im, i) {
-          if (!i) return;
-          im.style.opacity = U.clamp(pos - (i - 1), 0, 1);
-        });
-        fill.style.width = (st.flour / STEPS * 100) + '%';
-        var cur3 = lv[Math.round(pos)];
-        lab.textContent = cur3.name;
-        note.textContent = cur3.hint;
-      }
-      input.addEventListener('input', function () {
-        resetIdle(); st.flour = +input.value; upd();
-      });
-      upd();
-      box.appendChild(sl);
-      if (sc.note) box.appendChild(el('div', 'st-note', sc.note));
-    },
-
-    /* --- экран 17: цепочка «Корм → Животное → Молоко / мясо» --- */
-    feedChain: function (box, sc) {
-      box.classList.add('is-widget');
-      var row = el('div', 'chain-row');
-      C.feedChain.forEach(function (l, i) {
-        if (i) row.appendChild(el('div', 'chain-arrow', '→'));
-        var b = el('button', 'chain-cell is-pick' + (selKey() === l.key ? ' is-on' : ''));
-        b.type = 'button';
-        b.appendChild(stub(C.pic(l.cap, l.img, 'фото', 'contain'), 'stub-fill'));
-        b.appendChild(el('div', 'seed-name', l.name));
-        b.addEventListener('click', function () { resetIdle(); st.sel = l.key; rerender(); });
-        row.appendChild(b);
-      });
-      box.appendChild(row);
-      box.appendChild(el('div', 'st-hint', sc.hint));
-    },
-
-    /* --- экран 19: шесть продуктов --- */
-    products: function (box) {
-      box.classList.add('is-widget');
-      var grid = el('div', 'prod-grid');
-      C.products.forEach(function (p) {
-        var b = el('button', 'prod' + (selKey() === p.key ? ' is-on' : ''));
-        b.type = 'button';
-        b.appendChild(stub(C.pic(p.cap, p.img, 'фото', 'contain'), 'stub-fill'));
-        b.appendChild(el('div', 'prod-name', p.name));
-        b.addEventListener('click', function () { resetIdle(); st.sel = p.key; rerender(); });
-        grid.appendChild(b);
-      });
-      box.appendChild(grid);
-    },
-
-    /* --- экран 21: выбор страны и требования --- */
-    countries: function (box, sc) {
-      box.classList.add('is-widget');
-      var row = el('div', 'ind-row');
-      C.countries.forEach(function (c) {
-        var b = el('button', 'ind' + (selKey() === c.key ? ' is-on' : ''), c.name);
-        b.type = 'button';
-        b.addEventListener('click', function () { resetIdle(); st.sel = c.key; rerender(); });
-        row.appendChild(b);
-      });
-      box.appendChild(row);
-
-      var cur2 = find(C.countries, selKey());
-      var split = el('div', 'ctry-split');
-      var card = el('div', 'st-card');
-      card.appendChild(el('h3', 'st-card-t', 'Требования страны'));
-      card.appendChild(el('div', 'hub-about-n', cur2.name));
-      card.appendChild(el('p', 'st-card-p', cur2.text));
-      card.appendChild(el('div', 'st-note', 'Точный перечень требований предоставит заказчик'));
-      split.appendChild(card);
-      var ph = el('div', 'ctry-pic');
-      ph.appendChild(stub(sc.pic, 'stub-fill'));
-      split.appendChild(ph);
-      box.appendChild(split);
-    }
-  };
 
   /* =================================================================
      Действия кнопок (кнопка задаётся полем action в справочнике)
@@ -1192,38 +1297,46 @@
       rerender();
     },
 
-    /** Экраны 13 и 20: подсветить шаги по очереди. */
-    playSteps: function () {
-      if (!st.stepEls) return;
-      st.stepEls.forEach(function (s) { s.classList.remove('is-on'); });
-      st.stepEls.forEach(function (s, i) {
-        setTimeout(function () {
-          st.stepEls.forEach(function (x) { x.classList.remove('is-on'); });
-          s.classList.add('is-on');
-        }, i * 900);
-      });
+    /* --- экран 13: девять шагов подготовки зернохранилища --- */
+
+    /** Золотая кнопка: следующий шаг, а на последнем — «До / После». */
+    storeNext: function () {
+      var s = storeStep();
+      if (s.toggle) { st.before = !st.before; rerender(); return; }
+      var n = Math.min(s.n + 1, C.storeSteps.length);
+      st.sel = String(n);
+      st.spot = null;
+      st.done = false;
+      rerender();
     },
 
-    /** Экран 21: пакет сопроводительных документов. */
+    /**
+     * Касание «горячего» места на ангаре. Прототипа дизайнеры не дали,
+     * поведение придумано нами и намеренно простое: препарат сначала
+     * выбирают, потом переносят касанием пола; решётку закрывают одним
+     * касанием. Результат виден в подсказке и в плашке справа.
+     */
+    storeSpot: function (key) {
+      if (key === 'item') { st.spot = st.spot === 'item' ? null : 'item'; }
+      else if (key === 'floor') { if (st.spot === 'item') st.done = true; }
+      else { st.done = true; }
+      rerender();
+    },
+
+    /* --- экраны 16 и 17: следующая вкладка маршрута --- */
+    foodNext: function () { st.tab = foodTab().next.tab; st.level = null; rerender(); },
+    feedNext: function () { st.tab = feedState().next.tab; st.sel = null; rerender(); },
+
+    /** Экран 21: окно «Пакет документов». Кадра в макетах нет —
+        показываем стеклянную заглушку в общем стиле. */
     showDocs: function () {
-      var over = el('div', 'st-over');
-      var panel = el('div', 'st-over-panel');
-      panel.appendChild(el('h3', 'st-card-t', 'Пакет документов'));
-      var grid = el('div', 'docs-grid');
-      C.exportDocs.forEach(function (d, i) {
-        var c = el('div', 'doc');
-        // на первую карточку кладём снимок протоколов, остальные образцы
-        // документов предоставит заказчик — там пока заглушки
-        var img = i === 0 ? 'assets/photos/lab-reports.webp' : '';
-        c.appendChild(stub(C.pic(d, img, 'документ', img ? 'contain' : ''), 'stub-fill'));
-        c.appendChild(el('div', 'doc-name', d));
-        grid.appendChild(c);
-      });
-      panel.appendChild(grid);
-      panel.appendChild(el('div', 'st-note',
-        'Образцы документов предоставит заказчик.'));
-      panel.appendChild(button({ label: 'Закрыть', action: 'closeOver' },
-        'st-btn is-primary st-card-btn'));
+      var over = el('div', 'sc-over');
+      var panel = el('div', 'sc-over-panel');
+      panel.appendChild(el('div', 'sc-panel-cap', 'Пакет документов'));
+      panel.appendChild(el('h3', 'sc-panel-t', '[CONTENT]'));
+      panel.appendChild(el('p', 'sc-panel-p',
+        'Окна с пакетом документов в макетах нет.\nОбразцы и вёрстку окна предоставит заказчик.'));
+      panel.appendChild(button({ label: 'Закрыть', action: 'closeOver' }, 'sc-btn'));
       over.appendChild(panel);
       over.addEventListener('click', function (e) { if (e.target === over) over.remove(); });
       $('view').appendChild(over);
@@ -1236,9 +1349,7 @@
   /* Что доигрывает ?demo=1 на каждом экране — для снимков и показа. */
   var DEMOS = {
     'soil-2': function () { ACTIONS.calcDose(); },
-    'seed-3': function () { ACTIONS.weedDrone(); },
-    'store-1': function () { ACTIONS.playSteps(); },
-    'export-1': function () { ACTIONS.playSteps(); }
+    'seed-3': function () { ACTIONS.weedDrone(); }
   };
 
   /* =================================================================
@@ -1250,12 +1361,10 @@
     view.className = '';
     view.innerHTML = '';
     view.setAttribute('data-screen', cur.id);
-    var layout = cur.layout || 'station';
+    var layout = cur.layout || 'scene';
     view.setAttribute('data-layout', layout);
-    if (layout === 'scene') renderSceneLayout(cur, view);
-    else if (layout === 'intro') renderIntro(cur, view);
-    else if (layout === 'hero') renderHero(cur, view);
-    else renderStation(cur, view);
+    if (layout === 'intro') renderIntro(cur, view);
+    else renderSceneLayout(cur, view);
   }
 
   /** Перерисовать текущий экран без затухания (смена вкладки или выбора). */

@@ -1,0 +1,395 @@
+const imgChatGptImage1720261411281 = "http://localhost:3845/assets/e6b1b52bf58be5e83644871420b98281640ad081.png";
+const imgChatGptImage1720261411282 = "http://localhost:3845/assets/b261fb8384543ceb7b768975edb1039592743891.png";
+const imgFrame = "http://localhost:3845/assets/630d6ddc4be288d566cec0bb9564a3dec04d88cb.svg";
+const imgNumber1 = "http://localhost:3845/assets/9b62dd79435155e7caa095b5ee3b65788f53100e.svg";
+const imgNumber2 = "http://localhost:3845/assets/740b5544b91cda59ec7e468d852bb8b94d727e62.svg";
+const imgFrame2136139329 = "http://localhost:3845/assets/b580d876b602cd67e1ca8d991a1645e142893400.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="475:2042" data-name="2. Карта зерна - Открытая информация">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="475:2043">
+        <div className="absolute h-[1045px] left-[-16px] top-0 w-[1904px]" data-node-id="475:2044">
+          <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1112px] left-[calc(50%+7px)] top-[calc(50%+0.5px)] w-[1958px]" data-node-id="475:2045" data-name="ChatGPT Image 17 сент. 2026 г., 14_11_28 1">
+            <div aria-hidden className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-0 overflow-hidden">
+                <img alt="" className="absolute h-[99.87%] left-[0.02%] max-w-none top-[0.07%] w-[99.97%]" src={imgChatGptImage1720261411281} />
+              </div>
+              <div className="absolute inset-0 overflow-hidden">
+                <img alt="" className="absolute h-[99.86%] left-[0.05%] max-w-none top-[0.08%] w-[99.93%]" src={imgChatGptImage1720261411282} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute content-stretch flex flex-col items-start left-[1316px] top-[48px] w-[530px]" data-node-id="475:2046">
+            <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] h-[234px] items-start not-italic overflow-clip px-[var(--grain-space-32,32px)] py-[32px] relative rounded-[24px] shrink-0 text-white w-full whitespace-nowrap" data-node-id="475:2047">
+              <p className="font-['Akkurat_LL_Cyrillic:Light'] leading-[1.2] relative shrink-0 text-[32px]" data-node-id="475:2048">
+                Экспорт зерна, 2025
+              </p>
+              <div className="content-stretch flex flex-col font-['Akkurat_LL_Cyrillic:Regular'] gap-[2px] items-start overflow-clip relative shrink-0 w-full" data-node-id="475:2049" data-name="Number-1">
+                <div className="content-stretch flex gap-[10px] items-baseline leading-[normal] overflow-clip relative shrink-0" data-node-id="475:2050" data-name="Frame">
+                  <p className="relative shrink-0 text-[64px]" data-node-id="475:2051">
+                    33 085
+                  </p>
+                  <p className="relative shrink-0 text-[20px]" data-node-id="475:2052">
+                    тыс. т
+                  </p>
+                </div>
+                <p className="leading-[1.4] relative shrink-0 text-[14px]" data-node-id="475:2053">
+                  поставлено на экспорт
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute content-stretch flex gap-[4px] h-[668px] items-start left-[48px] top-[329px] w-[385px]" data-node-id="475:2054">
+            <div className="backdrop-blur-[35px] content-stretch flex flex-col h-[668px] items-start overflow-clip relative rounded-[24px] shrink-0 w-[373px]" data-node-id="475:2055" data-name="Container">
+              <div className="content-stretch flex items-center relative shrink-0 w-full" data-node-id="475:2056" data-name="List and Scroll">
+                <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2057" data-name="List">
+                  <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0 w-full" data-node-id="475:2058" data-name="Top 10">
+                    <div className="content-stretch flex flex-col gap-[4px] items-start overflow-clip relative shrink-0 w-full" data-node-id="475:2059" data-name="List">
+                      <div className="backdrop-blur-[25px] bg-[rgba(186,240,138,0.2)] content-stretch flex flex-col gap-[6px] items-start p-[16px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2060" data-name="top">
+                        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-center text-white whitespace-nowrap" data-node-id="475:2061">
+                          Топ-3 направления
+                        </p>
+                        <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2062" data-name="Number-1">
+                          <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-full" data-node-id="475:2063" data-name="Frame">
+                            <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2064" data-name="Frame">
+                              <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2065">
+                                Турция
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2066" data-name="Number-2">
+                          <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-full" data-node-id="475:2067" data-name="Frame">
+                            <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2068" data-name="Frame">
+                              <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2069">
+                                Египет
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2070" data-name="Number-3">
+                          <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-full" data-node-id="475:2071" data-name="Frame">
+                            <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2072" data-name="Frame">
+                              <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2073">
+                                Иран
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2074" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2075" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2076" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2077">
+                              Бангладеш
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2078" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2079" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2080" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2081">
+                              Беларусь
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2082" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2083" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2084" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2085">
+                              Израиль
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2086" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2087" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2088" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2089">
+                              Йемен
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2090" data-name="Number-4">
+                        <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-full" data-node-id="475:2091" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2092" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2093">
+                              Китай
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2094" data-name="Number-5">
+                        <div className="content-stretch flex items-center overflow-clip relative shrink-0 w-full" data-node-id="475:2095" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2096" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2097">
+                              Казахстан
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2098" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2099" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2100" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2101">
+                              Латвия
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2102" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2103" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2104" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2105">
+                              Ливия
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2106" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2107" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2108" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2109">
+                              ОАЭ
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[44px] items-start overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[373px]" data-node-id="475:2110" data-name="Number-6">
+                        <div className="content-stretch flex items-center justify-between overflow-clip relative shrink-0 w-full" data-node-id="475:2111" data-name="Frame">
+                          <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2112" data-name="Frame">
+                            <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2113">
+                              Саудовская Аравия
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="bg-[rgba(100,140,27,0.15)] content-stretch flex h-[668px] items-start justify-center relative rounded-[30px] shrink-0 w-[8px]" data-node-id="475:2114" data-name="Scroll bar">
+              <div className="bg-[#43744b] h-[262px] relative rounded-[30px] shrink-0 w-[8px]" data-node-id="475:2115" />
+            </div>
+          </div>
+          <div className="absolute bg-[rgba(100,140,27,0.15)] content-stretch flex h-[318px] items-start justify-center left-[1848px] rounded-[30px] top-[286px] w-[8px]" data-node-id="475:2116" data-name="Scroll bar">
+            <div className="bg-[#43744b] h-[164px] relative rounded-[30px] shrink-0 w-[8px]" data-node-id="475:2117" />
+          </div>
+          <div className="absolute content-stretch flex h-[75px] items-center justify-between left-[48px] top-[239px] w-[385px]" data-node-id="475:2118" data-name="Search bar">
+            <div className="backdrop-blur-[25px] bg-[rgba(246,246,246,0.1)] content-stretch flex h-[75px] items-center px-[16px] py-[8px] relative rounded-[999px] shrink-0 w-[385px]" data-node-id="475:2119" data-name="Search">
+              <div className="content-stretch flex gap-[16px] items-center relative shrink-0" data-node-id="475:2120">
+                <div className="relative shrink-0 size-[48px]" data-node-id="475:2121" data-name="Frame">
+                  <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame} />
+                </div>
+                <p className="[word-break:break-word] font-['Akkurat_LL_Cyrillic:Light'] leading-[1.2] not-italic opacity-40 relative shrink-0 text-[24px] text-white whitespace-nowrap" data-node-id="475:2123">
+                  Поиск по странам
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[4px] h-[572px] items-start left-[1315px] overflow-clip px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[286px] w-[529px]" data-node-id="475:2124" data-name="Container">
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-start p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2125">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[56px] items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[59px]" data-node-id="475:2126" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2127" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2128" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2129">
+                      1
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="[word-break:break-word] content-stretch flex flex-[1_0_0] flex-col font-['Inter:Light'] font-light gap-[6px] items-start min-w-px not-italic relative text-white" data-node-id="475:2130">
+                <p className="leading-[28px] relative shrink-0 text-[20px] w-full" data-node-id="475:2131">
+                  Экспорт зерна в 2026 г.
+                </p>
+                <p className="leading-[24px] relative shrink-0 text-[16px] w-full" data-node-id="475:2132">
+                  За первое полугодие 2026 г. под контролем ЦОК АПК экспортировано 28 млн тонн российского зерна.
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2133" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber1} />
+              </div>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-start p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2135">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 size-[56px]" data-node-id="475:2136" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2137" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2138" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2139">
+                      2
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2140">
+                <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-white w-full whitespace-pre-wrap" data-node-id="475:2141">
+                  {`Переговоры с Турцией `}
+                  <br aria-hidden />
+                  по вопросам экспорта зерна
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2142" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber2} />
+              </div>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-start p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2144">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 size-[56px]" data-node-id="475:2145" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2146" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2147" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2148">
+                      3
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2149">
+                <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-white w-full" data-node-id="475:2150">
+                  Делегация Турции посетила лабораторию ЦОК АПК
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2151" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber2} />
+              </div>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-center p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2153">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[56px] items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 w-[59px]" data-node-id="475:2154" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2155" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2156" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2157">
+                      4
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2158">
+                <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-white w-full" data-node-id="475:2159">
+                  Экспорт зерна в 2026 г.
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2160" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber1} />
+              </div>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-start p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2162">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 size-[56px]" data-node-id="475:2163" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2164" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2165" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2166">
+                      5
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2167">
+                <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-white w-full whitespace-pre-wrap" data-node-id="475:2168">
+                  {`Переговоры с Турцией `}
+                  <br aria-hidden />
+                  по вопросам экспорта зерна
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2169" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber2} />
+              </div>
+            </div>
+            <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[16px] items-start p-[8px] relative rounded-[16px] shrink-0 w-full" data-node-id="475:2171">
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col items-center justify-center overflow-clip px-[16px] py-[8px] relative rounded-[16px] shrink-0 size-[56px]" data-node-id="475:2172" data-name="Number-1">
+                <div className="content-stretch flex items-center overflow-clip relative shrink-0" data-node-id="475:2173" data-name="Frame">
+                  <div className="content-stretch flex items-start relative shrink-0" data-node-id="475:2174" data-name="Frame">
+                    <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[14px] text-white whitespace-nowrap" data-node-id="475:2175">
+                      6
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="content-stretch flex flex-[1_0_0] flex-col items-start min-w-px relative" data-node-id="475:2176">
+                <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[28px] not-italic relative shrink-0 text-[20px] text-white w-full" data-node-id="475:2177">
+                  Делегация Турции посетила лабораторию ЦОК АПК
+                </p>
+              </div>
+              <div className="absolute h-[33px] left-[422px] top-[8px] w-[35px]" data-node-id="475:2178" data-name="Number-1">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgNumber2} />
+              </div>
+            </div>
+          </div>
+          <div className="absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex gap-[26px] h-[124px] items-start left-[689px] overflow-clip p-[32px] rounded-[24px] top-[873px] w-[1167px]" data-node-id="475:2180" data-name="Container">
+            <div className="content-stretch flex flex-[1_0_0] gap-[4px] items-start min-w-px overflow-clip relative" data-node-id="475:2181" data-name="List">
+              <div className="bg-[#ebc669] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2182" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-on-accent,black)] whitespace-nowrap" data-node-id="475:2183">
+                  2015
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2184" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2185">
+                  2016
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2186" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2187">
+                  2017
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2188" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2189">
+                  2018
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2190" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2191">
+                  2019
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2192" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2193">
+                  2020
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2194" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2195">
+                  2021
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2196" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2197">
+                  2022
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2198" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2199">
+                  2023
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2200" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2201">
+                  2024
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2202" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="475:2203">
+                  2025
+                </p>
+              </div>
+              <div className="bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col h-[48px] items-center justify-center overflow-clip px-[20px] py-[8px] relative rounded-[16px] shrink-0" data-node-id="475:2204" data-name="Number-1">
+                <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[1.4] not-italic relative shrink-0 text-[20px] text-white whitespace-nowrap" data-node-id="475:2205">
+                  2026
+                </p>
+              </div>
+            </div>
+            <div className="absolute h-[4px] left-[32px] top-[95px] w-[1280px]" data-node-id="475:2206">
+              <div className="absolute inset-[0_0_-100%_0]">
+                <img alt="" className="block max-w-none size-full" src={imgFrame2136139329} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="[word-break:break-word] absolute font-['Akkurat_LL_Cyrillic:Regular'] leading-[0] left-[calc(50%-912px)] not-italic text-[#ddc195] text-[64px] top-[calc(50%-461px)] uppercase whitespace-nowrap" data-node-id="475:2223">
+          <p className="leading-[normal] mb-0">Маршруты</p>
+          <p className="leading-[normal]">экспорта</p>
+        </div>
+      </div>
+    </div>
+  );
+}

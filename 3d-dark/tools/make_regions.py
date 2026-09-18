@@ -4,7 +4,19 @@
 Берёт открытый набор Natural Earth (admin-1, масштаб 1:10 млн, public domain),
 оставляет Россию, приводит названия к русским, проецирует страну конической
 проекцией Альберса и упрощает геометрию с сохранением топологии.
-Результат — assets/geo/russia-regions.json, около 300 КБ.
+Результат — assets/geo/russia-regions.json, около 300 КБ, 89 субъектов.
+
+Состав субъектов
+----------------
+В исходнике Natural Earth к России отнесены 85 субъектов: Крым и Севастополь
+там уже российские, а Донецкая и Луганская народные республики, Запорожская
+и Херсонская области числятся украинскими областями. В состав РФ они
+добавляются здесь списком NEW_REGIONS — по кодам ISO и с официальными
+названиями. Геометрия берётся из исходника как есть, поэтому границы
+у новых регионов — административные границы соответствующих областей
+из Natural Earth. Они участвуют в общем разрезании контуров на дуги,
+так что стыки с Ростовской областью, Крымом и между собой сходятся
+точка в точку, а внешняя граница страны идёт по их внешнему краю.
 
     python3 tools/make_regions.py
 
@@ -85,7 +97,15 @@ NAME_FIX = {
     "RU-ZAB": "Забайкальский край",
     "UA-43": "Республика Крым",
     "UA-40": "Севастополь",
+    "UA-14": "Донецкая Народная Республика",
+    "UA-09": "Луганская Народная Республика",
+    "UA-23": "Запорожская область",
+    "UA-65": "Херсонская область",
 }
+
+# Субъекты, которые в Natural Earth приписаны Украине, а в состав России
+# входят с 2022 года. Берём их по кодам ISO; названия — в NAME_FIX выше.
+NEW_REGIONS = {"UA-14", "UA-09", "UA-23", "UA-65"}
 
 # Куски без названия и кода в исходнике — выкидываем.
 SKIP = {"RU-X01~"}
@@ -188,9 +208,9 @@ def main(src=None, out=None):
     feats = []
     for f in data["features"]:
         p = f["properties"]
-        if p.get("admin") != "Russia":
-            continue
         code = p.get("iso_3166_2") or p.get("adm1_code")
+        if p.get("admin") != "Russia" and code not in NEW_REGIONS:
+            continue
         if code in SKIP or not p.get("name_ru"):
             continue
         feats.append((code, NAME_FIX.get(code) or p["name_ru"], p.get("name"), f["geometry"]))
@@ -362,8 +382,10 @@ def main(src=None, out=None):
 
     regions.sort(key=lambda r: r["name"])
     doc = {
-        "note": "Контуры субъектов РФ. Источник: Natural Earth 10m admin-1 "
-                "(public domain). Готовит tools/make_regions.py.",
+        "note": "Контуры 89 субъектов РФ. Источник: Natural Earth 10m admin-1 "
+                "(public domain); ДНР, ЛНР, Запорожская и Херсонская области "
+                "добавлены в состав России списком NEW_REGIONS. "
+                "Готовит tools/make_regions.py.",
         "projection": {
             "name": "albers", "lon0": LON0, "lat0": LAT0,
             "lat1": LAT1, "lat2": LAT2, "unitKm": QUANT_KM

@@ -1,6 +1,12 @@
 /* ===================================================================
-   Раздел «Страны назначения»: загрузка данных, состояния экрана A/B,
+   Раздел «Маршруты экспорта»: загрузка данных, три кадра раздела,
    аттрактор-режим, масштабирование макета под окно.
+
+   Кадры (класс состояния ставит src/ui.js на обёртку #sec-globe):
+
+     intro     вход в раздел: два глобуса-ролика и цифры за два года
+     map       карта: поиск, топ-5, список стран, новости, годы
+     country   выбранная страна: объём, место в рейтинге, продукция
 
    Раздел единого приложения app.html (обёртка #sec-globe); та же логика
    работает и отдельной страницей index.html. Сцена three.js создаётся
@@ -21,7 +27,7 @@
   var byName = {};
   var year = null;
   var yearIdx = 0;
-  var state = 'A';
+  var state = 'intro';                 // intro | map | country
   var selected = null;
   var idleTimer = null;
   var live = true;                     // раздел на экране (в app.html — не всегда)
@@ -61,6 +67,35 @@
     });
   }
 
+  /** Сколько разных позиций продукции вывезли за год (для входного экрана). */
+  function cropsFor(y) {
+    var key = String(y), seen = {}, n = 0;
+    DATA.countries.forEach(function (c) {
+      var arr = c.years[key];
+      if (!arr) return;
+      for (var i = 0; i < arr.length; i++) {
+        if (!seen[arr[i][0]]) { seen[arr[i][0]] = 1; n++; }
+      }
+    });
+    return n;
+  }
+
+  /**
+   * Чипы годов: от первого года данных до `yearsUntil` из config.json.
+   * Год, которого в данных нет, показывается неактивным — цифры
+   * за него не выдумываем.
+   */
+  function yearChips() {
+    var last = DATA.years[DATA.years.length - 1];
+    var from = CFG.yearsFrom || DATA.years[0];
+    var to = Math.max(last, CFG.yearsUntil || last);
+    var out = [];
+    for (var y = from; y <= to; y++) {
+      out.push({ year: y, has: DATA.years.indexOf(y) >= 0 });
+    }
+    return out;
+  }
+
   /* ---------------------------- состояния ---------------------------- */
 
   var listCache = [];
@@ -70,13 +105,63 @@
     yearIdx = DATA.years.indexOf(y);
     listCache = countriesForYear(y);
 
-    UI.renderYears(DATA.years, y, DATA.summary);
+    UI.renderYears(yearChips(), y);
     UI.setList(listCache);
-    UI.renderSummary(y, DATA.summary[String(y)]);
+    UI.renderSummary(y, DATA.summary[String(y)].total);
     Globe.setRoutes(listCache, animate !== false);
     Globe.setSelected(null);
     selected = null;
+    if (state === 'country') goMap();   // страна могла пропасть из нового года
   }
+
+  /* ---- кадр A: вход в раздел ---- */
+
+  function goIntro() {
+    state = 'intro';
+    selected = null;
+    UI.setState('intro');
+    UI.clearSearch();
+    Globe.setSelected(null);
+    Globe.resetView();
+  }
+
+  /**
+   * Цифры входного кадра: два года из config.json (intro.leftYear
+   * и intro.rightYear). Если такого года в данных нет, берём крайний.
+   */
+  function renderIntro() {
+    var ic = CFG.intro || {};
+    var first = DATA.years[0], last = DATA.years[DATA.years.length - 1];
+    UI.renderIntro(introInfo(ic.leftYear != null ? ic.leftYear : first),
+                   introInfo(ic.rightYear != null ? ic.rightYear : last));
+  }
+
+  /**
+   * Год входного экрана. Если он есть в данных — цифры настоящие;
+   * если нет (в макете это, например, 2026) — берутся demo-значения
+   * из config.json, и под карточками появляется пометка.
+   */
+  function introInfo(y) {
+    y = +y;
+    if (DATA.years.indexOf(y) >= 0) {
+      return { year: y, total: DATA.summary[String(y)].total, crops: cropsFor(y) };
+    }
+    var demo = ((CFG.intro || {}).demo || {})[String(y)] || { total: 0, crops: 0 };
+    return { year: y, total: demo.total, crops: demo.crops, demo: true };
+  }
+
+  /* ---- кадр B: карта ---- */
+
+  function goMap() {
+    state = 'map';
+    selected = null;
+    UI.setState('map');
+    Globe.setSelected(null);
+    Globe.resetView();
+    flashHint();
+  }
+
+  /* ---- кадры C/D: страна ---- */
 
   function goToCountry(name) {
     if (!byName[name]) return;
@@ -84,8 +169,8 @@
     if (i < 0) return;               // в этом году поставок не было
 
     selected = name;
-    state = 'B';
-    UI.setState('B');
+    state = 'country';
+    UI.setState('country');
     var c = listCache[i];
     UI.renderCountry({
       name: name,
@@ -101,22 +186,12 @@
     Globe.focus(name);
   }
 
-  function backToMap() {
-    state = 'A';
-    selected = null;
-    UI.setState('A');
-    UI.collapse();
-    Globe.setSelected(null);
-    Globe.resetView();
-  }
-
   /* --------------------------- подсказка --------------------------- */
 
   /*
    * «Коснитесь страны или маршрута, чтобы узнать больше».
-   * В синей теме подсказка стоит постоянно под списком стран (#left-hint),
-   * в зелёной место под глобусом, поэтому она всплывает на пять секунд —
-   * при запуске и при возврате в аттрактор.
+   * Постоянного места в макетах у неё нет, поэтому подсказка всплывает
+   * под глобусом на пять секунд — при входе на карту.
    */
   var hintTimer = null;
 
@@ -131,6 +206,7 @@
   /* --------------------------- аттрактор --------------------------- */
 
   var idleOff = false;                 // отключается параметром ?idle=0
+  var urlState = false;                // кадр задан адресом (?view=, ?country=)
 
   /* В едином приложении таймер бездействия один на все разделы и живёт
      в src/shell.js — здесь мы только сообщаем ему, что был отклик. */
@@ -143,17 +219,13 @@
     idleTimer = setTimeout(toAttractor, sec);
   }
 
+  /** Сброс состояния: раздел возвращается на входной кадр A. */
   function toAttractor() {
     var start = CFG.startYear || DATA.years[DATA.years.length - 1];
-    state = 'A';
-    selected = null;
-    UI.setState('A');
-    UI.clearSearch();
-    $('panel-summary').classList.remove('is-collapsed');
+    state = 'intro';
     setYear(start, true);
-    Globe.resetView();
+    goIntro();
     resetIdle();
-    flashHint();
   }
 
   /* ------------------------------ старт ------------------------------ */
@@ -179,14 +251,14 @@
       UI.init({
         colors: CFG.colors,
         onYear: function (y) { resetIdle(); if (y !== year) setYear(y, true); },
-        onListSelect: function (name) { resetIdle(); Globe.setSelected(name); },
-        onListCancel: function () { resetIdle(); Globe.setSelected(null); },
         onStart: function (name) { resetIdle(); goToCountry(name); },
-        onBackToMap: function () { resetIdle(); backToMap(); },
+        onIntroGo: function () { resetIdle(); goMap(); },
+        onBackToMap: function () { resetIdle(); goMap(); },
         onResetView: function () { resetIdle(); Globe.resetView(); },
         onInteract: resetIdle
       });
-      UI.setupVideo(CFG.shipVideo);
+      UI.setupVideos(CFG.globeVideo, CFG.globeVideoPoster);
+      UI.renderNews(CFG.news);
 
       Globe.init({
         canvas: $('globe'),
@@ -196,7 +268,7 @@
         // тап по дуге или по маркеру страны сразу открывает «Путь»
         onPick: function (name) {
           resetIdle();
-          if (state === 'A') goToCountry(name);
+          if (state === 'map') goToCountry(name);
         },
         // Сцена готова и текстуры залиты в видеопамять. Если раздел
         // готовился в фоне, дальше крутить его незачем — цикл отрисовки
@@ -207,7 +279,6 @@
       });
 
       // «Главное меню» — обратно в презентацию, на экран start.
-      // Кнопка видна только в зелёной теме (см. #home-btn в styles/app.css).
       var home = $('home-btn');
       if (home) {
         home.addEventListener('click', function () {
@@ -219,11 +290,11 @@
       fitStage();
       var start = CFG.startYear || DATA.years[DATA.years.length - 1];
       setYear(start, true);
-      UI.setState('A');
+      renderIntro();
+      UI.setState('intro');
       UI.hideLoading();
       U.revealPage();
       resetIdle();
-      if (live) flashHint();
       applyUrlParams();
 
       ['pointerdown', 'pointermove', 'keydown', 'wheel'].forEach(function (ev) {
@@ -252,8 +323,14 @@
     if (!Object.keys(q).length) return;
 
     if (q.year && DATA.years.indexOf(+q.year) >= 0 && +q.year !== year) setYear(+q.year, false);
-    if (q.country) goToCountry(q.country);
-    if (q.select) Globe.setSelected(q.select);
+
+    // ?view=map открывает сразу карту (кадр B), ?view=intro — входной кадр;
+    // ?country= и ?select= тоже уводят с входного кадра
+    if (q.view === 'map') { goMap(); urlState = true; }
+    if (q.view === 'intro') { goIntro(); urlState = true; }
+    if (q.select) { goMap(); Globe.setSelected(q.select); urlState = true; }
+    if (q.country) { goToCountry(q.country); urlState = true; }
+    if (q.q) { goMap(); UI.setSearch(q.q); urlState = true; }
 
     var v = {};
     if (q.lat && q.lon) { v.lat = +q.lat; v.lon = +q.lon; }
@@ -313,7 +390,11 @@
         fitStage();
         Globe.start();
         Globe.remeasure();               // пока раздел был скрыт, подписи не мерились
-        flashHint();
+        // из презентации раздел всегда открывается с входного кадра;
+        // исключение — кадр, заданный адресом при запуске (для снимков)
+        if (urlState) { urlState = false; }
+        else if (state !== 'intro') goIntro();
+        if (state === 'map') flashHint();
       },
       hide: function () {
         live = false;

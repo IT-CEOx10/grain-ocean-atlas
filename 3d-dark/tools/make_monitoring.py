@@ -38,6 +38,11 @@ YEAR_K = {2020: 1.02, 2021: 0.87, 2022: 1.19, 2023: 1.06,
 
 # Валовой сбор пшеницы по субъектам, тыс. т — опорный уровень «среднего года».
 # Ключ — код субъекта из assets/geo/russia-regions.json.
+#
+# NO_DATA — субъекты, по которым госмониторинг не проводится и данных
+# намеренно нет: на карте они серые, карточка открывается пустой.
+NO_DATA = {"UA-14", "UA-09", "UA-23", "UA-65"}
+
 BASE = {
     # юг
     "RU-ROS": 11500, "RU-KDA": 10600, "RU-STA": 8700, "RU-VGG": 4300,
@@ -147,7 +152,7 @@ def main():
     with open(GEO, encoding="utf-8") as f:
         geo = json.load(f)
     codes = [(r["id"], r["name"]) for r in geo["regions"]]
-    missing = [c for c, _ in codes if c not in BASE]
+    missing = [c for c, _ in codes if c not in BASE and c not in NO_DATA]
     if missing:
         print("ВНИМАНИЕ: нет опорного объёма для %s — поставлю ноль"
               % ", ".join(missing))

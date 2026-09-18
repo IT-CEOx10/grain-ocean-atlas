@@ -1,0 +1,104 @@
+const imgImage2090017764 = "http://localhost:3845/assets/bf2fb23f806ec7e71de075b43be8d79fb8903447.png";
+const imgEllipse20 = "http://localhost:3845/assets/67fa3028615d7b1cdeccc98b8fe917bbab369b97.svg";
+const imgEllipse21 = "http://localhost:3845/assets/2ecb7b8601ec5998ddcc67307d80421dc569db21.svg";
+const imgEllipse22 = "http://localhost:3845/assets/4d3fc64c555b784c00604ddffff02ef77a7efa6c.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] opacity-20 relative size-full" data-node-id="465:1702" data-name="21 · Зерно объединяет большой труд">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="465:1703" data-name="01 · Единая предметная сцена">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <div className="absolute flex h-[1063px] items-center justify-center left-0 top-0 w-[1888px]" data-node-id="465:1704">
+          <div className="-scale-y-100 flex-none rotate-180">
+            <div className="h-[1063px] relative w-[1888px]" data-name="image 2090017764">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage2090017764} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[557.203px] items-center justify-center left-[-893px] top-[-345px] w-[2538.821px]" data-node-id="465:1705">
+          <div className="flex-none rotate-[89.82deg]">
+            <div className="h-[2537.1px] relative w-[549.195px]">
+              <div className="absolute inset-[-4.13%_-19.08%]">
+                <img alt="" className="block max-w-none size-full" src={imgEllipse20} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[559.126px] items-center justify-center left-[-897px] top-[-345.92px] w-[3148.132px]" data-node-id="465:1706">
+          <div className="flex-none rotate-[89.82deg]">
+            <div className="h-[3146.414px] relative w-[549.195px]">
+              <div className="absolute inset-[-3.33%_-19.08%]">
+                <img alt="" className="block max-w-none size-full" src={imgEllipse21} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[1404.052px] items-center justify-center left-[1212px] top-[-69px] w-[1091.042px]" data-node-id="465:1707">
+          <div className="flex-none rotate-[89.82deg]">
+            <div className="h-[1086.626px] relative w-[1400.628px]">
+              <div className="absolute inset-[-9.64%_-7.48%]">
+                <img alt="" className="block max-w-none size-full" src={imgEllipse22} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[1404.052px] items-center justify-center left-[1212px] top-[-69px] w-[1091.042px]" data-node-id="465:1708">
+          <div className="flex-none rotate-[89.82deg]">
+            <div className="h-[1086.626px] relative w-[1400.628px]">
+              <div className="absolute inset-[-9.64%_-7.48%]">
+                <img alt="" className="block max-w-none size-full" src={imgEllipse22} />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="465:1709">
+        ПУТЬ ЗЕРНА · ОТ ПОЛЯ ДО ПОТРЕБИТЕЛЯ
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] uppercase w-[1428px]" data-node-id="465:1710">
+        Производство зерна предполагает большую работу
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="465:1711" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:1711;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[1260px] not-italic px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[217px] w-[596px]" data-node-id="465:1712" data-name="Grain/Panel">
+        <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:1712;167:641">
+          На каждом этапе — люди
+        </p>
+        <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full whitespace-pre-wrap" data-node-id="I465:1712;167:642">
+          {`От заботы о почве до готовой продукции: `}
+          <br aria-hidden />
+          {`за богатым и качественным урожаем стоит труд сельхозпроизводителей `}
+          <br aria-hidden />и специалистов из смежных отраслей
+        </p>
+      </div>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[1260px] not-italic px-[var(--grain-space-32,32px)] py-[32px] rounded-[24px] top-[478px] w-[596px]" data-node-id="465:1713" data-name="Grain/Panel">
+        <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I465:1713;167:641">
+          ЦОК АПК — надёжный партнёр
+        </p>
+        <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I465:1713;167:642">
+          Наша работа помогает сельхозпроизводителю оценить качество произведенного продукта, оформить нужные документы для сбыта внутри страны и на мировом рынке, получить справедливую цену. А потребителю - быть уверенным в безопасности и качестве продукции на своем столе.
+        </p>
+      </div>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[64px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[908px] w-[520px]" data-node-id="465:1714" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:1714;164:647">
+          Мониторинг зерна РФ →
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1300px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[908px] w-[556px]" data-node-id="465:1715" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I465:1715;164:647">
+          Маршруты экспорта →
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+    </div>
+  );
+}

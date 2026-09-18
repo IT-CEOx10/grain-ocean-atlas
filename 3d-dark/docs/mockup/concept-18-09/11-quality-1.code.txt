@@ -1,0 +1,114 @@
+const imgChatGptImage1520261535311 = "http://localhost:3845/assets/3a38367960cb0d9d7d8631213bd090b53e528260.png";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:1885" data-name="10 · Как оценивают качество урожая">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="448:1886" data-name="01 · Лабораторный образец — единая сцена">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <div className="absolute h-[1117px] left-[-52px] top-[-23px] w-[1971px]" data-node-id="448:1887" data-name="ChatGPT Image 15 сент. 2026 г., 15_35_31 1">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[99.85%] left-[0.01%] max-w-none top-[0.09%] w-[99.97%]" src={imgChatGptImage1520261535311} />
+          </div>
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="448:1888">
+        СТАНЦИЯ 3 · ОЦЕНКА КАЧЕСТВА УРОЖАЯ
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] uppercase w-[1350px]" data-node-id="448:1889">
+        лабораторный скрининг
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="448:1890" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1890;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:1892" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1893" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1894" data-name="Previous">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1894;164:647">
+              ← От посевов к урожаю
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:1895" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="448:1896" data-name="Next">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:1896;164:647">
+              Результаты оценки →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[64px] not-italic p-[var(--grain-space-32,32px)] rounded-[24px] top-[228px] w-[450px]" data-node-id="448:1897" data-name="Grain/Panel">
+        <div className="leading-[0] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1897;167:641">
+          <p className="leading-[38.4px] mb-0">У каждого урожая</p>
+          <p className="leading-[38.4px]">свои свойства</p>
+        </div>
+        <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I448:1897;167:642">
+          Исследования помогают оценить качество и дальнейшее использование зерна.
+        </p>
+      </div>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start left-[1326px] not-italic p-[var(--grain-space-32,32px)] rounded-[24px] top-[202px] w-[530px]" data-node-id="448:1898" data-name="Grain/Panel">
+        <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1898;167:641">
+          Влажность
+        </p>
+        <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I448:1898;167:642">
+          Содержание влаги в зерне определяют в отобранной пробе. Показатель учитывают при подготовке к хранению.
+        </p>
+      </div>
+      <div className="-translate-x-1/2 absolute gap-x-[2px] gap-y-[4px] grid grid-cols-[repeat(3,minmax(0,1fr))] grid-rows-[repeat(2,minmax(0,1fr))] h-[228px] left-[calc(50%+0.5px)] top-[788px] w-[775px]" data-node-id="448:1899">
+        <div className="content-stretch flex flex-col gap-[var(--grain-space-8,8px)] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1900" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(34,79,107,0.5)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1900;510:1585">
+            Белок
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#cddaef,inset_0px_0px_35px_0px_#88cbed]" />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1901" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1901;510:198">
+            Стекловидность
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1902" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1902;510:198">
+            Клейковина
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1903" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1903;510:198">
+            Натура
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1904" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1904;510:198">
+            Тяжелые металлы
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+        <div className="content-stretch flex flex-col gap-[16px] items-center justify-center justify-self-stretch p-[var(--grain-space-24,24px)] relative rounded-[var(--grain-radius-32,32px)] self-stretch shrink-0" data-node-id="448:1905" data-name="Grain/QualityMetricSelector">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.45)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:1905;510:198">
+            Бензапирен
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[28px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[174px] w-[900px]" data-node-id="448:1906">
+        Коснитесь показателя, чтобы узнать больше
+      </p>
+    </div>
+  );
+}

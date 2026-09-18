@@ -31,6 +31,16 @@ OUT = os.path.join(ROOT, "assets", "photos", "concept")
 # любого исходника, так что ресайза не происходит) и экономим качеством.
 SCENE_W, SCENE_Q = 1920, 72      # сцены во весь экран
 OBJECT_W, OBJECT_Q = 1200, 78    # предметы на прозрачном фоне (альфа остаётся)
+CARD_W, CARD_Q = 900, 80         # снимки внутри карточек шириной 438 px
+
+# Снимки, которые лежат в карточках, а не во весь экран: их незачем
+# хранить в ширине сцены. Имя файла без расширения.
+CARDS = {
+    "store-pest", "store-clean", "store-mask-off", "store-mask-on",
+    "store-tablet", "store-grate", "store-gas", "store-pest-dead",
+    "pick-food", "pick-feed", "pick-tech",
+    "tile-monitoring", "tile-globe", "tile-regions",
+}
 
 # Куски, которые вырезаем из полных кадров макетов.
 # Каждая строка: кадр, прямоугольник (left, top, right, bottom) в пикселях
@@ -38,18 +48,7 @@ OBJECT_W, OBJECT_Q = 1200, 78    # предметы на прозрачном ф
 CROPS = [
     # Заставка: коллаж из фотографий вокруг зерна. Снизу обрезаем выше
     # заголовка «ЗЕРНО В ОСНОВЕ ВСЕГО» — он будет набран текстом.
-    # Сам коллаж занимает 248..1569 по ширине и 127..844 по высоте,
-    # берём его с запасом ~15 px; заголовок начинается с y=915.
     ("01-intro.png", (233, 112, 1585, 862), "intro-collage", 1600, 78),
-    # Экран развилки: картинки внутри трёх плиток справа внизу,
-    # без подписей и без рамки самой плитки.
-    ("02-start.png", (806, 746, 1139, 928), "tile-monitoring", 560, 80),
-    ("02-start.png", (1167, 746, 1481, 928), "tile-globe", 560, 80),
-    ("02-start.png", (1509, 746, 1840, 928), "tile-regions", 560, 80),
-    # Экран «Сохранение и восстановление земельного ресурса»: картинки
-    # внутри двух карточек выбора удобрения, без подписей и без рамки.
-    ("06-soil-2.png", (68, 455, 336, 641), "soil-2-mineral", 560, 82),
-    ("06-soil-2.png", (352, 455, 618, 641), "soil-2-organic", 560, 82),
 ]
 
 # Сцены, которые приходится доставать из готового кадра макета.
@@ -62,24 +61,7 @@ CROPS = [
 # не видно, а под нашими панелями это место всё равно закрыто.
 #
 # Прямоугольники — в координатах экрана 1920x1080 (кадр выше на BAND).
-CLEANS = [
-    {
-        "frame": "06-soil-2.png",
-        "band": (0, 62, 1920, 1142),      # сам экран внутри кадра с подписями
-        "name": "soil-2-scene",
-        "width": 1920,
-        "quality": 72,
-        "rects": [
-            # (прямоугольник, направление растяжки)
-            ((56, 55, 1400, 185), "v"),    # надзаголовок и заголовок
-            ((1548, 56, 1862, 178), "v"),  # кнопка «В Центр»
-            ((40, 55, 624, 1025), "v"),    # вся левая колонка: фон ровный
-            ((1450, 193, 1856, 595), "h"), # панели справа лежат на поле,
-                                           # поэтому тянем вбок, от поля к фону
-            ((1368, 900, 1862, 1023), "v"),  # «Семена и посевы →»
-        ],
-    },
-]
+CLEANS = []
 
 
 def save_webp(im, name, width, quality, alpha):
@@ -105,9 +87,14 @@ def convert(name):
     im = Image.open(os.path.join(SRC, name))
     alpha = im.mode in ("RGBA", "LA") and im.getchannel("A").getextrema()[0] < 255
 
-    scene = im.width >= 1600
-    width, quality = (SCENE_W, SCENE_Q) if scene else (OBJECT_W, OBJECT_Q)
-    return save_webp(im, os.path.splitext(name)[0], width, quality, alpha)
+    stem = os.path.splitext(name)[0]
+    if stem in CARDS:
+        width, quality = CARD_W, CARD_Q
+    elif im.width >= 1600:
+        width, quality = SCENE_W, SCENE_Q
+    else:
+        width, quality = OBJECT_W, OBJECT_Q
+    return save_webp(im, stem, width, quality, alpha)
 
 
 def crop(frame, box, name, width, quality):

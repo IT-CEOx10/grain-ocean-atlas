@@ -1,0 +1,113 @@
+const imgImage97 = "http://localhost:3845/assets/839814133e6018630755d7c30714da05ab419a7e.png";
+const imgThumb = "http://localhost:3845/assets/ba1f6fd7e8309d1fd2208d8987a4ddb1d0b78168.svg";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="448:2329" data-name="15 · От зерна к продуктам переработки">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="448:2330" data-name="01 · Зернохранилище и работа специалистов">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1063px] left-1/2 top-[calc(50%+0.5px)] w-[1888px]" data-node-id="448:2331" data-name="image 97">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage97} />
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="448:2332">
+        ПРОДОВОЛЬСТВЕННЫЙ МАРШРУТ
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] w-[1400px]" data-node-id="448:2333">
+        ОТ ЗЕРНА К ПРОДУКТАМ ПЕРЕРАБОТКИ
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="448:2334" data-name="Grain/Button">
+        <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2334;164:647">
+          В Центр
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute content-stretch flex h-[108px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[908px] w-[1792px]" data-node-id="448:2335" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:2336" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[480px]" data-node-id="448:2337" data-name="Previous">
+            <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2337;164:647">
+              ← Другой маршрут
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-full items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="448:2338" data-name="NextSlot">
+          <div className="content-stretch flex gap-[16px] h-full items-center justify-center p-[24px] relative rounded-[var(--grain-radius-32,32px)] shrink-0 w-[480px]" data-node-id="448:2339" data-name="Next">
+            <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I448:2339;164:647">
+              Растительные масла →
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+      </div>
+      <div className="absolute bg-[#172c2a] content-stretch flex gap-[var(--grain-space-4,4px)] h-[64px] items-start left-[64px] p-[var(--grain-space-4,4px)] rounded-[var(--grain-radius-16,16px)] top-[188px] w-[1040px]" data-node-id="448:2340" data-name="Grain/ProcessingCategorySwitch">
+        <div className="content-stretch flex h-full items-center justify-center overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-[254px]" data-node-id="I448:2340;532:330" data-name="Сегмент 1">
+          <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[28px] min-w-px not-italic relative text-[20px] text-[color:var(--grain-color-text,white)] text-center" data-node-id="I448:2340;532:331">
+            Мука
+          </p>
+        </div>
+        <div className="content-stretch flex h-full items-center justify-center overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-[254px]" data-node-id="I448:2340;532:332" data-name="Сегмент 2">
+          <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[28px] min-w-px not-italic relative text-[20px] text-[color:var(--grain-color-text,white)] text-center" data-node-id="I448:2340;532:333">
+            Крупы
+          </p>
+        </div>
+        <div className="bg-[var(--grain-color-panel,rgba(246,246,246,0.1))] content-stretch flex h-full items-center justify-center overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-[254px]" data-node-id="I448:2340;532:334" data-name="Сегмент 3">
+          <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[28px] min-w-px not-italic relative text-[20px] text-[color:var(--grain-color-text,white)] text-center" data-node-id="I448:2340;532:335">
+            Хлопья
+          </p>
+        </div>
+        <div className="content-stretch flex h-full items-center justify-center overflow-clip relative rounded-[var(--grain-radius-16,16px)] shrink-0 w-[254px]" data-node-id="I448:2340;532:336" data-name="Сегмент 4">
+          <p className="[word-break:break-word] flex-[1_0_0] font-['Inter:Light'] font-light leading-[28px] min-w-px not-italic relative text-[20px] text-[color:var(--grain-color-text,white)] text-center" data-node-id="I448:2340;532:337">
+            Растительные масла
+          </p>
+        </div>
+      </div>
+      <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col gap-[8px] items-start left-[1148px] rounded-[36px] top-[188px] w-[708px]" data-node-id="448:2341">
+        <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="448:2342" data-name="Grain/Panel">
+          <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:2342;167:641">
+            Как получают хлопья
+          </p>
+          <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I448:2342;167:642">
+            Подготовленное зерно пропаривают и плющат. Ядро превращается в тонкую пластинку, сохраняя узнаваемую структуру зерна
+          </p>
+        </div>
+        <div className="[word-break:break-word] backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col font-['Inter:Light'] font-light gap-[26px] items-start not-italic p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="448:2343" data-name="Grain/Panel">
+          <p className="leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-full" data-node-id="I448:2343;167:641">
+            Что оценивают
+          </p>
+          <p className="leading-[32px] relative shrink-0 text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full" data-node-id="I448:2343;167:642">
+            Влажность · цвет · целостность. Также проверяют примеси, вкус и запах продукта
+          </p>
+        </div>
+        <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex items-start overflow-clip p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-full" data-node-id="448:2344" data-name="Регулятор качества муки · демонстрация">
+          <div className="content-stretch flex flex-col gap-[var(--grain-space-16,16px)] h-[100px] items-start p-[var(--grain-space-0,0px)] relative shrink-0 w-[644px]" data-node-id="448:2345" data-name="Grain/Slider">
+            <p className="[word-break:break-word] font-['Inter:Regular'] font-normal leading-[28.8px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="448:2346">
+              Степень плющения
+            </p>
+            <div className="bg-[var(--grain-color-border,rgba(255,255,255,0.2))] content-stretch flex flex-col gap-[var(--grain-space-0,0px)] h-[6px] items-start p-[var(--grain-space-0,0px)] relative rounded-[var(--grain-radius-999,999px)] shrink-0 w-full" data-node-id="448:2347" data-name="Track">
+              <div className="absolute bg-[var(--grain-color-accent,#ddc195)] h-[6px] left-0 top-0 w-[580px]" data-node-id="448:2348" data-name="Value" />
+              <div className="absolute left-[564px] size-[32px] top-[-13px]" data-node-id="448:2349" data-name="Thumb">
+                <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgThumb} />
+              </div>
+            </div>
+            <div className="[word-break:break-word] content-stretch flex font-['Inter:Light'] font-light h-[32px] items-start justify-between leading-[28px] not-italic overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-full whitespace-nowrap" data-node-id="448:2350" data-name="Labels">
+              <p className="relative shrink-0" data-node-id="448:2351">
+                Толще
+              </p>
+              <p className="relative shrink-0" data-node-id="448:2352">
+                Средние
+              </p>
+              <p className="relative shrink-0" data-node-id="448:2353">
+                Тоньше
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,12 +1,81 @@
 /* ===================================================================
-   Раздел «Мониторинг зерна РФ» — два экрана на одной странице
-   (monitoring.html): карта России и карточка выбранного региона.
+   Раздел «Мониторинг зерна РФ» — три экрана на одной подложке:
 
-   Переменные тем, шрифты, фон, .panel, .search, .round-btn и .ghost-btn
-   берутся из styles/app.css (зелёная тема); здесь только раскладка
-   этих двух экранов. Вся вёрстка в координатах 1920x1080, #stage
-   масштабируется под окно (src/monitoring.js, fitStage).
+     scr-map        карта госмониторинга (кадр 23-monitoring)
+     scr-region     карточка выбранного региона (кадр 24-region)
+     scr-presence   «Регионы присутствия ЦОК АПК» (кадр 03b-regions)
+
+   Все размеры сняты с кадров фигмы docs/mockup/concept-18-09
+   (*.png — картинка, *.code.txt — разметка кадра с координатами).
+   Кадр нарисован в поле 1920x1080, а интерфейс лежит на карточке
+   1888x1048 с отступом 16 px от краёв и радиусом 32. Карточку мы
+   повторяем (как и соседний раздел «Маршруты экспорта»), поэтому все
+   координаты ниже отсчитываются от неё: у элементов, которые в кадре
+   стояли вне карточки, из координат вычтены эти 16 px.
+
+   Шрифт Inter подключается в styles/story-theme.css (@font-face);
+   его правила действуют только внутри #sec-story, поэтому переменные
+   кита продублированы здесь под префиксом --mn-*.
+
+   Вся вёрстка в координатах 1920x1080, #stage масштабируется под окно
+   (src/monitoring.js, fitStage).
    =================================================================== */
+
+/* ---------------------------- переменные ---------------------------- */
+
+#sec-monitoring {
+  --mn-gold: #ddc195;
+  --mn-text: #ffffff;
+  --mn-muted: rgba(255, 255, 255, .7);
+  --mn-bg: #0e2b2e;              /* подложка карты */
+  --mn-bg-region: #0c1813;       /* подложка экрана региона */
+
+  /* стекло панелей: светлая заливка 10 % и размытие 35 */
+  --mn-panel: rgba(246, 246, 246, .1);
+  --mn-blur: blur(35px);
+  --mn-r: 24px;
+  --mn-pad: 32px;
+
+  /* кнопки карты (зеленоватое стекло) и «призрачные» кнопки экранов */
+  --mn-btn-map: rgba(107, 148, 76, .2);
+  --mn-btn-ghost: rgba(246, 246, 246, .01);
+  --mn-btn-line: inset 0 0 4px rgba(255, 255, 255, .25),
+    inset 0 0 35px rgba(255, 255, 255, .15);
+
+  --mn-tabs-bg: #172c2a;
+  --mn-bar-track: #1c3d26;
+  --mn-bar-fill: #ebc669;
+  --mn-scroll-track: rgba(100, 140, 27, .15);
+  --mn-scroll-thumb: #43744b;
+
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-weight: 400;
+  color: var(--mn-text);
+}
+
+/* Карточка кадра: в макетах интерфейс лежит на прямоугольнике
+   1888x1048 с отступом 16 px от краёв и радиусом 32 — так же сделан
+   соседний раздел «Маршруты экспорта». Все координаты ниже —
+   внутри этой карточки.
+   Фон — фактура из слоя кадра (тёмная зелень с горизонталями);
+   звёздной россыпи в новом дизайне нет. */
+#sec-monitoring #card {
+  inset: 16px;
+  border-radius: 32px;
+  background-color: var(--mn-bg);
+  background-image: url(../assets/photos/concept/mon-map-bg.webp);
+  background-size: cover;
+  background-position: center;
+}
+#sec-monitoring #stars { display: none; }
+body.mon-screen { background: #141d23; }
+
+#sec-monitoring #loading {
+  border-radius: 32px;
+  background: var(--mn-bg);
+  font-family: inherit;
+  color: var(--mn-muted);
+}
 
 /* Экраны лежат друг на друге и переключаются прозрачностью:
    видимость нужна, чтобы скрытый экран не ловил касания. */
@@ -20,566 +89,859 @@
 }
 .mon-scr.is-on { opacity: 1; visibility: visible; }
 
-/* ------------------------------ шапка ------------------------------ */
+/* Экраны с картой — прозрачная плёнка поверх холста: сама плёнка касания
+   пропускает (иначе карта и кнопки масштаба под ней не нажимаются),
+   ловят их только панели и кнопки внутри. */
+#scr-map, #scr-presence { pointer-events: none; }
+#scr-map > *, #scr-presence > * { pointer-events: auto; }
+#scr-map > .map-hint, #scr-presence > .map-hint { pointer-events: none; }
 
-.mon-title {
+/* ------------------------------ общее ------------------------------ */
+
+#sec-monitoring .mn-panel {
   position: absolute;
-  left: 60px;
-  top: 34px;
-  z-index: 6;
-  width: 860px;
+  z-index: 5;
+  padding: var(--mn-pad);
+  border-radius: var(--mn-r);
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  color: var(--mn-text);
 }
 
-.mon-screen .mon-search {
-  position: absolute;
-  right: 60px;
-  top: 46px;
-  width: 452px;
-  height: 72px;
+/* заголовок панели и крупное число с единицей */
+#sec-monitoring .mn-cap {
   margin: 0;
-  z-index: 6;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
+  color: var(--mn-text);
 }
-.mon-screen .mon-search input {
-  height: 72px;
-  border-radius: 999px;
-  padding: 0 26px 0 62px;
-  font-size: 18px;
-}
-.mon-screen .mon-search .search-icon {
-  left: 28px;
-  top: 27px;
-  width: 18px;
-  height: 18px;
-}
-
-/* --------------------------- селектор года --------------------------- */
-
-.mon-years {
-  position: absolute;
-  left: 60px;
-  top: 134px;
-  z-index: 6;
+#sec-monitoring .mn-num {
   display: flex;
-  gap: 8px;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1.1;
+  color: var(--mn-text);
+  font-variant-numeric: tabular-nums;
+}
+#sec-monitoring .mn-num i {
+  font-style: normal;
+  font-size: 20px;
+  font-weight: 400;
+}
+#sec-monitoring .mn-note {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--mn-text);
 }
 
-.mon-year {
-  width: 60px;
-  height: 46px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .05);
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--muted);
+/* кнопка-таблетка «Главное меню», «В Центр», «← К карте России» */
+#sec-monitoring .mn-btn {
+  position: absolute;
+  z-index: 6;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-variant-numeric: tabular-nums;
+  border: 0;
+  border-radius: 32px;
+  background: var(--mn-btn-ghost);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--mn-btn-line);
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+  cursor: pointer;
+  transition: background .18s ease;
 }
-.mon-year.is-active {
-  background: var(--accent);
-  color: var(--year-fg-on);
-  font-weight: 700;
-  box-shadow: 0 6px 18px rgba(217, 179, 106, .35);
-}
+#sec-monitoring .mn-btn:active { background: rgba(255, 255, 255, .12); }
 
-/* ------------------------------ карточки ------------------------------ */
-
-.mon-card { padding: 22px 24px; border-radius: 18px; }
-
-.mon-card-head {
-  font-family: var(--mono);
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 16px;
-}
-
-.mon-total { left: 60px; top: 198px; width: 470px; height: 272px; }
-.mon-top { left: 60px; top: 486px; width: 470px; height: 474px; }
-
-/* число + подпись под ним */
-.m-item { margin-bottom: 14px; }
-.m-item:last-child { margin-bottom: 0; }
-.m-item .cap {
-  font-size: 13px;
-  color: var(--muted);
-  letter-spacing: .01em;
-}
-.m-item .val {
-  font-family: var(--mono);
-  font-size: 34px;
-  font-weight: 700;
-  color: var(--num);
-  line-height: 1.1;
-  font-variant-numeric: tabular-nums;
-}
-.m-item .val i {
-  font-style: normal;
-  font-family: var(--body);
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--muted);
-  margin-left: 8px;
-}
-
-/* --------------------------- топ-10 регионов --------------------------- */
-
-.mon-top-list {
-  height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 6px;
-}
-.mon-top-list::-webkit-scrollbar { width: 4px; }
-.mon-top-list::-webkit-scrollbar-thumb {
-  background: var(--scroll-thumb);
-  border-radius: 2px;
-}
-
-.t-row {
+/* стеклянная кнопка карты: глобус и масштаб */
+#sec-monitoring .mn-round {
   display: flex;
   align-items: center;
-  gap: 12px;
-  height: 34px;
-  margin-bottom: 6px;
-  padding: 0 12px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, .045);
+  justify-content: center;
+  border: 0;
+  border-radius: 32px;
+  background: var(--mn-btn-map);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .mn-round:active { background: rgba(107, 148, 76, .38); }
+#sec-monitoring .mn-round svg { display: block; width: 48px; height: 48px; fill: #fff; }
+
+/* ------------------------------- табы ------------------------------- */
+
+#sec-monitoring .mn-tabs {
+  position: absolute;
+  z-index: 6;
+  display: flex;
+  gap: 4px;
+  height: 64px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--mn-tabs-bg);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+}
+#sec-monitoring .mn-tab {
+  flex: 1 0 0;
+  min-width: 0;
+  height: 56px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .mn-tab.is-on { background: var(--mn-panel); }
+
+/* ==================== экран 23: карта госмониторинга ==================== */
+
+#sec-monitoring .mn-title {
+  position: absolute;
+  z-index: 6;
+  left: 65px;
+  top: 60px;
+  margin: 0;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 70px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--mn-gold);
+  white-space: pre-line;
+}
+
+#sec-monitoring .map-tabs { left: 62px; top: 207px; width: 1040px; }
+
+/* поиск: пилюля со значком и золотой кнопкой «Искать» */
+#sec-monitoring .mn-search {
+  position: absolute;
+  z-index: 6;
+  left: 1153px;
+  top: 63px;
+  display: flex;
+  align-items: center;
+  width: 691px;
+  height: 88px;
+  padding: 0 8px 0 16px;
+  border-radius: 999px;
+  background: var(--mn-btn-map);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+}
+#sec-monitoring .mn-search-ico {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin-right: 16px;
+  fill: #fff;
+  opacity: .5;
+}
+#sec-monitoring .mn-search input {
+  flex: 1;
+  min-width: 0;
+  height: 64px;
+  border: 0;
+  outline: none;
+  background: none;
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
+}
+#sec-monitoring .mn-search input::placeholder { color: rgba(255, 255, 255, .4); }
+#sec-monitoring .mn-search input::-webkit-search-cancel-button { display: none; }
+
+#sec-monitoring .mn-search-btn {
+  flex: none;
+  width: 166px;
+  height: 78px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mn-gold);
+  color: rgba(0, 0, 0, .8);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
   cursor: pointer;
 }
-.t-row .rk {
-  width: 20px;
-  text-align: right;
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--accent);
+#sec-monitoring .mn-search-btn:active { background: #c9ab7e; }
+
+#sec-monitoring .mn-globe {
+  position: absolute;
+  z-index: 6;
+  left: 1060px;
+  top: 63px;
+  width: 89px;
+  height: 87px;
 }
-.t-row .nm {
+
+/* «Главное меню» и годы: в кадре карты их нет. Обе ставим в свободную
+   строку под поиском, правее табов, — композицию кадра это не трогает. */
+/* селектор с двумя id: в styles/app.css у #home-btn своя раскладка
+   для зелёной темы (слева внизу), и она перебивает класс */
+#sec-monitoring #home-btn.mn-home {
+  left: auto;
+  right: 44px;
+  top: 207px;
+  bottom: auto;
+  width: 232px;
+  height: 64px;
+  padding: 0;
+  border-radius: 16px;
+  background: var(--mn-btn-ghost);
+  font-size: 20px;
+  font-weight: 300;
+}
+
+#sec-monitoring .mn-years {
+  position: absolute;
+  z-index: 6;
+  left: 1116px;
+  top: 207px;
+  display: flex;
+  gap: 4px;
+  height: 64px;
+  padding: 4px;
+  border-radius: 16px;
+  background: var(--mn-tabs-bg);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+}
+#sec-monitoring .mn-year {
+  width: 64px;
+  height: 56px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .mn-year.is-on { background: var(--mn-panel); }
+
+/* левая колонка: сводка, две плитки, топ-10 */
+
+#sec-monitoring .mn-col {
+  position: absolute;
+  z-index: 5;
+  left: 62px;
+  top: 290px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 530px;
+  height: 711px;
+}
+#sec-monitoring .mn-col .mn-panel { position: relative; }
+
+#sec-monitoring .mn-total {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  height: 234px;
+}
+
+#sec-monitoring .mn-tiles { display: flex; gap: 4px; }
+#sec-monitoring .mn-tile {
+  flex: none;
+  width: 263px;
+  height: 158px;
+  padding: var(--mn-pad);
+  border-radius: var(--mn-r);
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  box-sizing: border-box;
+}
+
+#sec-monitoring .mn-top {
   flex: 1;
-  font-size: 14.5px;
-  color: var(--text);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#sec-monitoring .mn-top-head {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--mn-text);
+}
+#sec-monitoring .mn-top-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--mn-scroll-thumb) var(--mn-scroll-track);
+}
+#sec-monitoring .mn-top-list::-webkit-scrollbar { width: 8px; }
+#sec-monitoring .mn-top-list::-webkit-scrollbar-track {
+  background: var(--mn-scroll-track);
+  border-radius: 30px;
+}
+#sec-monitoring .mn-top-list::-webkit-scrollbar-thumb {
+  background: var(--mn-scroll-thumb);
+  border-radius: 30px;
+}
+
+#sec-monitoring .t-row {
+  flex: none;
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+  border: 0;
+  padding: 0;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+#sec-monitoring .t-rk {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 51px;
+  border-radius: 16px;
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+  font-size: 14px;
+  color: var(--mn-text);
+  font-variant-numeric: tabular-nums;
+}
+#sec-monitoring .t-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 16px;
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+}
+#sec-monitoring .t-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--mn-text);
+}
+#sec-monitoring .t-line .nm {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.t-row .vl {
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--pick-value);
-  font-variant-numeric: tabular-nums;
+#sec-monitoring .t-line .vl { flex: none; font-variant-numeric: tabular-nums; }
+#sec-monitoring .t-bar {
+  height: 6px;
+  border-radius: 6px;
+  background: var(--mn-bar-track);
+  overflow: hidden;
 }
-.t-row:active,
-.t-row.is-hot { background: var(--pick-bg); }
-.t-row.is-hot .nm { color: var(--pick-name); }
-
-.t-empty { padding: 8px 12px; font-size: 14px; color: var(--muted); }
-
-/* ------------------------------ карта ------------------------------ */
-
-#map-box {
-  position: absolute;
-  left: 566px;
-  top: 150px;
-  width: 1300px;
-  height: 706px;
-  z-index: 3;
-}
-
-#map {
-  width: 1300px;
-  height: 706px;
+#sec-monitoring .t-bar i {
   display: block;
-  border-radius: 20px;    /* при зуме карта доходит до краёв кадра */
+  height: 100%;
+  border-radius: 6px;
+  background: var(--mn-bar-fill);
+  transition: width .5s ease;
+}
+#sec-monitoring .t-row.is-hot .t-main,
+#sec-monitoring .t-row:active .t-main { background: rgba(246, 246, 246, .2); }
+
+#sec-monitoring .t-empty {
+  padding: 8px 4px;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--mn-muted);
+}
+
+/* легенда и подсказка */
+
+#sec-monitoring .mn-legend {
+  position: absolute;
+  z-index: 5;
+  left: 641px;
+  top: 893px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#sec-monitoring .mn-legend span {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-text);
+}
+#sec-monitoring .mn-legend i {
+  flex: none;
+  width: 30px;
+  height: 20px;
+  border: 1px solid #e5c773;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+#sec-monitoring .mn-legend .is-data { background: #244f28; }
+#sec-monitoring .mn-legend .is-strong { background: #e6b416; }
+#sec-monitoring .mn-legend .is-none { background: #2a3533; }
+
+#sec-monitoring .map-hint {
+  position: absolute;
+  z-index: 5;
+  left: 1180px;
+  top: 974px;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--mn-text);
+}
+
+/* -------------------------- карта на холсте --------------------------
+   Один холст во весь экран на два экрана сразу: госмониторинг
+   и регионы присутствия. Панели лежат поверх. */
+
+#sec-monitoring #map-box {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity .28s ease;
+}
+#sec-monitoring.on-region #map-box { opacity: 0; pointer-events: none; }
+
+#sec-monitoring #map {
+  position: absolute;
+  inset: 0;
+  width: 1888px;
+  height: 1048px;
+  display: block;
   touch-action: none;
   cursor: pointer;
 }
 
 /* подпись региона под пальцем */
-.mon-tip {
+#sec-monitoring .mn-tip {
   position: absolute;
   z-index: 5;
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: rgba(9, 26, 23, .90);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  font-size: 14px;
-  color: var(--text);
+  padding: 10px 18px;
+  border-radius: 16px;
+  background: rgba(14, 43, 46, .88);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  box-shadow: inset 0 0 0 1px rgba(229, 199, 115, .3);
+  font-size: 20px;
+  font-weight: 300;
+  color: var(--mn-text);
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transform: translate(-50%, -145%);
+  transform: translate(-50%, -140%);
   transition: opacity .16s ease;
 }
-.mon-tip.is-on { opacity: 1; }
-.mon-tip b {
-  font-family: var(--mono);
-  font-weight: 700;
-  color: var(--accent);
-  margin-left: 8px;
+#sec-monitoring .mn-tip.is-on { opacity: 1; }
+#sec-monitoring .mn-tip b {
+  margin-left: 10px;
+  font-weight: 400;
+  color: var(--mn-gold);
+  font-variant-numeric: tabular-nums;
 }
 
-.mon-legend {
+/* выноска у выбранного региона присутствия: подпись и линия к контуру */
+#sec-monitoring .mn-call {
   position: absolute;
-  left: 576px;
-  top: 872px;
-  width: 300px;
   z-index: 4;
-  color: var(--muted);
+  width: 220px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--mn-text);
+  text-shadow: 0 1px 4px rgba(0, 10, 8, .9);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .28s ease;
 }
-.mon-legend .l-cap {
-  display: block;
-  font-size: 10.5px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.mon-legend .l-bar {
-  display: block;
-  height: 8px;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #1E3B35, #4E5B41, #A8873F, #F0C56C);
-}
-.mon-legend .l-lo,
-.mon-legend .l-hi { display: inline-block; margin-top: 6px; font-size: 11.5px; }
-.mon-legend .l-hi { float: right; }
-
-.mon-hint {
+#sec-monitoring .mn-call.is-on { opacity: 1; }
+#sec-monitoring .mn-call i {
   position: absolute;
-  left: 566px;
-  top: 888px;
-  width: 1300px;
-  z-index: 4;
-  text-align: center;
-  font-size: 17px;
-  color: var(--muted);
+  left: 0;
+  bottom: -14px;
+  width: 280px;
+  height: 1px;
+  background: rgba(255, 255, 255, .55);
 }
+#sec-monitoring .mn-call.is-right i { left: -60px; width: 60px; }
 
-#zoom-in { left: 1794px; top: 700px; }
-#zoom-out { left: 1794px; top: 768px; }
-/* На карте прозрачная плашка панели теряется, поэтому у кнопок зума
-   своя, плотнее, и тонкий золотой контур. */
-.mon-zoom {
-  background: rgba(9, 26, 23, .74);
-  box-shadow: inset 0 0 0 1px rgba(217, 179, 106, .30), 0 10px 26px rgba(0, 0, 0, .40);
-}
-.mon-zoom:active { background: rgba(217, 179, 106, .22); }
-.mon-zoom svg { stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
-
-/* --------------------------- экран региона --------------------------- */
-
-.mon-eyebrow {
+/* кнопки масштаба справа снизу */
+#sec-monitoring #map-tools {
   position: absolute;
-  left: 60px;
-  top: 44px;
+  right: 61px;
+  bottom: 45px;
   z-index: 6;
-  font-size: 12.5px;
-}
-
-.mon-title-reg {
-  top: 66px;
-  width: 1020px;
-  font-size: 40px;
-  line-height: 1.06;
-}
-
-.mon-kinds {
-  position: absolute;
-  left: 60px;
-  top: 192px;
-  z-index: 6;
-  display: flex;
-  gap: 10px;
-}
-.mon-kind {
-  height: 52px;
-  padding: 0 26px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .05);
-  font-family: var(--body);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-}
-.mon-kind.is-active {
-  background: var(--accent);
-  color: var(--btn-fg);
-  font-weight: 600;
-  box-shadow: 0 6px 18px rgba(217, 179, 106, .30);
-}
-.mon-kind.is-off { opacity: .38; pointer-events: none; }
-
-.mon-vol { left: 60px; top: 262px; width: 480px; height: 316px; }
-.mon-hist { left: 60px; top: 602px; width: 480px; height: 226px; }
-.mon-cls { left: 1380px; top: 262px; width: 480px; height: 402px; }
-.mon-qual { left: 1380px; top: 688px; width: 480px; height: 180px; }
-
-/* столбики «обследовано по годам»: заодно второй селектор года */
-.y-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  height: 122px;
-}
-.y-col {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-end;
   gap: 8px;
+}
+#sec-monitoring #zoom-reset {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  padding: 0;
+  background: none;
   cursor: pointer;
 }
-.y-col .b {
-  display: block;
-  width: 100%;
-  border-radius: 4px 4px 0 0;
-  background: rgba(217, 179, 106, .28);
-  transition: background .3s ease;
-}
-.y-col .l {
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-.y-col.is-active .b {
-  background: var(--accent);
-  box-shadow: 0 0 14px rgba(217, 179, 106, .45);
-}
-.y-col.is-active .l { color: var(--accent); }
+#sec-monitoring #zoom-reset svg { display: block; width: 48px; height: 48px; fill: #fff; }
+#sec-monitoring .mn-zooms { display: flex; flex-direction: column; gap: 4px; }
+#sec-monitoring .mn-zooms .mn-round { width: 86px; height: 80px; }
+#sec-monitoring.on-region #map-tools { display: none; }
 
-/* доля обследования: полоска под числами */
-.v-bar {
-  margin-top: 4px;
-  height: 10px;
-  border-radius: 5px;
-  background: var(--bar-track);
-  overflow: hidden;
+/* на регионах присутствия кнопок две, они меньше и стоят ниже карточки */
+#sec-monitoring.on-presence #map-tools {
+  right: 48px;
+  bottom: 45px;
+  gap: 11.2px;
 }
-.v-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 5px;
-  background: var(--bar-fill);
-  box-shadow: var(--bar-glow);
-  transition: width .5s ease;
+#sec-monitoring.on-presence #zoom-reset { display: none; }
+#sec-monitoring.on-presence .mn-zooms { gap: 11.2px; }
+#sec-monitoring.on-presence .mn-zooms .mn-round {
+  width: 62.3px;
+  height: 60.9px;
+  border-radius: 22.4px;
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: blur(24.5px);
+  backdrop-filter: blur(24.5px);
 }
+#sec-monitoring.on-presence .mn-zooms .mn-round svg { width: 33.6px; height: 33.6px; }
 
-/* классы зерна */
-.c-row { margin-bottom: 20px; }
-.c-row:last-child { margin-bottom: 0; }
-.c-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 8px;
-}
-.c-top span { font-size: 15px; color: var(--text); }
-.c-top b {
-  font-family: var(--mono);
-  font-size: 21px;
-  font-weight: 700;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
-}
-.c-bar {
-  height: 10px;
-  border-radius: 5px;
-  background: var(--bar-track);
-  overflow: hidden;
-}
-.c-bar i {
-  display: block;
-  height: 100%;
-  border-radius: 5px;
-  background: var(--bar-fill);
-  box-shadow: var(--bar-glow);
-  transition: width .5s ease;
-}
-.c-date {
-  margin-top: 16px;
-  font-size: 13px;
-  color: var(--muted);
-}
+/* ==================== экран 24: выбранный регион ==================== */
 
-/* ------------------------- образец зерна ------------------------- */
-
-.mon-sample {
-  position: absolute;
-  left: 610px;
-  top: 186px;
-  width: 700px;
-  height: 700px;
-  z-index: 3;
-}
-
-/* тёплое пятно света под чашкой — как под плитками на других экранах */
-.mon-sample::before {
-  content: "";
-  position: absolute;
-  left: 8%;
-  right: 8%;
-  top: 16%;
-  bottom: 6%;
-  border-radius: 50%;
-  background: radial-gradient(50% 50% at 50% 50%,
-    rgba(217, 179, 106, .16), rgba(217, 179, 106, 0) 70%);
-  filter: blur(10px);
-}
-
-.mon-sample img {
+#sec-monitoring .mn-scene {
   position: absolute;
   inset: 0;
+  z-index: 0;
+  background: var(--mn-bg-region);
+}
+#sec-monitoring .mn-scene img {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  -webkit-user-drag: none;
-  filter: drop-shadow(0 26px 54px rgba(0, 0, 0, .55));
+  object-fit: cover;
 }
-
-#dots { position: absolute; inset: 0; }
-
-.m-dot {
-  position: absolute;
-  width: 40px;
-  height: 40px;
-  margin: -20px 0 0 -20px;
-  border-radius: 50%;
-  border: 2px solid var(--accent);
-  background: rgba(217, 179, 106, .20);
-  box-shadow: 0 0 0 6px rgba(217, 179, 106, .09), 0 0 20px rgba(217, 179, 106, .45);
-  cursor: pointer;
-  animation: dot-pulse 2.6s ease-in-out infinite;
-}
-.m-dot::after {
+/* мягкое свечение по краям кадра, как в макете */
+#sec-monitoring .mn-scene::after {
   content: "";
   position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-/* подпись под точкой: без неё непонятно, что за кружки на зерне */
-.m-dot .lab {
-  position: absolute;
-  left: 50%;
-  top: 46px;
-  transform: translateX(-50%);
-  font-style: normal;
-  font-family: var(--body);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--glabel);
-  white-space: nowrap;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, .8), 0 0 12px rgba(0, 0, 0, .7);
+  inset: 0;
+  box-shadow: inset 0 0 250px #172d31;
   pointer-events: none;
 }
-.m-dot.is-on .lab { color: var(--accent); }
-.m-dot.is-on {
-  background: var(--accent);
-  animation: none;
-  box-shadow: 0 0 0 8px rgba(217, 179, 106, .14), 0 0 26px rgba(217, 179, 106, .7);
-}
-.m-dot.is-on::after { background: var(--btn-fg); }
 
-/* Пока раскрыт один показатель, остальные точки приглушаются, а их
-   подписи убираются совсем: карточка всё равно ложится поверх, и
-   полупрозрачный текст под ней читался как грязь. */
-.m-dot.is-quiet { opacity: .45; animation: none; }
-.m-dot.is-quiet .lab { opacity: 0; }
-.m-dot, .m-dot .lab { transition: opacity .25s ease; }
-
-@keyframes dot-pulse {
-  0%, 100% { box-shadow: 0 0 0 6px rgba(217, 179, 106, .09), 0 0 20px rgba(217, 179, 106, .40); }
-  50% { box-shadow: 0 0 0 11px rgba(217, 179, 106, .05), 0 0 26px rgba(217, 179, 106, .65); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .m-dot { animation: none; }
-}
-
-/* карточка показателя, всплывает у точки */
-.m-pop {
+#sec-monitoring .mn-eyebrow {
   position: absolute;
-  width: 246px;
-  padding: 14px 16px 15px;
-  border-radius: 14px;
-  background: rgba(11, 32, 28, .93);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  box-shadow: 0 20px 44px rgba(0, 0, 0, .45);
   z-index: 6;
+  left: 48px;
+  top: 48px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  text-transform: uppercase;
+  color: var(--mn-muted);
 }
-.m-pop .pk { font-size: 13px; color: var(--muted); }
-.m-pop .pv {
-  font-family: var(--mono);
-  font-size: 30px;
-  font-weight: 700;
-  color: var(--accent);
-  line-height: 1.15;
+#sec-monitoring .mn-title-reg {
+  position: absolute;
+  z-index: 6;
+  left: 48px;
+  top: 94px;
+  margin: 0;
+  width: 1450px;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 48px;
+  text-transform: uppercase;
+  color: var(--mn-gold);
+}
+#sec-monitoring .mn-sub {
+  position: absolute;
+  z-index: 6;
+  left: 48px;
+  top: 158px;
+  width: 960px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
+}
+
+#sec-monitoring .mn-home-reg { left: 1540px; top: 48px; width: 300px; height: 108px; }
+#sec-monitoring .mn-back { left: 48px; top: 922px; width: 480px; height: 78px; }
+
+/* две панели объёмов слева */
+#sec-monitoring .mn-metrics {
+  position: absolute;
+  z-index: 5;
+  left: 48px;
+  top: 294px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+#sec-monitoring .mn-metrics .mn-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  width: 400px;
+  height: 211px;
+  box-sizing: border-box;
+}
+#sec-monitoring .mn-metrics .mn-num { font-size: 42px; line-height: 48px; }
+#sec-monitoring .mn-metrics .mn-num i { font-weight: 300; }
+#sec-monitoring .mn-metrics .mn-note {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
+}
+
+/* панель классов зерна */
+#sec-monitoring .mn-cls {
+  left: 1264px;
+  top: 254px;
+  width: 576px;
+  height: 548px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+#sec-monitoring .mn-cls-sub {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
+  white-space: pre-line;
+}
+#sec-monitoring .mn-cls-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#sec-monitoring .c-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 76px;
+}
+#sec-monitoring .c-name {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+#sec-monitoring .c-name b {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 28.8px;
+  color: var(--mn-text);
+}
+#sec-monitoring .c-name span {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
   font-variant-numeric: tabular-nums;
 }
-.m-pop .pv i {
-  font-style: normal;
-  font-family: var(--body);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--muted);
-  margin-left: 6px;
+#sec-monitoring .c-pct {
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
+  color: var(--mn-text);
+  font-variant-numeric: tabular-nums;
 }
-.m-pop .pt { margin-top: 6px; font-size: 13px; line-height: 1.42; color: var(--strong); }
+#sec-monitoring .mn-cls-foot {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
+}
 
-.mon-sample-cap {
+/* метки-цифры вокруг цилиндра: кружок и подпись над ним */
+#sec-monitoring .mn-marks { position: absolute; inset: 0; z-index: 4; }
+#sec-monitoring .mn-mark {
   position: absolute;
-  left: 610px;
-  top: 894px;
-  width: 700px;
-  z-index: 3;
-  text-align: center;
-  font-size: 14px;
-  color: var(--muted);
-}
-
-/* --------------------------- кнопки внизу --------------------------- */
-
-html.theme-green #home-btn.mon-home {
-  left: 60px;
-  bottom: 46px;
+  width: 56px;
   height: 56px;
-  padding: 0 26px;
-  font-size: 16px;
-}
-html.theme-green .on-region #home-btn.mon-home { left: 322px; }
-
-.mon-back {
-  left: 60px;
-  bottom: 46px;
-  height: 56px;
-  padding: 0 26px;
+  border: 0;
+  padding: 0;
   border-radius: 999px;
-  font-size: 16px;
-  background: rgba(255, 255, 255, .05);
+  background: var(--mn-panel);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 28.8px;
+  cursor: pointer;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+#sec-monitoring .mn-mark-lab {
+  position: absolute;
+  height: 28px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  text-align: center;
+  color: var(--mn-muted);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+#sec-monitoring .mn-mark.is-on {
+  background: rgba(221, 193, 149, .3);
+  box-shadow: 0 0 28px rgba(221, 193, 149, .3);
+}
+#sec-monitoring .mn-mark.is-off { opacity: .45; pointer-events: none; }
+
+/* панель, на которую показывает метка, на секунду подсвечивается */
+#sec-monitoring .mn-panel.is-lit {
+  box-shadow: inset 0 0 0 1px rgba(221, 193, 149, .55),
+    0 0 40px rgba(221, 193, 149, .18);
 }
 
-/* Пометка, что цифры выдуманные: стоит на обоих экранах,
-   намеренно неброско — но убрать её нельзя. */
-.mon-demo {
+/* ============== экран «Регионы присутствия ЦОК АПК» ============== */
+
+#sec-monitoring .pres-title {
   position: absolute;
-  right: 60px;
-  bottom: 26px;
   z-index: 6;
-  font-size: 12px;
-  letter-spacing: .02em;
-  color: var(--brand);
+  left: 48px;
+  top: 48px;
+  margin: 0;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 48px;
+  text-transform: uppercase;
+  color: var(--mn-gold);
 }
+#sec-monitoring .pres-tabs { left: 48px; top: 120px; width: 680px; }
+#sec-monitoring .mn-hub { left: 1540px; top: 48px; width: 300px; height: 108px; }
+
+#sec-monitoring .mn-pres-cap {
+  position: absolute;
+  z-index: 5;
+  left: 1402px;
+  top: 206px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  letter-spacing: .98px;
+  text-transform: uppercase;
+  color: var(--mn-gold);
+}
+
+#sec-monitoring .mn-pres {
+  left: 1370px;
+  top: 238px;
+  width: 470px;
+  height: 620px;
+  border-radius: 32px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+#sec-monitoring .mn-pres-name {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
+  color: var(--mn-text);
+}
+#sec-monitoring .mn-pres-body {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-muted);
+  white-space: pre-line;
+}
+#sec-monitoring .mn-pres-todo {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-gold);
+}
+
+#sec-monitoring .mn-pres-foot {
+  position: absolute;
+  z-index: 5;
+  left: 1402px;
+  top: 806px;
+  width: 390px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: var(--mn-text);
+}
+
+#sec-monitoring .pres-hint {
+  position: absolute;
+  z-index: 5;
+  left: 48px;
+  top: 982px;
+  width: 1170px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--mn-text);
+}
+
+/* -------------------------- пометка о данных --------------------------
+   Цифры в разделе демонстрационные — подпись стоит на всех экранах
+   и убирать её нельзя, пока не пришли настоящие данные. */
+
+#sec-monitoring .mn-demo {
+  position: absolute;
+  right: 48px;
+  bottom: 18px;
+  z-index: 6;
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: .02em;
+  color: rgba(255, 255, 255, .45);
+}
+#sec-monitoring.on-map .mn-demo { right: 200px; }

@@ -1,0 +1,100 @@
+const imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1 = "http://localhost:3845/assets/a83dfdc611fcc37a476e49b9b8b376d4aca8dc86.png";
+const imgImage = "http://localhost:3845/assets/27d0a58506f8faecac552c3bb005c94dc867d9d5.png";
+const imgImage1 = "http://localhost:3845/assets/56c67428c66f36428478366bb5ba403bb6aff358.png";
+const imgImage2 = "http://localhost:3845/assets/36e135adf7aaacaede135815fd03f9a953303e50.png";
+const imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A2 = "http://localhost:3845/assets/abd717aa2137f4dace882c10e143801416626652.png";
+const imgImage3 = "http://localhost:3845/assets/17784425ef507ddf623628756d306b67d5fb6ebe.png";
+const imgImage4 = "http://localhost:3845/assets/cd1aa0b4d4762afb1b9e94c4db377ae897f06326.png";
+const imgTennis3 = "http://localhost:3845/assets/af2c52838d3b298d027be0c9a3b3010904455fbf.png";
+const imgFrame = "http://localhost:3845/assets/3ee0a6edce2638cb39fb356dc62e2651eb9c3dce.png";
+const imgImage5 = "http://localhost:3845/assets/776f013e797ce9fe073d8e5e89af85a662d4508b.png";
+const imgImage6 = "http://localhost:3845/assets/a4736471a8af4c78db06f687ce1a7acf9bc539c3.png";
+const imgImage7 = "http://localhost:3845/assets/bd41a68070e4e1bc3127c338b06ca01b81c6c2be.png";
+const imgImage8 = "http://localhost:3845/assets/efaac056463d47c600843fb8b4fc8cdcc2cc1082.png";
+const imgFrame1 = "http://localhost:3845/assets/102d97f016a21f87d1f8a878b566dd7a273916ec.png";
+const imgImage9 = "http://localhost:3845/assets/f2946f413a8da6184955f873774a489fbd4fd0fd.png";
+const imgImage10 = "http://localhost:3845/assets/765f2d8c882cc1a409c3503ddcc0848474660bf9.png";
+
+export default function Scene() {
+  return (
+    <div className="bg-[#001515] relative size-full" data-node-id="465:2738" data-name="scene_01_10">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="465:2739">
+        <div className="absolute h-[1080px] left-[-16px] top-[-32px] w-[1920px]" data-node-id="465:2740" data-name="exec-d3a67c97-dde1-48dc-93d7-c1be9f8ccc2a 1">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[99.95%] left-[0.03%] max-w-none top-[0.02%] w-[99.94%]" src={imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A1} />
+          </div>
+        </div>
+      </div>
+      <div className="absolute h-[174.396px] left-[calc(50%+242.15px)] rounded-[20px] top-[201.62px] w-[263.762px]" data-node-id="465:2741" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage} />
+      </div>
+      <div className="absolute h-[227.322px] left-[calc(50%+80.77px)] rounded-[17px] top-[127px] w-[187.41px]" data-node-id="465:2742" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[17px] size-full" src={imgImage1} />
+      </div>
+      <div className="absolute h-[172.66px] left-[643.39px] rounded-[20px] top-[127px] w-[247.277px]" data-node-id="465:2743" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage2} />
+      </div>
+      <div className="absolute h-[671.553px] left-[658.14px] top-[127px] w-[559.627px]" data-node-id="465:2744" data-name="exec-d3a67c97-dde1-48dc-93d7-c1be9f8ccc2a 2">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute h-[139.54%] left-[-96.43%] max-w-none top-[-15.25%] w-[297.52%]" src={imgExecD3A67C97Dde148Dc93D7C1Be9F8Ccc2A2} />
+        </div>
+      </div>
+      <div className="absolute h-[194.351px] left-[calc(50%+232.6px)] rounded-[20px] top-[calc(50%+61.6px)] w-[167.454px]" data-node-id="465:2745" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage3} />
+      </div>
+      <div className="absolute h-[156.175px] left-[calc(50%+374.03px)] rounded-[20px] top-[516.57px] w-[235.998px]" data-node-id="465:2746" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage4} />
+      </div>
+      <div className="absolute h-[169.19px] left-[448.17px] overflow-clip rounded-[20px] top-[185.13px] w-[258.557px]" data-node-id="465:2747" data-name="tennis-3">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgTennis3} />
+        <div className="absolute h-[169.19px] left-0 top-0 w-[258.557px]" data-node-id="465:2748" data-name="Image">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgTennis3} />
+        </div>
+      </div>
+      <div className="absolute left-[311.95px] overflow-clip rounded-[20px] size-[189.145px] top-[240.66px]" data-node-id="465:2749" data-name="Frame">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgFrame} />
+        <div className="absolute left-0 size-[189.145px] top-0" data-node-id="465:2750" data-name="Image">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgFrame} />
+        </div>
+      </div>
+      <div className="absolute h-[156.175px] left-[246.88px] rounded-[20px] top-[395.97px] w-[235.998px]" data-node-id="465:2751" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage5} />
+      </div>
+      <div className="absolute left-[324.96px] rounded-[20px] size-[227.322px] top-[485.33px]" data-node-id="465:2752" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage6} />
+      </div>
+      <div className="absolute h-[255.954px] left-[447px] rounded-[20px] top-[calc(50%+31px)] w-[209.101px]" data-node-id="465:2753" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage7} />
+      </div>
+      <div className="absolute h-[222.983px] left-[636px] rounded-[20px] top-[calc(50%+81.62px)] w-[262.895px]" data-node-id="465:2754" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage8} />
+      </div>
+      <div className="absolute h-[173.602px] left-[947.73px] overflow-clip rounded-[20px] top-[calc(50%+122.17px)] w-[270.267px]" data-node-id="465:2755" data-name="Frame">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgFrame1} />
+        <div className="absolute flex h-[242.648px] items-center justify-center left-0 mix-blend-screen top-0 w-[325.504px]" data-node-id="465:2756">
+          <div className="-scale-y-100 flex-none">
+            <div className="blur-[4.247px] h-[242.648px] relative w-[325.504px]" data-name="Image">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgImage9} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute flex h-[277.602px] items-center justify-center left-[-62.14px] top-[-43.68px] w-[350.749px]" data-node-id="465:2757">
+          <div className="flex-none rotate-[-4.66deg]">
+            <div className="h-[251.526px] relative w-[331.422px]" data-name="Image">
+              <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgFrame1} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute h-[224.719px] left-[calc(50%+445.17px)] rounded-[20px] top-[327.42px] w-[157.043px]" data-node-id="465:2758" data-name="Image">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[20px] size-full" src={imgImage10} />
+      </div>
+      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Regular'] font-normal h-[78px] leading-[72px] left-[calc(25%+480px)] not-italic text-[72px] text-[color:var(--grain-color-accent,#ddc195)] text-center top-[calc(50%+365px)] w-[1700px]" data-node-id="465:2759">
+        ЗЕРНО В ОСНОВЕ ВСЕГО
+      </p>
+      <p className="-translate-x-1/2 [word-break:break-word] absolute font-['Inter:Light'] font-light h-[40px] leading-[32px] left-[calc(25%+480px)] not-italic text-[24px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] text-center top-[calc(100%-87px)] w-[1600px]" data-node-id="465:2760">
+        Коснитесь экрана, чтобы узнать его историю
+      </p>
+    </div>
+  );
+}
