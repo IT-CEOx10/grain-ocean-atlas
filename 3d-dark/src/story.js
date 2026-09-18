@@ -162,10 +162,6 @@
   /* Карточки, которые собираются из справочников по выбору на экране.
      Тексты всё равно живут в story-content.js — здесь только сборка. */
   var DYNAMIC = {
-    'quality-1': function () {
-      var i = find(C.grainIndicators, selKey());
-      return [{ title: i.name, text: i.text }];
-    },
     product: function () {
       var p = find(C.products, selKey());
       return [
@@ -337,7 +333,7 @@
 
   /** Картинка-сцена во весь экран. */
   function sceneLayer(scr) {
-    var p = (scr.scene && scr.scene.pic) || null;
+    var p = sceneFor(scr).pic || null;
     var box = el('div', 'sc-scene' + (p && p.fit === 'contain' ? ' is-contain' : ''));
     if (p && p.img) {
       var im = new Image();
@@ -362,7 +358,30 @@
     var n = el('section', 'sc-panel' + (p.cls ? ' ' + p.cls : ''));
     if (p.cap) n.appendChild(el('div', 'sc-panel-cap', p.cap));
     if (p.title) n.appendChild(el('h3', 'sc-panel-t', p.title));
+    if (p.sub) n.appendChild(el('div', 'sc-panel-sub', p.sub));
     if (p.text) n.appendChild(el('p', 'sc-panel-p', p.text));
+    if (p.big) n.appendChild(el('div', 'sc-big', p.big));
+    if (p.defs) {
+      var df = el('div', 'sc-defs');
+      p.defs.forEach(function (d) {
+        var row = el('div', 'sc-def');
+        row.appendChild(el('div', 'sc-def-k', d[0]));
+        row.appendChild(el('div', 'sc-def-v', d[1]));
+        df.appendChild(row);
+      });
+      n.appendChild(df);
+    }
+    if (p.leads) {
+      p.leads.forEach(function (d) {
+        var line = el('p', 'sc-lead');
+        line.appendChild(el('b', null, d[0]));
+        line.appendChild(document.createTextNode(' ' + d[1]));
+        n.appendChild(line);
+      });
+    }
+    if (p.grid) n.appendChild(gridEl(p.grid));
+    if (p.slider) n.appendChild(sliderEl(SLIDERS[p.slider]()));
+    if (p.gauge) n.appendChild(gaugeEl(GAUGES[p.gauge]()));
     if (p.rows) {
       var rt = el('div', 'sc-rows');
       p.rows.forEach(function (r, i) {
@@ -376,6 +395,288 @@
     }
     if (p.note) n.appendChild(el('div', 'sc-note', p.note));
     return n;
+  }
+
+  /* =================================================================
+     Общие детали новой раскладки
+
+     Плитка-кнопка, ползунок, шкала показателя, плашка-статус,
+     карточки-картинки, радио-метка. Все они собираются из описания
+     в справочнике; ручной разметки в HTML нет нигде.
+     ================================================================= */
+
+  /* Иконки плиток — тонкие контуры, как в UI KIT. Рисуем сами:
+     картинок под них дизайнеры не давали. */
+  var ICONS = {
+    flask: '<path d="M9.4 3h5.2"/><path d="M10.6 3v6.3l-5 9a2 2 0 0 0 1.8 3h9.2a2 2 0 0 0 1.8-3l-5-9V3"/>' +
+           '<path d="M8.3 15.2h7.4"/>',
+    fungus: '<path d="M3.8 11a8.2 8.2 0 0 1 16.4 0z"/><path d="M10.2 11v6.9a1.8 1.8 0 0 0 3.6 0V11"/>',
+    drop: '<path d="M12 3.4c3.3 3.7 5.3 6.5 5.3 9.2a5.3 5.3 0 1 1-10.6 0c0-2.7 2-5.5 5.3-9.2z"/>',
+    gene: '<circle cx="12" cy="12" r="8.4"/><path d="M9.2 7.4c0 4.6 5.6 4.6 5.6 9.2"/>' +
+          '<path d="M14.8 7.4c0 4.6-5.6 4.6-5.6 9.2"/><path d="M9.7 10.2h4.6"/><path d="M9.7 13.8h4.6"/>',
+    bug: '<path d="M8.1 9a3.9 3.9 0 0 1 7.8 0v3.3a3.9 3.9 0 0 1-7.8 0z"/><path d="M9.7 6.5 8.5 4.8"/>' +
+         '<path d="M14.3 6.5 15.5 4.8"/><path d="M8.1 10.4H4.7"/><path d="M15.9 10.4h3.4"/>' +
+         '<path d="M8.4 13.6 5.6 15.4"/><path d="M15.6 13.6l2.8 1.8"/><path d="M12 12.4v4.4"/>'
+  };
+
+  function iconEl(name) {
+    var box = el('span', 'sc-pick-ico');
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.innerHTML = ICONS[name] || '';
+    box.appendChild(svg);
+    return box;
+  }
+
+  /**
+   * Сетка плиток-кнопок.
+   *   src   имя списка в справочнике (C[src]);
+   *   cols  сколько столбцов; gap — зазор, если он не 16;
+   *   mid   подпись по центру, ico — с иконкой, tall — высокая плитка.
+   * Плитка выбирается касанием, выбор живёт в st.sel.
+   */
+  function gridEl(g) {
+    var box = el('div', 'sc-grid' + (g.mid ? ' is-mid' : '') +
+      (g.ico ? ' is-ico' : '') + (g.tall ? ' is-tall' : ''));
+    box.style.gridTemplateColumns = 'repeat(' + (g.cols || 3) + ', 1fr)';
+    if (g.gap != null) box.style.gap = g.gap + 'px';
+    (C[g.src] || []).forEach(function (it) {
+      var b = el('button', 'sc-pick' + (selKey() === it.key ? ' is-on' : ''));
+      b.type = 'button';
+      if (it.span) b.style.gridColumn = '1 / -1';
+      if (it.icon) b.appendChild(iconEl(it.icon));
+      b.appendChild(el('span', null, it.name));
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.sel = it.key;
+        if (PICKED[cur.id]) PICKED[cur.id]();
+        rerender();
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /**
+   * Ползунок кита: подпись слева, единица справа, тонкая дорожка
+   * с круглой ручкой, подписи «Минимум/Максимум» под ней.
+   * Значение — доля 0…1; тянут за прозрачный системный ползунок.
+   */
+  var STEPS = 1000;
+
+  function sliderEl(s) {
+    var box = el('div', 'sc-slider');
+    var top = el('div', 'sc-slider-top');
+    top.appendChild(el('span', null, s.label));
+    var unit = el('span', 'sc-slider-unit', s.unit);
+    top.appendChild(unit);
+    box.appendChild(top);
+
+    var track = el('div', 'sc-track');
+    track.appendChild(el('div', 'sc-rail'));
+    var fill = el('div', 'sc-fill');
+    var knob = el('div', 'sc-knob');
+    track.appendChild(fill);
+    track.appendChild(knob);
+    var input = el('input', 'sc-range');
+    input.type = 'range';
+    input.min = 0;
+    input.max = STEPS;
+    input.step = 1;
+    input.value = Math.round(s.value * STEPS);
+    track.appendChild(input);
+    box.appendChild(track);
+
+    var ends = el('div', 'sc-ends');
+    ends.appendChild(el('span', null, s.left || 'Минимум'));
+    ends.appendChild(el('span', null, s.right || 'Максимум'));
+    box.appendChild(ends);
+
+    function put() {
+      var p = input.value / STEPS * 100;
+      fill.style.width = p + '%';
+      knob.style.left = p + '%';
+    }
+    input.addEventListener('input', function () {
+      resetIdle();
+      put();
+      var t = s.on && s.on(input.value / STEPS);
+      if (t) unit.textContent = t;
+    });
+    put();
+    return box;
+  }
+
+  /**
+   * Шкала показателя: символ элемента крупно, рядом формула, под ними
+   * дорожка — зелёная зона до норматива, красная за ним, ручка на
+   * текущем значении.
+   */
+  function gaugeEl(g) {
+    var box = el('div', 'sc-gauge' + (g.bad ? ' is-bad' : ''));
+    var head = el('div', 'sc-gauge-head');
+    head.appendChild(el('span', 'sc-gauge-sym', g.sym));
+    head.appendChild(el('span', 'sc-gauge-f', g.formula));
+    box.appendChild(head);
+
+    var track = el('div', 'sc-track');
+    var rail = el('div', 'sc-rail');
+    var m = Math.round(g.mark * 100);
+    rail.style.background = 'linear-gradient(90deg, var(--sc-ok) 0 ' + m +
+      '%, var(--sc-bad) ' + m + '% 100%)';
+    track.appendChild(rail);
+    var knob = el('div', 'sc-knob');
+    knob.style.left = Math.round(g.at * 100) + '%';
+    track.appendChild(knob);
+    box.appendChild(track);
+
+    var ends = el('div', 'sc-ends');
+    ends.appendChild(el('span', null, g.left));
+    ends.appendChild(el('span', null, g.right));
+    box.appendChild(ends);
+
+    st.gauge = box;
+    st.gaugeKnob = knob;
+    return box;
+  }
+
+  /** Плашка-статус: зелёная — всё в норме, красноватая — превышение. */
+  function statusEl(s) {
+    var n = el('div', 'sc-status' + (s.bad ? ' is-bad' : ''));
+    n.appendChild(el('span', 'sc-status-m', s.bad ? '!' : '✓'));
+    n.appendChild(el('span', null, s.text));
+    st.status = n;
+    return n;
+  }
+
+  /** Карточки-картинки с галочкой у выбранной. */
+  function picksEl(p) {
+    var box = el('div', 'sc-cards2');
+    (C[p.src] || []).forEach(function (it) {
+      var on = selKey() === it.key;
+      var b = el('button', 'sc-card2' + (on ? ' is-on' : ''));
+      b.type = 'button';
+      var ph = el('div', 'sc-card2-pic');
+      var im = new Image();
+      im.src = U.asset(it.img);
+      im.alt = it.name;
+      ph.appendChild(im);
+      b.appendChild(ph);
+      b.appendChild(el('div', 'sc-card2-name', it.label || it.name));
+      if (on) b.appendChild(el('span', 'sc-card2-ok', '✓'));
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.sel = it.key;
+        if (PICKED[cur.id]) PICKED[cur.id]();
+        rerender();
+      });
+      box.appendChild(b);
+    });
+    return box;
+  }
+
+  /** Радио-метки прямо на объектах сцены (экран 8). */
+  function radiosEl(scr, root) {
+    scr.radios.forEach(function (r) {
+      var b = el('button', 'sc-radio' + (selKey() === r.key ? ' is-on' : ''));
+      b.type = 'button';
+      b.style.left = r.x + 'px';
+      b.style.top = r.y + 'px';
+      b.appendChild(el('span', 'sc-radio-d'));
+      b.appendChild(el('span', null, r.label));
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.sel = r.key;
+        rerender();
+      });
+      root.appendChild(b);
+    });
+  }
+
+  /** Картинка сцены, поставленная по координатам кадра. */
+  function figsEl(scr, root) {
+    scr.figs.forEach(function (f) {
+      var n = el('div', 'sc-fig');
+      n.style.left = f.at[0] + 'px';
+      n.style.top = f.at[1] + 'px';
+      n.style.width = f.at[2] + 'px';
+      n.style.height = f.at[3] + 'px';
+      var im = new Image();
+      im.src = U.asset(f.img);
+      im.alt = f.cap || '';
+      n.appendChild(im);
+      root.appendChild(n);
+    });
+  }
+
+  /** Мелкие подписи прямо на сцене; count — счётчик найденных сорняков. */
+  function capsEl(scr, root) {
+    scr.caps.forEach(function (c) {
+      var n = el('div', 'sc-cap' + (c.count ? ' sc-count' : ''), c.text || '');
+      n.style.left = c.x + 'px';
+      n.style.top = c.y + 'px';
+      if (c.count) st.countEl = n;
+      root.appendChild(n);
+    });
+  }
+
+  /** Делитель на предметном снимке (две половины зерна). */
+  function splitEl(scr, root) {
+    var s = scr.split;
+    var n = el('div', 'sc-split');
+    n.style.left = s.x + 'px';
+    n.style.top = s.y + 'px';
+    n.style.height = s.h + 'px';
+    n.appendChild(el('i', null, '◄ ►'));
+    n.firstChild.style.top = s.knob + 'px';
+    root.appendChild(n);
+  }
+
+  /**
+   * Цели-сорняки поверх сцены. Пока не нашли — прозрачные, по касанию
+   * появляется кольцо и подпись. Обзор с БПЛА подсвечивает все сразу.
+   */
+  function weedsEl(marks, root) {
+    if (!st.found) st.found = {};
+    st.weedEls = [];
+    marks.forEach(function (m, i) {
+      var b = el('button', 'sc-weed' + (st.found[i] ? ' is-found' : ''));
+      b.type = 'button';
+      b.style.left = m.x + 'px';
+      b.style.top = m.y + 'px';
+      b.appendChild(el('i'));
+      b.appendChild(el('b', null, 'Сорняк'));
+      b.addEventListener('click', function () {
+        resetIdle();
+        st.found[i] = true;
+        b.classList.add('is-found');
+        if (st.countEl) countWeeds(marks.length);
+      });
+      st.weedEls.push(b);
+      root.appendChild(b);
+    });
+    if (st.countEl) countWeeds(marks.length);
+  }
+
+  function countWeeds(total) {
+    var n = 0;
+    for (var k in st.found) if (st.found[k]) n++;
+    st.countEl.textContent = 'Найдено ' + n + ' из ' + total;
+    st.countEl.classList.toggle('is-done', n === total);
+  }
+
+  /** Плавающие блоки по координатам кадра: панель, кнопки, сетка. */
+  function boxesEl(scr, root) {
+    scr.boxes.forEach(function (b) {
+      var n = el('div', 'sc-box' + (b.row ? ' is-row' : ''));
+      n.style.left = b.at[0] + 'px';
+      n.style.top = b.at[1] + 'px';
+      n.style.width = b.at[2] + 'px';
+      if (b.at[3]) n.style.height = b.at[3] + 'px';
+      if (b.gap != null) n.style.gap = b.gap + 'px';
+      (b.items || []).forEach(function (item) { n.appendChild(slotEl(item)); });
+      root.appendChild(n);
+    });
   }
 
   /* Блоки, которые зависят от выбора на экране: тексты всё равно лежат
@@ -392,12 +693,67 @@
       var first = C.stations[0];
       return button({ label: s.key === first.key ? 'Начать с почвы →' : 'Открыть станцию →',
         to: s.to }, 'sc-btn is-gold');
+    },
+
+    /* --- экран 5: плашка «превышения нет» / «превышение порога» --- */
+    soilStatus: function () {
+      var over = soilLevel() > C.soilMark;
+      return statusEl({ bad: over, text: over ? C.soilStatus.bad : C.soilStatus.ok });
+    },
+
+    /* --- экран 6: доза удобрения --- */
+    doseValue: function () {
+      var f = find(C.fertilizers, selKey());
+      return panelEl({ title: 'Доза удобрения', text: f.name,
+        big: st.dose ? f.dose : 'формула' });
+    },
+    doseNote: function () {
+      return panelEl({ text: st.dose ? f2(find(C.fertilizers, selKey())) : C.doseNote });
+    },
+
+    /* --- экран 7: панель слева с пояснением выбранного направления.
+           В макете пояснений нет, но плитки должны на что-то отвечать:
+           текст встаёт в ту же панель «Лабораторная проверка». --- */
+    seedCheck: function () {
+      var c = find(C.seedChecks, selKey());
+      return panelEl({
+        title: 'Лабораторная проверка',
+        sub: 'Помогает убедиться в качестве\nпосевного материала',
+        text: c.name + '. ' + c.text
+      });
+    },
+
+    /* --- экран 8: карточка выбранной области поля --- */
+    seedZone: function () {
+      var z = find(C.seedZones, selKey());
+      return panelEl({ title: z.title, text: z.text });
+    },
+
+    /* --- экран 11: карточка выбранного показателя --- */
+    grainIndicator: function () {
+      var i = find(C.grainIndicators, selKey());
+      return panelEl({ title: i.name, text: i.text });
+    },
+
+    /* --- экран 9: две кнопки под подсказкой. Золотая — та, которой
+           стоит воспользоваться дальше; вторая стеклянная. --- */
+    weedBtnSelf: function () {
+      var on = tabKey() === 'photo';
+      return button({ label: on ? 'Смотрим' : 'Посмотреть самостоятельно',
+        action: 'weedSelf' }, 'sc-btn' + (on ? '' : ' is-gold'));
+    },
+    weedBtnDrone: function () {
+      var on = tabKey() === 'drone';
+      return button({ label: on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
+        action: 'weedDrone' }, 'sc-btn' + (tabKey() === 'photo' ? ' is-gold' : ''));
     }
   };
 
   function slotEl(item) {
     if (item.dyn) return SLOTS[item.dyn] ? SLOTS[item.dyn]() : el('div');
     if (item.label) return button(item, 'sc-btn' + (item.gold ? ' is-gold' : ''));
+    if (item.picks) return picksEl(item.picks);
+    if (item.grid && !item.title) return gridEl(item.grid);
     return panelEl(item);
   }
 
@@ -406,9 +762,79 @@
     var box = el('div', 'sc-col is-' + side + ' is-' + (spec.at || 'top') +
       (spec.hasNav ? ' has-nav' : ''));
     if (spec.width) box.style.width = spec.width + 'px';
+    if (spec.top) box.style.top = spec.top + 'px';
+    if (spec.gap != null) box.style.gap = spec.gap + 'px';
     (spec.items || []).forEach(function (item) { box.appendChild(slotEl(item)); });
     return box;
   }
+
+  /* ---------------- почва: элемент, концентрация, статус ----------------
+     Концентрация хранится долей 0…1 от шкалы. Норматив стоит на отметке
+     C.soilMark (0,7), поэтому «превышение» — это просто доля выше неё,
+     а подпись в мг/кг считается из норматива элемента. Сами нормативы
+     демонстрационные, см. справочник. */
+
+  function soilLevel() {
+    if (st.level == null) st.level = find(C.soilElements, selKey()).start;
+    return st.level;
+  }
+
+  /** Значение в мг/кг для текущей доли шкалы. */
+  function soilMg(e, part) {
+    var v = part * e.limit / C.soilMark;
+    return (e.limit < 10 ? v.toFixed(1).replace('.', ',') : String(Math.round(v))) + ' мг/кг';
+  }
+
+  /** Перерисовать только то, что зависит от ползунка: ручку и плашку. */
+  function soilRefresh() {
+    var over = st.level > C.soilMark;
+    if (st.gaugeKnob) st.gaugeKnob.style.left = Math.round(st.level * 100) + '%';
+    if (st.gauge) st.gauge.classList.toggle('is-bad', over);
+    if (st.status) {
+      st.status.className = 'sc-status' + (over ? ' is-bad' : '');
+      st.status.innerHTML = '';
+      st.status.appendChild(el('span', 'sc-status-m', over ? '!' : '✓'));
+      st.status.appendChild(el('span', null, over ? C.soilStatus.bad : C.soilStatus.ok));
+    }
+  }
+
+  /** Демонстрационный расчёт дозы: текст под крупным значением. */
+  function f2(f) {
+    return 'Демонстрационный расчёт: ' + f.dose + ' — ' + f.hint +
+      '\nФормулу и коэффициенты предоставит заказчик.';
+  }
+
+  /* Ползунки экранов: имя из справочника → описание для sliderEl. */
+  var SLIDERS = {
+    soil: function () {
+      var e = find(C.soilElements, selKey());
+      var part = soilLevel();
+      return {
+        label: 'Содержание ' + e.gen,
+        unit: soilMg(e, part),
+        value: part,
+        on: function (v) { st.level = v; soilRefresh(); return soilMg(e, v); }
+      };
+    }
+  };
+
+  /* Шкалы показателей. */
+  var GAUGES = {
+    soil: function () {
+      var e = find(C.soilElements, selKey());
+      var part = soilLevel();
+      return { sym: e.sym, formula: 'C < T', at: part, mark: C.soilMark,
+        bad: part > C.soilMark, left: 'Концентрация C', right: 'Норматив T' };
+    }
+  };
+
+  /* Что сделать, когда на экране сменили выбор. */
+  var PICKED = {
+    // другой элемент — своя привычная концентрация
+    'soil-1': function () { st.level = find(C.soilElements, st.sel).start; },
+    // другое удобрение — расчёт нужно запустить заново
+    'soil-2': function () { st.dose = null; }
+  };
 
   /** Метки-чипы на объектах сцены. Координаты — в пикселях кадра 1920x1080. */
   function markersEl(scr, root) {
@@ -492,8 +918,13 @@
       // затемнений может быть несколько: 'top bottom'
       root.appendChild(el('div', 'sc-shade is-' + scr.shade.split(' ').join(' is-')));
     }
+    if (scr.figs) figsEl(scr, root);
+    if (scr.split) splitEl(scr, root);
+    if (scr.caps) capsEl(scr, root);
     if (scr.links) root.appendChild(linksEl(scr));
     if (scr.markers) markersEl(scr, root);
+    if (scr.radios) radiosEl(scr, root);
+    if (scr.weedsByTab && scr.weedsByTab[tabKey()]) weedsEl(scr.weedsByTab[tabKey()], root);
     if (scr.title || scr.eyebrow) root.appendChild(headEl(scr));
     if (scr.topRight) {
       var top = el('div', 'sc-top');
@@ -502,6 +933,7 @@
     }
     if (scr.left) root.appendChild(colEl(scr.left, 'left'));
     if (scr.right) root.appendChild(colEl(scr.right, 'right'));
+    if (scr.boxes) boxesEl(scr, root);
     if (scr.tiles) root.appendChild(tilesEl(scr));
     if (scr.nav) navSceneEl(scr, root);
   }
@@ -536,184 +968,6 @@
 
   var WIDGETS = {
 
-    /* --- экран 5: карта полей, ползунок показателя, расчёт удобрений --- */
-    soilFields: function (box, sc) {
-      box.classList.add('is-widget');
-      if (st.plot == null) st.plot = C.plots[0].key;
-      var plot = find(C.plots, st.plot);
-      if (st.level == null) st.level = plot.value;
-
-      box.appendChild(el('div', 'st-scene-t', 'Лабораторная карта полей'));
-
-      var grid = el('div', 'sf-grid');
-      C.plots.forEach(function (p) {
-        var on = p.key === st.plot;
-        var b = el('button', 'sf-plot' + (on ? ' is-on' : ''));
-        b.type = 'button';
-        b.appendChild(el('span', 'sf-name', p.name));
-        b.appendChild(el('span', 'sf-cap', 'Продуктивность'));
-        b.appendChild(el('span', 'sf-val', (on ? st.level : p.value) + ' %'));
-        var bar = el('span', 'sf-bar');
-        var fill = el('i');
-        fill.style.width = (on ? st.level : p.value) + '%';
-        bar.appendChild(fill);
-        b.appendChild(bar);
-        b.addEventListener('click', function () {
-          resetIdle();
-          st.plot = p.key; st.level = p.value; rerender();
-        });
-        grid.appendChild(b);
-      });
-      box.appendChild(grid);
-
-      var sl = el('div', 'sf-slider');
-      sl.appendChild(el('div', 'sf-slider-t', 'Измените показатель почвы'));
-      var row = el('div', 'sf-slider-row');
-      row.appendChild(el('span', 'sf-end', 'Ниже'));
-      var input = el('input', 'st-range');
-      input.type = 'range'; input.min = 5; input.max = 100; input.value = st.level;
-      row.appendChild(input);
-      row.appendChild(el('span', 'sf-end', 'Выше'));
-      sl.appendChild(row);
-      box.appendChild(sl);
-
-      var valEl = grid.querySelector('.sf-plot.is-on .sf-val');
-      var barEl = grid.querySelector('.sf-plot.is-on .sf-bar i');
-      input.addEventListener('input', function () {
-        resetIdle();
-        st.level = +input.value;
-        if (valEl) valEl.textContent = st.level + ' %';
-        if (barEl) barEl.style.width = st.level + '%';
-        if (st.fertEl) fillFert(st.fertEl);
-      });
-    },
-
-    /* --- экран 6: шторка сравнения до/после --- */
-    beforeAfter: function (box, sc) {
-      box.classList.add('is-widget');
-      if (st.split == null) st.split = 50;
-
-      // Кадры сняты с разных ракурсов, поэтому подписи развёрнутые:
-      // это две отдельные фотографии, а не один кадр под шторкой.
-      var wrap = el('div', 'ba');
-      var a = stub(sc.before, 'ba-layer ba-before');
-      a.appendChild(el('span', 'ba-badge', 'До восстановления'));
-      var b = stub(sc.after, 'ba-layer ba-after');
-      b.appendChild(el('span', 'ba-badge is-right', 'После восстановления'));
-      var line = el('div', 'ba-line');
-      line.appendChild(el('span', 'ba-knob', '⟷'));
-      wrap.appendChild(a); wrap.appendChild(b); wrap.appendChild(line);
-
-      function put(clientX) {
-        var r = wrap.getBoundingClientRect();
-        var p = U.clamp((clientX - r.left) / r.width * 100, 4, 96);
-        st.split = p;
-        b.style.clipPath = 'inset(0 0 0 ' + p + '%)';
-        b.style.webkitClipPath = 'inset(0 0 0 ' + p + '%)';
-        line.style.left = p + '%';
-      }
-      b.style.clipPath = 'inset(0 0 0 ' + st.split + '%)';
-      b.style.webkitClipPath = 'inset(0 0 0 ' + st.split + '%)';
-      line.style.left = st.split + '%';
-
-      var down = false;
-      wrap.addEventListener('pointerdown', function (e) {
-        down = true; wrap.setPointerCapture(e.pointerId); put(e.clientX); resetIdle();
-      });
-      wrap.addEventListener('pointermove', function (e) { if (down) put(e.clientX); });
-      wrap.addEventListener('pointerup', function () { down = false; });
-      wrap.addEventListener('pointercancel', function () { down = false; });
-
-      box.appendChild(wrap);
-      box.appendChild(el('div', 'st-hint', sc.hint));
-    },
-
-    /* --- экран 7: выбор образца семени --- */
-    seedSamples: function (box, sc) {
-      box.classList.add('is-widget');
-      var row = el('div', 'seed-row');
-      sc.samples.forEach(function (s) {
-        var b = el('button', 'seed-item' + (selKey() === s.key ? ' is-on' : ''));
-        b.type = 'button';
-        b.appendChild(stub(s.pic, 'stub-fill'));
-        b.appendChild(el('div', 'seed-name', s.name));
-        b.addEventListener('click', function () { resetIdle(); st.sel = s.key; rerender(); });
-        row.appendChild(b);
-      });
-      box.appendChild(row);
-      box.appendChild(el('div', 'st-hint', sc.hint));
-    },
-
-    /* --- экран 8: две зоны на поле --- */
-    fieldZones: function (box, sc) {
-      box.classList.add('is-widget');
-      var frame = el('div', 'zone-frame');
-      frame.appendChild(stub(sc.pic, 'stub-fill'));
-      sc.zones.forEach(function (z) {
-        var b = el('button', 'zone' + (selKey() === z.key ? ' is-on' : ''));
-        b.type = 'button';
-        b.style.left = z.x + '%';
-        b.style.top = z.y + '%';
-        b.appendChild(el('span', 'zone-dot'));
-        b.appendChild(el('span', 'zone-name', z.name));
-        b.addEventListener('click', function () { resetIdle(); st.sel = z.key; rerender(); });
-        frame.appendChild(b);
-      });
-      box.appendChild(frame);
-      box.appendChild(el('div', 'st-hint', sc.hint));
-    },
-
-    /* --- экран 9: найти три сорняка на поле ---
-       Сорняков на снимке нет, метки-цели рисуются поверх кадра.
-       Кадр с беспилотником лежит вторым слоем и проявляется по кнопке
-       «Запустить обзор с БПЛА» (см. ACTIONS.droneScan). */
-    weeds: function (box, sc) {
-      box.classList.add('is-widget');
-      if (!st.found) st.found = {};
-      var frame = el('div', 'zone-frame');
-      frame.appendChild(stub(sc.pic, 'stub-fill'));
-      if (sc.picDrone) {
-        st.droneEl = stub(sc.picDrone, 'stub-fill zone-drone');
-        frame.appendChild(st.droneEl);
-        st.droneTag = el('div', 'zone-drone-tag', 'Съёмка с беспилотника');
-        frame.appendChild(st.droneTag);
-      }
-
-      var counter = el('div', 'weed-count');
-      function updCount() {
-        var n = 0;
-        for (var k in st.found) if (st.found[k]) n++;
-        counter.textContent = 'Найдено ' + n + ' из ' + sc.marks.length;
-        counter.classList.toggle('is-done', n === sc.marks.length);
-      }
-
-      st.weedEls = [];
-      sc.marks.forEach(function (m, i) {
-        var b = el('button', 'weed' + (st.found[i] ? ' is-found' : ''));
-        b.type = 'button';
-        b.style.left = m.x + '%';
-        b.style.top = m.y + '%';
-        b.appendChild(el('span', 'weed-ring'));
-        b.appendChild(el('span', 'weed-tag', 'Сорняк'));
-        b.addEventListener('click', function () {
-          resetIdle();
-          st.found[i] = true;
-          b.classList.add('is-found');
-          updCount();
-        });
-        st.weedEls.push(b);
-        frame.appendChild(b);
-      });
-
-      box.appendChild(frame);
-      var foot = el('div', 'weed-foot');
-      foot.appendChild(el('div', 'st-hint', sc.hint));
-      foot.appendChild(counter);
-      box.appendChild(foot);
-      updCount();
-      st.weedCount = updCount;
-    },
-
     /* --- экран 10: рост → уборка → собранное зерно --- */
     chain: function (box, sc) {
       box.classList.add('is-widget');
@@ -729,21 +983,6 @@
       });
       box.appendChild(row);
       if (sc.note) box.appendChild(el('div', 'chain-note', sc.note));
-    },
-
-    /* --- экран 11: четыре показателя качества зерна --- */
-    grainIndicators: function (box, sc) {
-      box.classList.add('is-widget');
-      box.appendChild(stub(sc.pic, 'stub-fill'));
-      box.appendChild(el('div', 'st-hint', sc.hint));
-      var row = el('div', 'ind-row');
-      C.grainIndicators.forEach(function (i) {
-        var b = el('button', 'ind' + (selKey() === i.key ? ' is-on' : ''), i.name);
-        b.type = 'button';
-        b.addEventListener('click', function () { resetIdle(); st.sel = i.key; rerender(); });
-        row.appendChild(b);
-      });
-      box.appendChild(row);
     },
 
     /* --- экраны 13 и 20: кадр и три шага --- */
@@ -934,48 +1173,23 @@
      Действия кнопок (кнопка задаётся полем action в справочнике)
      ================================================================= */
 
-  /** Демонстрационный расчёт дозы удобрений (экран 5). */
-  function fillFert(node) {
-    var plot = find(C.plots, st.plot || C.plots[0].key);
-    var lv = st.level == null ? plot.value : st.level;
-    var n = Math.round(120 - lv * 0.6);
-    var p = Math.round(70 - lv * 0.35);
-    var k = Math.round(90 - lv * 0.45);
-    node.innerHTML = '';
-    node.appendChild(el('div', 'fert-t', plot.name + ' · показатель ' + lv + ' %'));
-    var rows = el('div', 'st-rows');
-    [['Азот (N)', n + ' кг/га'], ['Фосфор (P)', p + ' кг/га'],
-     ['Калий (K)', k + ' кг/га']].forEach(function (r) {
-      var row = el('div', 'st-row');
-      row.appendChild(el('span', 'k', r[0]));
-      row.appendChild(el('span', 'v', r[1]));
-      rows.appendChild(row);
-    });
-    node.appendChild(rows);
-    node.appendChild(el('div', 'st-note',
-      'Пример расчёта. Формулу и коэффициенты предоставит заказчик.'));
-  }
-
   var ACTIONS = {
-    calcFert: function () {
-      var card = ROOT.querySelector('[data-slot="fert"]');
-      if (!card) return;
-      var node = card.querySelector('.fert');
-      if (!node) { node = el('div', 'fert'); card.appendChild(node); }
-      st.fertEl = node;
-      fillFert(node);
+
+    /** Экран 6: показать демонстрационный расчёт дозы удобрений. */
+    calcDose: function () { st.dose = true; rerender(); },
+
+    /** Экран 9: переключение «поле сверху → фотография поля». */
+    weedSelf: function () {
+      st.tab = tabKey() === 'photo' ? 'iso' : 'photo';
+      rerender();
     },
 
-    /** Экран 9: обзор с БПЛА подменяет кадр и подсвечивает все три сорняка. */
-    droneScan: function () {
-      if (st.droneEl) st.droneEl.classList.add('is-on');
-      if (st.droneTag) st.droneTag.classList.add('is-on');
-      if (!st.weedEls) return;
-      st.weedEls.forEach(function (b, i) {
-        st.found[i] = true;
-        setTimeout(function () { b.classList.add('is-found'); }, i * 260);
-      });
-      setTimeout(function () { if (st.weedCount) st.weedCount(); }, 3 * 260);
+    /** Экран 9: обзор с БПЛА — свой кадр, все сорняки подсвечены. */
+    weedDrone: function () {
+      if (tabKey() === 'drone') { st.tab = 'iso'; rerender(); return; }
+      st.tab = 'drone';
+      st.found = { 0: true, 1: true, 2: true };
+      rerender();
     },
 
     /** Экраны 13 и 20: подсветить шаги по очереди. */
@@ -1021,8 +1235,8 @@
 
   /* Что доигрывает ?demo=1 на каждом экране — для снимков и показа. */
   var DEMOS = {
-    'soil-1': function () { ACTIONS.calcFert(); },
-    'seed-3': function () { ACTIONS.droneScan(); },
+    'soil-2': function () { ACTIONS.calcDose(); },
+    'seed-3': function () { ACTIONS.weedDrone(); },
     'store-1': function () { ACTIONS.playSteps(); },
     'export-1': function () { ACTIONS.playSteps(); }
   };

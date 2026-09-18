@@ -1076,6 +1076,14 @@
   background: linear-gradient(180deg, rgba(13, 21, 24, 0) 46%,
     rgba(13, 21, 24, .72) 72%, #0F1B1F 88%);
 }
+/* экран 7: сцены-картинки нет, фон рисуем сами — тёмная зелень
+   и мягкое свечение за зерном, как на кадре макета */
+.sc-shade.is-grain {
+  background:
+    radial-gradient(62% 50% at 40% 76%, rgba(28, 80, 56, .72) 0%,
+      rgba(18, 48, 38, .30) 52%, rgba(12, 30, 30, 0) 80%),
+    linear-gradient(180deg, #112325 0%, #0B1D1D 46%, #112624 100%);
+}
 .sc-shade.is-soft {
   background: radial-gradient(120% 90% at 50% 40%, rgba(0, 0, 0, 0) 46%,
     rgba(8, 18, 22, .55) 100%);

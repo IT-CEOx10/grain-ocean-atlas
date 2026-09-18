@@ -98,6 +98,17 @@
   --sc-pick: rgba(150, 205, 230, .20);
   --sc-pick-line: rgba(168, 214, 236, .55);
 
+  /* шкала «Оценка показателя» и плашки-статусы: зелёное — в норме,
+     красноватое — превышение. Цвета сняты с кадра 05-soil-1. */
+  --sc-ok: #478E7A;
+  --sc-bad: #9A5148;
+  --sc-ok-bg: rgba(20, 74, 56, .62);
+  --sc-ok-line: rgba(95, 191, 143, .38);
+  --sc-ok-text: #6FD3A0;
+  --sc-bad-bg: rgba(96, 40, 34, .62);
+  --sc-bad-line: rgba(214, 128, 112, .40);
+  --sc-bad-text: #E7A395;
+
   /* переопределение общей темы (styles/app.css) для старых экранов */
   --mono: 'Inter', 'Segoe UI', system-ui, sans-serif;
   --body: 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -144,8 +155,12 @@ body.story-screen { background: #17252C; }
   left: var(--sc-edge);
   top: 63px;
   z-index: 5;
-  max-width: 1120px;
+  max-width: 1440px;
 }
+
+/* Заголовок с надзаголовком опускается чуть ниже: так в макетах
+   станций, где над названием стоит строка «СТАНЦИЯ 1 · …». */
+#sec-story .sc-eyebrow + .sc-title { margin-top: 12px; }
 
 #sec-story .sc-eyebrow {
   margin: 0 0 10px;
@@ -232,6 +247,8 @@ body.story-screen { background: #17252C; }
 
 #sec-story .sc-panel-t {
   margin: 0;
+  /* переносы строк в заголовках панелей расставлены вручную, как в макетах */
+  white-space: pre-line;
   font-size: 30px;
   font-weight: 400;
   line-height: 36px;
@@ -242,6 +259,8 @@ body.story-screen { background: #17252C; }
   margin: 0 0 12px;
   font-size: 16px;
   font-weight: 400;
+  letter-spacing: .1em;
+  text-transform: uppercase;
   color: var(--sc-dim);
 }
 
@@ -254,6 +273,8 @@ body.story-screen { background: #17252C; }
   color: var(--sc-muted);
 }
 #sec-story .sc-panel-t + .sc-panel-p { margin-top: 24px; }
+/* панель из одного абзаца: текст прижат к верхнему отступу */
+#sec-story .sc-panel-p:first-child { margin-top: 0; }
 
 /* строки показателей: номер, название, значение */
 
@@ -307,6 +328,479 @@ body.story-screen { background: #17252C; }
   line-height: 20px;
   color: var(--sc-dim);
 }
+
+/* подзаголовок под названием панели: тише заголовка, но крупнее пометки */
+#sec-story .sc-panel-sub {
+  margin: 12px 0 0;
+  white-space: pre-line;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+
+/* крупное слово-значение (панель «Доза удобрения») */
+#sec-story .sc-big {
+  margin-top: 18px;
+  font-size: 54px;
+  font-weight: 300;
+  line-height: 60px;
+  color: var(--sc-gold);
+}
+
+/* пары «подпись — значение» столбиком (панель результатов исследования) */
+#sec-story .sc-defs { margin-top: 26px; }
+#sec-story .sc-def { margin-top: 22px; }
+#sec-story .sc-def:first-child { margin-top: 0; }
+#sec-story .sc-def-k {
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--sc-muted);
+}
+#sec-story .sc-def-v {
+  margin-top: 2px;
+  font-size: 23px;
+  line-height: 32px;
+  color: var(--sc-text);
+}
+
+/* абзацы с жирным зачином (панель «Дальнейшее использование») */
+#sec-story .sc-lead {
+  margin: 22px 0 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
+#sec-story .sc-lead:first-child { margin-top: 0; }
+#sec-story .sc-lead b {
+  font-weight: 600;
+  color: var(--sc-text);
+}
+
+/* ------------------------- плитки-кнопки -------------------------
+   Сетка выбора: содержание элементов на почве, направления
+   исследования семян, показатели качества зерна. Одна и та же
+   плитка, разница только в сетке и в том, есть ли иконка. */
+
+#sec-story .sc-grid {
+  display: grid;
+  gap: 16px;
+}
+#sec-story .sc-panel .sc-grid { margin-top: 40px; }
+
+#sec-story .sc-pick {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  min-height: 80px;
+  border-radius: 22px;
+  background: var(--sc-glass-soft);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  color: var(--sc-text);
+  font-family: var(--body);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 28px;
+  text-align: center;
+  transition: background .18s ease, box-shadow .18s ease;
+}
+#sec-story .sc-grid.is-mid .sc-pick { justify-content: center; }
+/* высокая плитка с подписью слева (показатели качества зерна) */
+#sec-story .sc-grid.is-tall .sc-pick { min-height: 102px; padding: 0 26px; }
+
+#sec-story .sc-pick.is-on {
+  background: linear-gradient(180deg, rgba(178, 216, 238, .34),
+    rgba(148, 194, 220, .14));
+  box-shadow: inset 0 0 0 1px rgba(200, 230, 246, .55),
+    0 0 26px rgba(150, 205, 230, .22);
+  color: #FFFFFF;
+}
+
+/* плитка с иконкой: значок сверху, подпись прижата к низу */
+#sec-story .sc-grid.is-ico .sc-pick {
+  flex-direction: column;
+  align-items: flex-start;
+  /* значок сверху, подпись прижата к низу — так в макете */
+  justify-content: space-between;
+  padding: 30px;
+  min-height: 146px;
+  text-align: left;
+  font-size: 17px;
+  line-height: 22px;
+  color: var(--sc-muted);
+}
+#sec-story .sc-pick-ico {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+}
+#sec-story .sc-pick-ico svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: var(--sc-text);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#sec-story .sc-pick.is-on .sc-pick-ico { background: rgba(255, 255, 255, .20); }
+
+/* ---------------------------- ползунок ----------------------------
+   Тонкая дорожка, круглая ручка, подписи по краям. Тянут за прозрачный
+   системный ползунок поверх — так работает и мышью, и пальцем. */
+
+#sec-story .sc-slider { margin-top: 32px; }
+
+#sec-story .sc-slider-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--sc-text);
+}
+#sec-story .sc-slider-unit { color: var(--sc-muted); }
+
+#sec-story .sc-track {
+  position: relative;
+  height: 28px;
+  margin-top: 6px;
+}
+#sec-story .sc-rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 11px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, .20);
+}
+#sec-story .sc-fill {
+  position: absolute;
+  left: 0;
+  top: 11px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sc-gold);
+}
+#sec-story .sc-knob {
+  position: absolute;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: -14px;
+  border-radius: 50%;
+  background: var(--sc-gold);
+}
+#sec-story .sc-range {
+  position: absolute;
+  inset: -12px 0;
+  width: 100%;
+  opacity: 0;
+  -webkit-appearance: none;
+  appearance: none;
+  background: none;
+}
+#sec-story .sc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 44px;
+  height: 44px;
+}
+
+#sec-story .sc-ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 15px;
+  line-height: 20px;
+  color: var(--sc-dim);
+}
+
+/* ------------------------ шкала показателя ------------------------
+   Символ элемента крупно, рядом формула, под ними дорожка: зелёная
+   зона до норматива, красная за ним, ручка — текущая концентрация. */
+
+#sec-story .sc-gauge { margin-top: 22px; }
+
+#sec-story .sc-gauge-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+#sec-story .sc-gauge-sym {
+  font-size: 72px;
+  font-weight: 300;
+  line-height: 76px;
+  color: var(--sc-gold);
+}
+#sec-story .sc-gauge-f {
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--sc-muted);
+}
+
+#sec-story .sc-gauge .sc-track { margin-top: 10px; height: 22px; }
+#sec-story .sc-gauge .sc-rail {
+  top: 8px;
+  background: linear-gradient(90deg, var(--sc-ok) 0 70%, var(--sc-bad) 70% 100%);
+}
+#sec-story .sc-gauge .sc-knob {
+  top: 0;
+  width: 22px;
+  height: 22px;
+  margin-left: -11px;
+  background: var(--sc-ok);
+  box-shadow: 0 0 0 3px rgba(23, 37, 44, .55);
+}
+#sec-story .sc-gauge.is-bad .sc-knob { background: var(--sc-bad); }
+
+/* --------------------------- плашка-статус --------------------------- */
+
+#sec-story .sc-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 26px var(--sc-pad);
+  border-radius: var(--sc-r);
+  background: var(--sc-ok-bg);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-ok-line);
+  color: var(--sc-ok-text);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 32px;
+}
+#sec-story .sc-status.is-bad {
+  background: var(--sc-bad-bg);
+  box-shadow: inset 0 0 0 1px var(--sc-bad-line);
+  color: var(--sc-bad-text);
+}
+#sec-story .sc-status-m { flex: none; }
+
+/* ------------------------ карточки-картинки ------------------------
+   Выбор питания для почвы: снимок, подпись и золотая рамка с галочкой
+   у выбранной карточки. */
+
+#sec-story .sc-cards2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+#sec-story .sc-card2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+  border-radius: 24px;
+  background: var(--sc-glass-soft);
+  -webkit-backdrop-filter: var(--sc-blur);
+  backdrop-filter: var(--sc-blur);
+  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+  color: var(--sc-text);
+  font-family: var(--body);
+  transition: box-shadow .18s ease;
+}
+#sec-story .sc-card2.is-on {
+  box-shadow: inset 0 0 0 2px #D59229;
+}
+#sec-story .sc-card2-pic {
+  height: 186px;
+  border-radius: 20px;
+  overflow: hidden;
+}
+#sec-story .sc-card2-pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+#sec-story .sc-card2-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  white-space: pre-line;
+  font-size: 22px;
+  line-height: 30px;
+  text-align: center;
+}
+#sec-story .sc-card2-ok {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E2A63A;
+  color: #22303A;
+  font-size: 18px;
+}
+
+/* --------------------- радио-метка на сцене ---------------------
+   Кружок и подпись на тёмной плашке поверх объекта сцены. */
+
+#sec-story .sc-radio {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 60px;
+  padding: 0 28px;
+  border-radius: 16px;
+  background: rgba(30, 43, 49, .82);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  color: var(--sc-text);
+  font-family: var(--body);
+  font-size: 22px;
+  font-weight: 400;
+  white-space: nowrap;
+  transition: background .18s ease;
+}
+#sec-story .sc-radio-d {
+  flex: none;
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .72);
+}
+#sec-story .sc-radio.is-on .sc-radio-d::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+/* --------------------- плавающие блоки на сцене ---------------------
+   Панель или кнопки, поставленные по координатам кадра: карточка
+   выбранной области, подсказка с кнопками, сетка показателей. */
+
+#sec-story .sc-box {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-gap);
+}
+#sec-story .sc-box.is-row { flex-direction: row; }
+#sec-story .sc-box.is-row > * { flex: 1; height: 100%; }
+
+/* мелкая подпись прямо на сцене (у зерна) */
+#sec-story .sc-cap {
+  position: absolute;
+  z-index: 4;
+  font-size: 20px;
+  line-height: 26px;
+  color: var(--sc-muted);
+}
+
+/* делитель на предметном снимке: тонкая линия и круглая ручка */
+#sec-story .sc-split {
+  position: absolute;
+  z-index: 4;
+  width: 1px;
+  background: rgba(255, 255, 255, .30);
+}
+#sec-story .sc-split i {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border-radius: 50%;
+  background: #F4F6F5;
+  color: #22303A;
+  font-size: 13px;
+  font-style: normal;
+}
+
+/* картинка сцены, поставленная по координатам кадра */
+#sec-story .sc-fig {
+  position: absolute;
+  z-index: 2;
+}
+#sec-story .sc-fig img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* --------------------- поиск сорняков (экран 9) ---------------------
+   Цели не видно, пока её не нашли: по касанию появляется кольцо
+   и подпись. Обзор с БПЛА подсвечивает все сразу. */
+
+#sec-story .sc-weed {
+  position: absolute;
+  z-index: 4;
+  width: 96px;
+  height: 96px;
+  margin: -48px 0 0 -48px;
+  border-radius: 50%;
+  background: none;
+}
+#sec-story .sc-weed i {
+  position: absolute;
+  inset: 22px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(120, 225, 170, 0);
+  transition: box-shadow .25s ease;
+}
+#sec-story .sc-weed.is-found i {
+  box-shadow: 0 0 0 2px rgba(120, 225, 170, .85),
+    0 0 26px rgba(90, 210, 150, .45);
+}
+#sec-story .sc-weed b {
+  position: absolute;
+  left: 50%;
+  top: -10px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(20, 60, 46, .88);
+  color: #8FE3B6;
+  font-size: 16px;
+  font-weight: 400;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity .25s ease;
+}
+#sec-story .sc-weed.is-found b { opacity: 1; }
+
+/* счётчик найденных: обычно отдельной подписью над подсказкой */
+#sec-story .sc-cap.sc-count { margin-top: 0; }
+
+
+#sec-story .sc-count {
+  margin-top: 10px;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 24px;
+  color: var(--sc-dim);
+}
+#sec-story .sc-count.is-done { color: var(--sc-ok-text); }
 
 /* ------------------------------- табы -------------------------------
    Единая нейтральная подложка, выбранный сегмент светлее. Золото
