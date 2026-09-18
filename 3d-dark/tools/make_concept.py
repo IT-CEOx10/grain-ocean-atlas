@@ -42,6 +42,14 @@ CARDS = {
     "tile-monitoring", "tile-globe", "tile-regions",
 }
 
+# Снимки, которые в макете показаны не целиком, а крупным планом: доля
+# исходника (left, top, right, bottom) от 0 до 1. «Очистка хранилища» —
+# рабочий с пылесосом; числа пересчитаны из кадра 13-store-4 (картинка
+# в карточке 514x205 увеличена до 436 % и сдвинута на -127 % / -286 %).
+CARD_CROPS = {
+    "store-clean": (0.2918, 0.4599, 0.5211, 0.6209),
+}
+
 # Куски, которые вырезаем из полных кадров макетов.
 # Каждая строка: кадр, прямоугольник (left, top, right, bottom) в пикселях
 # кадра 1920x1080, имя результата, ширина и качество WebP.
@@ -88,6 +96,13 @@ def convert(name):
     alpha = im.mode in ("RGBA", "LA") and im.getchannel("A").getextrema()[0] < 255
 
     stem = os.path.splitext(name)[0]
+    if stem in CARD_CROPS:
+        l, t, r, b = CARD_CROPS[stem]
+        im = im.crop((round(l * im.width), round(t * im.height),
+                      round(r * im.width), round(b * im.height)))
+        # кусок мелкий, а карточка на экране 514 px: растягиваем вдвое
+        # с запасом, чтобы браузер не мылил его сам
+        im = im.resize((1028, round(1028 * im.height / im.width)), Image.LANCZOS)
     if stem in CARDS:
         width, quality = CARD_W, CARD_Q
     elif im.width >= 1600:

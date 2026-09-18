@@ -910,16 +910,17 @@
     /* --- экран 9: две кнопки под подсказкой. Золотая — та, которой
            стоит воспользоваться дальше; вторая стеклянная. --- */
     /* На изометрии обе кнопки золотые — так в кадре. Нажатая кнопка
-       становится стеклянной: видно, какое состояние сейчас открыто. */
+       остаётся пилюлей, но золото приглушается (#79623e, как в кадре):
+       видно, какое состояние сейчас открыто. */
     weedBtnSelf: function () {
       var on = tabKey() === 'photo';
       return button({ label: on ? 'Смотрим' : 'Посмотреть самостоятельно',
-        action: 'weedSelf' }, 'sc-btn' + (on ? '' : ' is-gold'));
+        action: 'weedSelf' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
     weedBtnDrone: function () {
       var on = tabKey() === 'drone';
       return button({ label: on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
-        action: 'weedDrone' }, 'sc-btn' + (on ? '' : ' is-gold'));
+        action: 'weedDrone' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
 
     /* --- экран 13: подготовка зернохранилища, девять шагов --- */
@@ -957,7 +958,7 @@
           text: ok ? s.status.done : s.status.text });
       }
       if (!s.note) return el('div');
-      return panelEl({ text: s.note });
+      return panelEl({ text: s.note, cls: 'is-note' });
     },
 
     /* --- экран 16: продовольственный маршрут --- */

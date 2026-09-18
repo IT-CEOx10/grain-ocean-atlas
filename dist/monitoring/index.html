@@ -1973,6 +1973,16 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: #FFFFFF;
   font-weight: 300;
 }
+/* нажатая золотая кнопка (кадры 09-seed-3-b/c): та же пилюля,
+   приглушённое золото и белое внутреннее свечение вместо золотого */
+#sec-story .sc-btn.is-gold-on {
+  border-radius: 999px;
+  background: #79623e;
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, .25), inset 0 0 35px rgba(255, 255, 255, .15),
+    inset 0 0 0 1px rgba(255, 255, 255, .2);
+  color: #FFFFFF;
+  font-weight: 300;
+}
 #sec-story .sc-btn.is-gold:active {
   background: #6F4A0E;
 }
@@ -2088,6 +2098,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: var(--sc-muted);
 }
 #sec-story .sc-panel-cap + .sc-panel-sub,
+#sec-story .sc-panel-sub:first-child,
 #sec-story .sc-panel-t.is-small { margin-top: 0; }
 /* панель-подпись: заголовок в размер обычного текста (кадр 07) */
 #sec-story .sc-panel-t.is-small { font-size: 24px; line-height: 32px; }
@@ -2452,6 +2463,9 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   flex-direction: column;
   gap: var(--sc-gap);
 }
+/* единственная кнопка в коробке занимает её целиком: высоту задаёт
+   коробка (в кадре 09 кнопки 128 px, а не обычные 108) */
+#sec-story .sc-box > .sc-btn:only-child { height: 100%; }
 #sec-story .sc-box.is-row { flex-direction: row; }
 #sec-story .sc-box.is-row > * { flex: 1; height: 100%; }
 
@@ -3207,7 +3221,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   font-size: 22px;
   line-height: 28.6px;
 }
-#sec-story .sc-panel.is-metrics .sc-rows { margin-top: 18px; gap: 4px; }
+#sec-story .sc-panel.is-metrics .sc-rows { margin-top: 6px; gap: 4px; }  /* в кадре между заголовком и строками 6 px: панель ровно 251 */
 #sec-story .sc-panel.is-metrics .sc-row {
   gap: 4px;
   height: 48px;
@@ -3342,7 +3356,27 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 28px;
   color: var(--sc-ok-text);
 }
-#sec-story .sc-status.is-dot.is-warn { color: var(--sc-gold); }
+/* обводка и цвет — из кадров 13-store: жёлтая у «не готов»,
+   салатовая у «готов»; отступ 33, между точкой и текстом 26 */
+#sec-story .sc-status.is-dot {
+  gap: 26px;
+  padding: 33px;
+  box-shadow: inset 0 0 0 1px rgba(139, 245, 46, .4);
+  color: rgba(139, 245, 46, .6);
+}
+#sec-story .sc-status.is-dot .sc-status-m { width: 11px; height: 11px; }
+#sec-story .sc-status.is-dot.is-warn {
+  box-shadow: inset 0 0 0 1px #f8d166;
+  color: #ddc195;
+}
+
+/* пояснение под снимком на шагах хранения: мельче обычного текста панели */
+#sec-story .sc-panel.is-note .sc-panel-p {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
 
 /* верхний слой шторки нарисован в своём размере внутри блока */
 #sec-story .sc-curtain-l img.is-at {

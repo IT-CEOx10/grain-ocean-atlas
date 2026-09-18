@@ -1969,6 +1969,16 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: #FFFFFF;
   font-weight: 300;
 }
+/* нажатая золотая кнопка (кадры 09-seed-3-b/c): та же пилюля,
+   приглушённое золото и белое внутреннее свечение вместо золотого */
+#sec-story .sc-btn.is-gold-on {
+  border-radius: 999px;
+  background: #79623e;
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, .25), inset 0 0 35px rgba(255, 255, 255, .15),
+    inset 0 0 0 1px rgba(255, 255, 255, .2);
+  color: #FFFFFF;
+  font-weight: 300;
+}
 #sec-story .sc-btn.is-gold:active {
   background: #6F4A0E;
 }
@@ -2084,6 +2094,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: var(--sc-muted);
 }
 #sec-story .sc-panel-cap + .sc-panel-sub,
+#sec-story .sc-panel-sub:first-child,
 #sec-story .sc-panel-t.is-small { margin-top: 0; }
 /* панель-подпись: заголовок в размер обычного текста (кадр 07) */
 #sec-story .sc-panel-t.is-small { font-size: 24px; line-height: 32px; }
@@ -2448,6 +2459,9 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   flex-direction: column;
   gap: var(--sc-gap);
 }
+/* единственная кнопка в коробке занимает её целиком: высоту задаёт
+   коробка (в кадре 09 кнопки 128 px, а не обычные 108) */
+#sec-story .sc-box > .sc-btn:only-child { height: 100%; }
 #sec-story .sc-box.is-row { flex-direction: row; }
 #sec-story .sc-box.is-row > * { flex: 1; height: 100%; }
 
@@ -3203,7 +3217,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   font-size: 22px;
   line-height: 28.6px;
 }
-#sec-story .sc-panel.is-metrics .sc-rows { margin-top: 18px; gap: 4px; }
+#sec-story .sc-panel.is-metrics .sc-rows { margin-top: 6px; gap: 4px; }  /* в кадре между заголовком и строками 6 px: панель ровно 251 */
 #sec-story .sc-panel.is-metrics .sc-row {
   gap: 4px;
   height: 48px;
@@ -3338,7 +3352,27 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 28px;
   color: var(--sc-ok-text);
 }
-#sec-story .sc-status.is-dot.is-warn { color: var(--sc-gold); }
+/* обводка и цвет — из кадров 13-store: жёлтая у «не готов»,
+   салатовая у «готов»; отступ 33, между точкой и текстом 26 */
+#sec-story .sc-status.is-dot {
+  gap: 26px;
+  padding: 33px;
+  box-shadow: inset 0 0 0 1px rgba(139, 245, 46, .4);
+  color: rgba(139, 245, 46, .6);
+}
+#sec-story .sc-status.is-dot .sc-status-m { width: 11px; height: 11px; }
+#sec-story .sc-status.is-dot.is-warn {
+  box-shadow: inset 0 0 0 1px #f8d166;
+  color: #ddc195;
+}
+
+/* пояснение под снимком на шагах хранения: мельче обычного текста панели */
+#sec-story .sc-panel.is-note .sc-panel-p {
+  margin: 0;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
 
 /* верхний слой шторки нарисован в своём размере внутри блока */
 #sec-story .sc-curtain-l img.is-at {
@@ -4695,10 +4729,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
           sub: 'Поиск вредителей и сорных растений\nпомогает защищать будущий урожай' }]
       },
       boxes: [
-        { at: [64, 780, 966, 128],
+        { at: [64, 764, 966, 128],
           items: [{ sub: 'Сначала попробуйте найти сорняки сами. Затем посмотрите, как обследуют\nполе с БПЛА.' }] },
-        { at: [1038, 780, 412, 128], items: [{ dyn: 'weedBtnSelf' }] },
-        { at: [1458, 780, 398, 128], items: [{ dyn: 'weedBtnDrone' }] }
+        { at: [1038, 764, 412, 128], items: [{ dyn: 'weedBtnSelf' }] },
+        { at: [1458, 764, 398, 128], items: [{ dyn: 'weedBtnDrone' }] }
       ],
       nav: {
         back: { label: '← Полевая диагностика', to: 'seed-2' },
@@ -6020,16 +6054,17 @@ body.story-screen { background: var(--sc-bg, #141D23); }
     /* --- экран 9: две кнопки под подсказкой. Золотая — та, которой
            стоит воспользоваться дальше; вторая стеклянная. --- */
     /* На изометрии обе кнопки золотые — так в кадре. Нажатая кнопка
-       становится стеклянной: видно, какое состояние сейчас открыто. */
+       остаётся пилюлей, но золото приглушается (#79623e, как в кадре):
+       видно, какое состояние сейчас открыто. */
     weedBtnSelf: function () {
       var on = tabKey() === 'photo';
       return button({ label: on ? 'Смотрим' : 'Посмотреть самостоятельно',
-        action: 'weedSelf' }, 'sc-btn' + (on ? '' : ' is-gold'));
+        action: 'weedSelf' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
     weedBtnDrone: function () {
       var on = tabKey() === 'drone';
       return button({ label: on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
-        action: 'weedDrone' }, 'sc-btn' + (on ? '' : ' is-gold'));
+        action: 'weedDrone' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
 
     /* --- экран 13: подготовка зернохранилища, девять шагов --- */
@@ -6067,7 +6102,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
           text: ok ? s.status.done : s.status.text });
       }
       if (!s.note) return el('div');
-      return panelEl({ text: s.note });
+      return panelEl({ text: s.note, cls: 'is-note' });
     },
 
     /* --- экран 16: продовольственный маршрут --- */
