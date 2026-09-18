@@ -10587,6 +10587,15 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   var C_NONE = [42, 53, 51];           // #2a3533
   var FILL_ALPHA = 0.92;               // сквозь заливку чуть видно фактуру фона
 
+  /* Новые регионы РФ: цифр по ним пока нет, но на карте они закрашены
+     как остальные регионы с данными — зелёным. Вместо объёма везде
+     пишется «данные уточняются». Цифры не выдумываем. */
+  var PENDING = { 'UA-14': 1, 'UA-09': 1, 'UA-23': 1, 'UA-65': 1 };
+  function noDataLabel(id) {
+    return PENDING[id] ? 'данные уточняются'
+      : (byId[id] ? 'нет данных' : 'нет госмониторинга');
+  }
+
   /* «Сильная пшеница»: в данных отдельного признака нет, поэтому
      берём ближайшее, что есть, — долю 2 класса не ниже порога.
      Настоящий признак должен прийти от заказчика. */
@@ -10728,7 +10737,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       c = here ? (here === presId ? PRES_PICK : PRES_ON) : PRES_OFF;
       return rgb(hot && here ? lighten(c, 0.22) : c);
     }
-    if (volume(id) <= 0) c = C_NONE;
+    if (volume(id) <= 0) c = PENDING[id] ? C_DATA : C_NONE;
     else c = isStrong(id) ? C_STRONG : C_DATA;
     return rgb(hot ? lighten(c, 0.26) : c);
   }
@@ -11114,7 +11123,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       line.appendChild(el('span', 'nm', s.name));
       var v = volume(s.id);
       line.appendChild(el('span', 'vl', v > 0 ? fmt1(v) + ' тыс. т'
-        : (byId[s.id] ? 'нет данных' : 'нет госмониторинга')));
+        : noDataLabel(s.id)));
       main.appendChild(line);
       var bar = el('div', 't-bar');
       var fill = el('i');
@@ -11146,7 +11155,7 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
       } else {
         var v = volume(id);
         tip.appendChild(el('b', null, v > 0 ? fmt1(v) + ' тыс. т'
-          : (byId[id] ? 'нет данных' : 'нет госмониторинга')));
+          : noDataLabel(id)));
       }
       var p2 = toCanvas(s.c[0], s.c[1]);
       // Подсказка лежит под панелями, поэтому целиком держим её в свободном
@@ -11273,8 +11282,12 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
     // госмониторинг там не проводится; есть, но без записи за год —
     // пшеницу в этом году не возделывали.
     var noMon = !byId[regionId];
-    var note = noMon ? 'Госмониторинг не проводится' : 'Данных за ' + year + ' год нет';
-    $('reg-sub').textContent = noMon
+    var pending = !!PENDING[regionId];
+    var note = pending ? 'Данные уточняются'
+      : noMon ? 'Госмониторинг не проводится' : 'Данных за ' + year + ' год нет';
+    $('reg-sub').textContent = pending
+      ? 'Данные по региону уточняются'
+      : noMon
       ? 'Госмониторинг в этом регионе не проводится'
       : 'Пшеница в этом регионе не возделывалась · демоданные';
     bigNum($('gross-body'), '—', '', note);
