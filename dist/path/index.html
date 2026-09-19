@@ -2458,6 +2458,42 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
     if (e && e.persisted) revealPage();
   });
 
+  /* ----------------------- стенд: сенсорная панель -----------------------
+     Приложение работает на тач-панели без клавиатуры и мыши. Посетитель
+     не должен случайно вызвать меню браузера, выделить текст, утащить
+     картинку или увеличить страницу щипком: сцена рассчитана на весь экран.
+     Свои жесты разделов (вращение глобуса, перетаскивание карты) идут
+     через pointer-события на холстах и этим запретам не мешают.
+     Отключить для отладки: ?kiosk=0 в адресе. */
+  (function kiosk() {
+    if (/[?&]kiosk=0\b/.test(global.location.search)) return;
+    var doc = global.document;
+    var st = doc.createElement('style');
+    st.textContent =
+      'html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;' +
+      '-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;' +
+      'touch-action:pan-x pan-y}' +
+      'img{-webkit-user-drag:none;user-drag:none}' +
+      'input,textarea{-webkit-user-select:text;user-select:text}';
+    (doc.head || doc.documentElement).appendChild(st);
+    var stop = function (e) { e.preventDefault(); };
+    doc.addEventListener('contextmenu', stop);
+    doc.addEventListener('dragstart', stop);
+    doc.addEventListener('selectstart', function (e) {
+      var t = e.target && e.target.nodeType === 1 ? e.target : e.target && e.target.parentElement;
+      if (!t || !t.closest || !t.closest('input,textarea')) e.preventDefault();
+    });
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) {
+      doc.addEventListener(n, stop);
+    });
+    // масштаб страницы: Ctrl + колесо и Ctrl + «плюс/минус/ноль»
+    doc.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); },
+      { passive: false });
+    doc.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && /^[-+=0]$/.test(e.key)) e.preventDefault();
+    });
+  })();
+
   global.U = {
     sectionUrl: sectionUrl,
     goSection: goSection,

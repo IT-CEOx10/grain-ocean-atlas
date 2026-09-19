@@ -240,12 +240,18 @@
   z-index: 5;
   display: flex;
   gap: 8px;
+  /* обойма вокруг плиток (кадр 02): отступ 6, радиус 36, своё размытие */
+  padding: 6px;
+  border-radius: 36px;
+  -webkit-backdrop-filter: blur(35px);
+  backdrop-filter: blur(35px);
 }
 
 .sc-tile {
   width: 334px;
   height: 274px;
-  padding: 16px;
+  /* в кадре отступ 8: при 16 название упиралось в круглую стрелку */
+  padding: 8px;
   border-radius: var(--sc-r);
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
@@ -270,9 +276,10 @@
 .sc-tile-body {
   flex: 1;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 0 0 4px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 0 0 8px;
 }
 .sc-tile-text { flex: 1; min-width: 0; }
 .sc-tile-name {

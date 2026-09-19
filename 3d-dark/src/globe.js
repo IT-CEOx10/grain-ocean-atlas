@@ -797,6 +797,14 @@
   function resize() {
     var w = canvas.clientWidth || 1920;
     var h = canvas.clientHeight || 1080;
+    // Сцена 1920x1080 растягивается под окно через transform: на панели
+    // 3840x2160 при масштабе Windows 100 % это увеличение вдвое при
+    // devicePixelRatio = 1. Без поправки глобус рисовался бы в Full HD
+    // и растягивался. Плотность считаем по настоящим пикселям экрана,
+    // потолок прежний — 2.
+    var rect = canvas.getBoundingClientRect();
+    var stretch = rect.width > 0 && w > 0 ? rect.width / w : 1;
+    renderer.setPixelRatio(Math.min((global.devicePixelRatio || 1) * stretch, 2));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     uRes.value.set(w, h);

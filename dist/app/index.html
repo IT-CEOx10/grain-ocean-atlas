@@ -3707,12 +3707,18 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   z-index: 5;
   display: flex;
   gap: 8px;
+  /* обойма вокруг плиток (кадр 02): отступ 6, радиус 36, своё размытие */
+  padding: 6px;
+  border-radius: 36px;
+  -webkit-backdrop-filter: blur(35px);
+  backdrop-filter: blur(35px);
 }
 
 .sc-tile {
   width: 334px;
   height: 274px;
-  padding: 16px;
+  /* в кадре отступ 8: при 16 название упиралось в круглую стрелку */
+  padding: 8px;
   border-radius: var(--sc-r);
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
@@ -3737,9 +3743,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 .sc-tile-body {
   flex: 1;
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 0 0 4px;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 0 0 8px;
 }
 .sc-tile-text { flex: 1; min-width: 0; }
 .sc-tile-name {
@@ -5246,6 +5253,42 @@ body.mon-screen { background: #141d23; }
   global.addEventListener('pageshow', function (e) {
     if (e && e.persisted) revealPage();
   });
+
+  /* ----------------------- стенд: сенсорная панель -----------------------
+     Приложение работает на тач-панели без клавиатуры и мыши. Посетитель
+     не должен случайно вызвать меню браузера, выделить текст, утащить
+     картинку или увеличить страницу щипком: сцена рассчитана на весь экран.
+     Свои жесты разделов (вращение глобуса, перетаскивание карты) идут
+     через pointer-события на холстах и этим запретам не мешают.
+     Отключить для отладки: ?kiosk=0 в адресе. */
+  (function kiosk() {
+    if (/[?&]kiosk=0\b/.test(global.location.search)) return;
+    var doc = global.document;
+    var st = doc.createElement('style');
+    st.textContent =
+      'html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;' +
+      '-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;' +
+      'touch-action:pan-x pan-y}' +
+      'img{-webkit-user-drag:none;user-drag:none}' +
+      'input,textarea{-webkit-user-select:text;user-select:text}';
+    (doc.head || doc.documentElement).appendChild(st);
+    var stop = function (e) { e.preventDefault(); };
+    doc.addEventListener('contextmenu', stop);
+    doc.addEventListener('dragstart', stop);
+    doc.addEventListener('selectstart', function (e) {
+      var t = e.target && e.target.nodeType === 1 ? e.target : e.target && e.target.parentElement;
+      if (!t || !t.closest || !t.closest('input,textarea')) e.preventDefault();
+    });
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach(function (n) {
+      doc.addEventListener(n, stop);
+    });
+    // масштаб страницы: Ctrl + колесо и Ctrl + «плюс/минус/ноль»
+    doc.addEventListener('wheel', function (e) { if (e.ctrlKey) e.preventDefault(); },
+      { passive: false });
+    doc.addEventListener('keydown', function (e) {
+      if ((e.ctrlKey || e.metaKey) && /^[-+=0]$/.test(e.key)) e.preventDefault();
+    });
+  })();
 
   global.U = {
     sectionUrl: sectionUrl,
@@ -9176,6 +9219,14 @@ function(t,e){"object"==typeof exports&&"undefined"!=typeof module?e(exports):"f
   function resize() {
     var w = canvas.clientWidth || 1920;
     var h = canvas.clientHeight || 1080;
+    // Сцена 1920x1080 растягивается под окно через transform: на панели
+    // 3840x2160 при масштабе Windows 100 % это увеличение вдвое при
+    // devicePixelRatio = 1. Без поправки глобус рисовался бы в Full HD
+    // и растягивался. Плотность считаем по настоящим пикселям экрана,
+    // потолок прежний — 2.
+    var rect = canvas.getBoundingClientRect();
+    var stretch = rect.width > 0 && w > 0 ? rect.width / w : 1;
+    renderer.setPixelRatio(Math.min((global.devicePixelRatio || 1) * stretch, 2));
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     uRes.value.set(w, h);
