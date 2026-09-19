@@ -60,6 +60,15 @@
   height: 100%;
   object-fit: cover;
 }
+.sc-scene.is-vig::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow: inset 0 0 250px #172d31;
+  pointer-events: none;
+}
 /* кадр, поставленный по координатам выгрузки Figma */
 .sc-scene img.is-at { position: absolute; object-fit: fill; }
 /* сцены с вырезанным фоном (остров Центра) ложатся целиком */

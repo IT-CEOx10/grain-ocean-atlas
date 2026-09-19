@@ -72,8 +72,35 @@ CROPS = [
 CLEANS = []
 
 
+def trim_edges(im):
+    """Срезает бракованную кромку в 1 px.
+
+    Слои из Figma иногда приходят со светлой (или тёмной) крайней строкой
+    или столбцом — след сглаживания при выгрузке. На экране это даёт
+    тонкую полосу по краю кадра. Кромку срезаем, только если она заметно
+    отличается по яркости от соседних строк.
+    """
+    rgb = im.convert("RGB")
+    w, h = rgb.size
+
+    def lum(points):
+        vals = [rgb.getpixel(p) for p in points]
+        return sum(c[0] * 3 + c[1] * 6 + c[2] for c in vals) / (10.0 * len(vals))
+
+    xs = range(0, w, max(1, w // 80))
+    ys = range(0, h, max(1, h // 80))
+    left = 1 if abs(lum([(0, y) for y in ys]) - lum([(3, y) for y in ys])) > 25 else 0
+    right = 1 if abs(lum([(w - 1, y) for y in ys]) - lum([(w - 4, y) for y in ys])) > 25 else 0
+    top = 1 if abs(lum([(x, 0) for x in xs]) - lum([(x, 3) for x in xs])) > 25 else 0
+    bottom = 1 if abs(lum([(x, h - 1) for x in xs]) - lum([(x, h - 4) for x in xs])) > 25 else 0
+    if left or right or top or bottom:
+        im = im.crop((left, top, w - right, h - bottom))
+    return im
+
+
 def save_webp(im, name, width, quality, alpha):
     """Ужимает картинку до нужной ширины и сохраняет в WebP."""
+    im = trim_edges(im)
     if im.width > width:
         height = round(im.height * width / im.width)
         im = im.resize((width, height), Image.LANCZOS)
@@ -96,6 +123,21 @@ def convert(name):
     alpha = im.mode in ("RGBA", "LA") and im.getchannel("A").getextrema()[0] < 255
 
     stem = os.path.splitext(name)[0]
+    if stem == "seed-1-scene":
+        # В кадре 07 этот слой перевёрнут по вертикали и размыт на 125 px,
+        # стоит со сдвигом (-50, -51) при размере 1988x1143 на фоне #0c1813.
+        # Эффекты запекаем в картинку: без них виден прямоугольный шов
+        # и блик в углу. Результат — ровно блок сцены 1888x1048.
+        from PIL import ImageFilter, ImageOps
+        pad, k = 400, 4
+        layer = ImageOps.flip(im.convert("RGB").resize((1988, 1143), Image.LANCZOS))
+        canvas = Image.new("RGB", (1988 + 2 * pad, 1143 + 2 * pad), (0x0c, 0x18, 0x13))
+        canvas.paste(layer, (pad, pad))
+        small = canvas.resize((canvas.width // k, canvas.height // k), Image.BILINEAR)
+        small = small.filter(ImageFilter.GaussianBlur(125.0 / k))
+        canvas = small.resize(canvas.size, Image.BICUBIC)
+        im = canvas.crop((pad + 50, pad + 51, pad + 50 + 1888, pad + 51 + 1048))
+        return save_webp(im, stem, SCENE_W, 82, False)
     if stem in CARD_CROPS:
         l, t, r, b = CARD_CROPS[stem]
         im = im.crop((round(l * im.width), round(t * im.height),

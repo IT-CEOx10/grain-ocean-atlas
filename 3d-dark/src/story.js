@@ -153,9 +153,16 @@
    * [слева, сверху, ширина, высота] в числах выгрузки Figma; без него
    * кадр просто обрезается по месту.
    */
+  var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1, 'store-1': 1 };
+
   function sceneLayer(scr) {
     var p = sceneFor(scr).pic || null;
-    var box = el('div', 'sc-scene' + (p && p.fit === 'contain' ? ' is-contain' : ''));
+    /* Виньетка: в кадрах Figma поверх сцены лежит внутренняя тень 250 px
+       цвета #172d31 — она затемняет края и прячет блики по углам картинок.
+       Её нет только у заставки, меню, Центра, почвы и хранения. */
+    var vig = !NO_VIGNETTE[scr.id];
+    var box = el('div', 'sc-scene' + (p && p.fit === 'contain' ? ' is-contain' : '') +
+      (vig ? ' is-vig' : ''));
     if (p && p.img) {
       var im = new Image();
       im.src = U.asset(p.img);
@@ -583,6 +590,7 @@
       n.style.top = c.y + 'px';
       if (c.w) n.style.width = c.w + 'px';
       if (c.right) n.style.textAlign = 'right';
+      if (c.center) n.style.textAlign = 'center';
       if (c.count) {
         st.countEl = n;
         // в макете счётчика нет: показываем его после первой находки
