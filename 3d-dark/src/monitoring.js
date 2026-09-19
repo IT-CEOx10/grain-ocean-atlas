@@ -540,8 +540,9 @@
 
   function drawTotal() {
     var r = mon.russia[String(year)] || {};
+    // в кадре 23-monitoring подпись без служебной пометки о демоданных
     bigNum($('total-body'), fmt1(r.surveyed), 'тыс. т',
-      'обследовано зерна урожая ' + year + ' · демоданные');
+      'обследовано зерна урожая ' + year);
 
     var tiles = $('total-tiles');
     tiles.textContent = '';

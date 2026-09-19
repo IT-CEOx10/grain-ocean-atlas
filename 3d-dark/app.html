@@ -101,7 +101,8 @@
         </section>
       </div>
 
-      <div id="intro-note" class="demo-note"></div>
+      <!-- служебная пометка: в кадре её нет, видна только с ?notes=1 -->
+      <div id="intro-note" class="demo-note is-note"></div>
 
       <button id="intro-go" class="btn-gold" type="button">Посмотреть маршруты экспорта</button>
     </section>
@@ -110,9 +111,8 @@
          Поиск, «Топ-5 направлений» и список остальных стран. -->
     <section id="panel-left" class="panel">
       <div class="search">
-        <svg class="search-icon" viewBox="0 0 16 16" aria-hidden="true">
-          <circle cx="7" cy="7" r="5"></circle><line x1="10.8" y1="10.8" x2="14" y2="14"></line>
-        </svg>
+        <!-- значок из кадра 25-globe-map (тот же, что в поиске по регионам) -->
+        <svg class="search-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M34.9778 37L25.8778 27.9C25.1556 28.4778 24.325 28.9352 23.3861 29.2722C22.4472 29.6093 21.4481 29.7778 20.3889 29.7778C17.7648 29.7778 15.544 28.869 13.7264 27.0514C11.9088 25.2338 11 23.013 11 20.3889C11 17.7648 11.9088 15.544 13.7264 13.7264C15.544 11.9088 17.7648 11 20.3889 11C23.013 11 25.2338 11.9088 27.0514 13.7264C28.869 15.544 29.7778 17.7648 29.7778 20.3889C29.7778 21.4481 29.6093 22.4472 29.2722 23.3861C28.9352 24.325 28.4778 25.1556 27.9 25.8778L37 34.9778L34.9778 37ZM20.3889 26.8889C22.1944 26.8889 23.7292 26.2569 24.9931 24.9931C26.2569 23.7292 26.8889 22.1944 26.8889 20.3889C26.8889 18.5833 26.2569 17.0486 24.9931 15.7847C23.7292 14.5208 22.1944 13.8889 20.3889 13.8889C18.5833 13.8889 17.0486 14.5208 15.7847 15.7847C14.5208 17.0486 13.8889 18.5833 13.8889 20.3889C13.8889 22.1944 14.5208 23.7292 15.7847 24.9931C17.0486 26.2569 18.5833 26.8889 20.3889 26.8889Z"></path></svg>
         <input id="search" type="search" placeholder="Поиск по странам" autocomplete="off">
       </div>
 
@@ -143,9 +143,10 @@
       <div id="news-list" class="news-list"></div>
     </section>
 
-    <!-- ========== кадр «Страна» ========== -->
+    <!-- ========== кадр «Страна» ==========
+         В кадре 25-globe-country карточка страны и таблица продукции —
+         две отдельные панели, одна под другой. -->
     <section id="panel-country" class="panel box">
-      <div class="eyebrow">Направление</div>
       <span id="country-name">—</span>
 
       <div class="metric">
@@ -156,14 +157,16 @@
 
       <div class="rank-row">
         <b id="country-rank">—</b>
-        <span>среди стран-импортёров российского зерна</span>
+        <span>среди стран-импортёров<br>российского зерна</span>
       </div>
+    </section>
 
-      <div class="divider"></div>
-      <div class="eyebrow">Продукция, <span id="country-year">—</span></div>
+    <section id="panel-products" class="panel">
+      <div class="prod-head">
+        <span>Продукция, <span id="country-year">—</span></span>
+        <span id="country-more" class="product-more"></span>
+      </div>
       <div id="country-products" class="product-grid"></div>
-      <div id="country-more" class="product-more"></div>
-      <div class="eyebrow card-foot">Данные ФГИС «Зерно» · тыс. тонн</div>
     </section>
 
     <!-- ========== панель годов (кадры «Карта» и «Страна») ========== -->
@@ -313,7 +316,8 @@
         Перетаскивайте карту для перемещения.</div>
     </section>
 
-    <div id="demo-note" class="mn-demo">Демонстрационные данные — будут заменены статистикой заказчика</div>
+    <!-- служебная пометка: в кадрах её нет, видна только с ?notes=1 -->
+    <div id="demo-note" class="mn-demo is-note">Демонстрационные данные — будут заменены статистикой заказчика</div>
     <div id="loading" class="loading">Загрузка данных…</div>
   </div>
 </div>

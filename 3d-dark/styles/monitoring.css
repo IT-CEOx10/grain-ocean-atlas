@@ -216,11 +216,12 @@ body.mon-screen { background: #141d23; }
   position: absolute;
   z-index: 6;
   left: 65px;
-  top: 60px;
+  top: 57px;
   margin: 0;
   font-size: 64px;
   font-weight: 400;
-  line-height: 70px;
+  /* в кадре шаг строк 65 px, а не «нормальный» интерлиньяж шрифта */
+  line-height: 65px;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--mn-gold);
@@ -251,7 +252,6 @@ body.mon-screen { background: #141d23; }
   height: 48px;
   margin-right: 16px;
   fill: #fff;
-  opacity: .5;
 }
 #sec-monitoring .mn-search input {
   flex: 1;
@@ -362,6 +362,13 @@ body.mon-screen { background: #141d23; }
   height: 234px;
 }
 
+/* Кадр нарисован в Akkurat, у нас Inter: у него выше линия прописных,
+   и строка внутри своей высоты стоит ниже. Эти сдвиги возвращают
+   заголовок, число и подпись ровно на места из кадра. */
+#sec-monitoring .mn-total .mn-cap,
+#sec-monitoring .mn-total .mn-num { margin-top: -4px; }
+#sec-monitoring .mn-tile .mn-num { margin-top: -8px; }
+
 #sec-monitoring .mn-tiles { display: flex; gap: 4px; }
 #sec-monitoring .mn-tile {
   flex: none;
@@ -388,17 +395,23 @@ body.mon-screen { background: #141d23; }
   line-height: 1.3;
   color: var(--mn-text);
 }
+/* В кадре видны ровно четыре строки (4 x 48 + 3 x 4 = 204), ниже пусто,
+   а полоса прокрутки стоит СНАРУЖИ панели — в 4 px справа от неё.
+   Отрицательное поле выносит правый край списка за панель, внутренний
+   отступ возвращает строки на их ширину (465 px). */
 #sec-monitoring .mn-top-list {
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  height: 204px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding-right: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--mn-scroll-thumb) var(--mn-scroll-track);
+  margin-right: -44px;
+  padding-right: 37px;
+  /* scrollbar-width здесь не ставим: в Chrome это свойство перебивает
+     ::-webkit-scrollbar, и вместо полосы из кадра получается системная,
+     на macOS — вовсе невидимая */
 }
 #sec-monitoring .mn-top-list::-webkit-scrollbar { width: 8px; }
 #sec-monitoring .mn-top-list::-webkit-scrollbar-track {
@@ -414,7 +427,9 @@ body.mon-screen { background: #141d23; }
   flex: none;
   display: flex;
   gap: 4px;
+  height: 48px;
   align-items: stretch;
+  box-sizing: border-box;
   border: 0;
   padding: 0;
   background: none;
@@ -704,6 +719,8 @@ body.mon-screen { background: #141d23; }
   font-weight: 300;
   line-height: 28px;
   color: var(--mn-muted);
+  /* в кадре вокруг разделителя по два пробела */
+  white-space: pre-wrap;
 }
 
 #sec-monitoring .mn-home-reg { left: 1540px; top: 48px; width: 300px; height: 108px; }
@@ -717,7 +734,7 @@ body.mon-screen { background: #141d23; }
   top: 294px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
 #sec-monitoring .mn-metrics .mn-panel {
   position: relative;
@@ -728,9 +745,16 @@ body.mon-screen { background: #141d23; }
   height: 211px;
   box-sizing: border-box;
 }
+/* содержимое выше 211 px не должно ужиматься: в кадре оно просто
+   занимает нижний отступ панели */
+#sec-monitoring .mn-metrics .mn-panel > * { flex: none; }
 #sec-monitoring .mn-metrics .mn-num { font-size: 42px; line-height: 48px; }
-#sec-monitoring .mn-metrics .mn-num i { font-weight: 300; }
+/* интерлиньяж задан в пикселях и наследуется единицей как есть: без
+   этой строки строка числа становится выше своих 48 px */
+#sec-monitoring .mn-metrics .mn-num i { font-weight: 300; line-height: 1; }
 #sec-monitoring .mn-metrics .mn-note {
+  /* в кадре подпись отбита от числа теми же 26 px, что и всё в панели */
+  margin-top: 26px;
   font-size: 20px;
   font-weight: 300;
   line-height: 28px;
@@ -749,7 +773,13 @@ body.mon-screen { background: #141d23; }
   box-sizing: border-box;
   overflow: hidden;
 }
+/* В кадре у заголовка и у подписи над списком фиксированная высота 40 px
+   (подпись в два ряда из неё выходит) — от этого зависит, где начинается
+   список классов. Ничто внутри панели не ужимается. */
+#sec-monitoring .mn-cls > * { flex: none; }
+#sec-monitoring .mn-cls .mn-cap { height: 40px; }
 #sec-monitoring .mn-cls-sub {
+  height: 40px;
   font-size: 20px;
   font-weight: 300;
   line-height: 28px;
@@ -762,6 +792,7 @@ body.mon-screen { background: #141d23; }
   gap: 4px;
 }
 #sec-monitoring .c-row {
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;

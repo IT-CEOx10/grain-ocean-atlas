@@ -1307,20 +1307,30 @@ html.theme-green #touch-hint {
 html.theme-green #touch-hint.is-on { opacity: 1; }
 
 /* ==================== три кадра «Маршрутов экспорта» ====================
-   Состав экранов пересобран по макетам фигмы (docs/mockup/concept-18-09,
-   кадры 25-globe-*), а оформление осталось прежним, зелёным: те же
-   переменные темы, те же заливки, радиусы и шрифты, что у панелей выше.
-   Из макетов взяты только состав блоков, тексты и примерная раскладка.
+   Состав, места, размеры, кегли и отступы сняты с кадров фигмы
+   docs/mockup/concept-18-09 (25-globe-intro, 25-globe-map-2025,
+   25-globe-country-a; рядом лежат *.code.txt с числами). Кадры нарисованы
+   в поле 1920x1080 без отступа по краям, у раздела #card тоже inset: 0,
+   поэтому координаты ниже — прямо в координатах кадра.
+
+   Цвета остаются нашими, зелёными: сам шар, фон, заливки плашек и золото
+   из темы не меняются. Из кадров взяты только состав блоков, их места,
+   размеры, кегли, интерлиньяж, отступы и радиусы.
 
    Кадров три, класс состояния ставит src/ui.js на обёртку #sec-globe:
 
-     is-intro     вход в раздел: два глобуса-слота и цифры за два года
+     is-intro     вход в раздел: два круглых слота и цифры за два года
      is-map       карта: поиск, топ-5, список стран, новости, годы
      is-country   выбранная страна: объём, место, продукция
 
-   Цвета берутся из переменных темы, поэтому правила написаны на обёртку
-   раздела, а не на тему: синий прототип (?theme=navy) получает те же три
-   кадра, только в своих цветах. */
+   Правила написаны на обёртку раздела, а не на тему: синий прототип
+   (?theme=navy) получает ту же раскладку в своих цветах. */
+
+/* Набор — тот же Inter, что в презентации и на карте России;
+   @font-face лежит в styles/story-theme.css. */
+#sec-globe,
+#sec-globe button,
+#sec-globe input { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
 
 /* ---------------------------- что видно когда ---------------------------- */
 
@@ -1329,19 +1339,14 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 #sec-globe #panel-summary,
 #sec-globe #panel-news,
 #sec-globe #panel-country,
+#sec-globe #panel-products,
 #sec-globe #timeline,
 #sec-globe #reset-view,
 #sec-globe #back-map,
 #sec-globe #home-btn { display: none; }
 
 #sec-globe.is-intro #gl-intro { display: block; }
-#sec-globe.is-intro #home-btn {
-  display: flex;
-  left: auto;
-  right: 60px;
-  top: 44px;
-  bottom: auto;
-}
+#sec-globe.is-intro #home-btn { display: flex; }
 
 #sec-globe.is-map #panel-left,
 #sec-globe.is-map #panel-summary,
@@ -1351,8 +1356,13 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 #sec-globe.is-map #home-btn { display: flex; }
 
 #sec-globe.is-country #panel-country,
+#sec-globe.is-country #panel-products,
 #sec-globe.is-country #timeline { display: block; }
 #sec-globe.is-country #back-map { display: flex; }
+
+/* Подпись «ЦОК АПК · Государственный мониторинг зерна» осталась от
+   синего прототипа: в кадрах раздела её нет. */
+html.theme-green #sec-globe #brand { display: none; }
 
 /* На входном кадре живая сцена не видна: там два отдельных слота.
    Канвас остаётся в раскладке, иначе three.js потеряет свой размер. */
@@ -1361,17 +1371,82 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 #sec-globe.is-intro #glabels { opacity: 0; pointer-events: none; }
 #sec-globe .globe-slot { transition: opacity .4s ease; }
 
-/* ---------------------------- заголовок ---------------------------- */
+/* ------------------------- общий вид плашек -------------------------
+   В кадрах у всех панелей раздела радиус 24 и размытие 35. */
 
-/* Раньше заголовок стоял внутри левой колонки; теперь он общий для всех
-   трёх кадров и лежит сам по себе. */
+#sec-globe .panel {
+  border-radius: 24px;
+  -webkit-backdrop-filter: blur(35px);
+  backdrop-filter: blur(35px);
+  box-sizing: border-box;
+}
+
+/* «призрачные» кнопки кадров: «Главное меню» и «← К странам назначения» */
+#sec-globe .ghost-btn {
+  left: auto;
+  right: auto;
+  bottom: auto;
+  gap: 16px;
+  justify-content: center;
+  padding: 0 24px;
+  background: rgba(15, 40, 28, .2);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  border: 0;
+  box-shadow: inset 0 0 4px rgba(255, 255, 255, .25),
+    inset 0 0 35px rgba(255, 255, 255, .15);
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+  color: var(--text);
+}
+/* «Главное меню»: в кадрах раздела его нет, поэтому на входном кадре
+   оно стоит справа вверху (как на кадрах карты России), а на карте —
+   в просвете между списком стран и панелью годов. Селекторы с темой:
+   иначе их перебивает общая раскладка кнопки html.theme-green #home-btn. */
+html.theme-green #sec-globe #home-btn {
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  padding: 0;
+  background: rgba(15, 40, 28, .2);
+}
+html.theme-green #sec-globe.is-intro #home-btn {
+  left: 1556px;
+  top: 64px;
+  width: 300px;
+  height: 108px;
+  border-radius: 32px;
+  font-size: 24px;
+  line-height: 32px;
+}
+html.theme-green #sec-globe.is-map #home-btn {
+  left: 462px;
+  top: 892px;
+  width: 216px;
+  height: 64px;
+  border-radius: 16px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+/* ---------------------------- заголовок ----------------------------
+   «Маршруты / экспорта» — один на все три кадра, 64 px, шаг строк 63. */
+
 #sec-globe #screen-title {
   position: absolute;
-  left: 60px;
-  top: 40px;
+  left: 81px;
+  top: 75px;
   z-index: 5;
   margin: 0;
-  line-height: 1.06;
+  font-family: inherit;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 63px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--title);
 }
 
 /* ------------------------------- видео -------------------------------
@@ -1394,18 +1469,19 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 
 #sec-globe #gl-intro { position: absolute; inset: 0; z-index: 4; }
 
-/* круглый слот под ролик: тот же размер и место, что у глобуса в макете */
+/* Круглый слот под ролик: в кадре шары диаметром 654 px,
+   центры (616; 574) и (1369; 574). */
 #sec-globe .orb {
   position: absolute;
-  top: 250px;
-  width: 560px;
-  height: 560px;
+  top: 247px;
+  width: 654px;
+  height: 654px;
   border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 0 80px rgba(79, 230, 210, .10);
 }
-#sec-globe #orb-left { left: 330px; }
-#sec-globe #orb-right { left: 1030px; }
+#sec-globe #orb-left { left: 289px; }
+#sec-globe #orb-right { left: 1042px; }
 
 #sec-globe .orb-poster {
   position: absolute;
@@ -1429,158 +1505,359 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   pointer-events: none;
 }
 
-/* две колонки карточек с цифрами */
+/* две колонки карточек с цифрами: слева 304 px, справа 274 px */
 #sec-globe .intro-col {
   position: absolute;
-  top: 640px;
-  width: 340px;
+  top: 672px;
+  z-index: 4;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 }
-#sec-globe .i-left { left: 60px; }
-#sec-globe .i-right { left: 1520px; }
+#sec-globe .i-left { left: 64px; width: 304px; }
+#sec-globe .i-right { left: 1582px; width: 274px; }
 
 #sec-globe .intro-card {
   position: relative;
-  padding: 20px 22px;
-  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+  padding: 16px;
+  border-radius: 24px;
 }
+/* «Экспорт зерна, 2016» в кадре стоит одной строкой; у Inter она шире,
+   чем у макетного Akkurat, и без запрета переноса ломается пополам */
+#sec-globe #intro-l-cap,
+#sec-globe #intro-r-cap { white-space: nowrap; }
 #sec-globe .intro-cap {
-  font-size: 16px;
-  line-height: 22px;
-  color: var(--muted);
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+  color: var(--text);
 }
+/* Строка числа занимает ровно 48 px, как в кадре; сдвиг на 5 px вверх
+   (position/top раскладку не трогает) ставит цифры на высоту кадра —
+   у Inter линия прописных ниже, чем у макетного Akkurat. */
 #sec-globe .intro-val {
+  position: relative;
+  top: -5px;
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 10px;
+  margin: 0;
 }
 #sec-globe .intro-val b {
-  font-family: var(--mono);
-  font-size: 40px;
-  font-weight: 700;
-  letter-spacing: -.01em;
+  font-family: inherit;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 48px;
+  letter-spacing: 0;
   color: var(--num);
+  font-variant-numeric: tabular-nums;
 }
 #sec-globe .intro-val span {
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--accent);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--text);
 }
 
 /* единственная золотая кнопка экрана */
 #sec-globe #intro-go {
   position: absolute;
   left: 50%;
-  top: 918px;
+  top: 908px;
   z-index: 6;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 480px;
-  height: 72px;
-  margin-left: -240px;
-  padding: 0 28px;
-  border: 0;
+  gap: 16px;
+  width: 511px;
+  height: 108px;
+  margin-left: -256px;
+  padding: 0 24px;
+  border: 1px solid rgba(255, 255, 255, .2);
   border-radius: 999px;
-  background: var(--btn-bg);
-  box-shadow: var(--btn-shadow);
-  font-family: var(--body);
-  font-size: 19px;
-  font-weight: 600;
-  color: var(--btn-fg);
+  box-sizing: border-box;
+  background: #855812;
+  box-shadow: inset 0 0 4px #FFDDA7, inset 0 0 35px #F5D197;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+  color: #FFFFFF;
   cursor: pointer;
 }
-#sec-globe #intro-go:active { background: var(--btn-bg-press); }
+#sec-globe #intro-go:active { background: #6E4810; }
 
-/* пометка под демонстрационными цифрами */
+/* пометка под демонстрационными цифрами (служебная, см. ?notes=1) */
 #sec-globe .demo-note {
   position: absolute;
   left: 60px;
   right: 60px;
-  top: 1016px;
+  top: 1030px;
   text-align: center;
   font-size: 12.5px;
   color: var(--hint);
 }
 
 /* =========================== кадр «Карта» ===========================
-   Левая колонка: поиск, «Топ-5 направлений» и список остальных стран. */
+   Левая колонка: поиск (385x75), «Топ-5 направлений» и список остальных
+   стран; всё вместе — от 258 до 1016 по вертикали. */
 
-#sec-globe.is-map .search { top: 130px; }
+#sec-globe #panel-left {
+  left: 64px;
+  top: 258px;
+  right: auto;
+  width: 385px;
+  height: 758px;
+  padding: 0;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
 
 #sec-globe #panel-left .search {
   position: absolute;
   left: 0;
-  right: 0;
+  top: 0;
+  right: auto;
+  display: flex;
+  align-items: center;
+  width: 385px;
+  height: 75px;
   margin: 0;
+  padding: 0 16px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  background: var(--panel);
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
+}
+#sec-globe .search-icon {
+  position: static;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  margin-right: 16px;
+  fill: var(--icon);
+  stroke: none;
+  opacity: .85;
+}
+#sec-globe .search input {
+  flex: 1;
+  min-width: 0;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--text);
 }
 
+/* «Топ-5 направлений»: плашка с пятью строками внутри */
 #sec-globe #panel-top5 {
   position: absolute;
   left: 0;
-  right: 0;
-  top: 222px;
-  padding: 20px 22px 22px;
-  border-radius: 18px;
+  top: 90px;
+  right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 373px;
+  padding: 16px;
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(25px);
 }
-#sec-globe #panel-top5 .section-title { margin: 0 0 12px; font-size: 20px; }
-#sec-globe .top5-list .country-row { height: 40px; margin-bottom: 6px; }
-#sec-globe .top5-list .country-row:last-child { margin-bottom: 0; }
+#sec-globe #panel-top5 .section-title {
+  margin: 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+}
+#sec-globe .top5-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-/* список остальных стран: те же плашки, что были, только ниже */
-#sec-globe.is-map #country-list { top: 536px; bottom: 114px; }
+/* строка списка: плашка 44 px с названием страны */
+#sec-globe .country-row,
+#sec-globe .top5-list .country-row {
+  display: flex;
+  align-items: center;
+  flex: none;
+  height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
+}
+#sec-globe .country-row .nm {
+  /* у Inter линия прописных ниже, чем у макетного Akkurat: без сдвига
+     название страны стоит в плашке на 3 px ниже, чем в кадре */
+  position: relative;
+  top: -3px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--text);
+}
+#sec-globe .country-row .vl { display: none; }
+
+/* Список остальных стран. Ширина 385 = 373 строки + 4 зазор + 8 полоса
+   прокрутки: полоса встаёт ровно туда, где она нарисована в кадре. */
+#sec-globe.is-map #country-list {
+  left: 0;
+  right: auto;
+  top: 404px;
+  bottom: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 385px;
+  height: 354px;
+  padding: 0 4px 0 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  /* scrollbar-width не ставим: в Chrome оно перебивает ::-webkit-scrollbar,
+     и вместо полосы из кадра получается системная (на macOS невидимая) */
+}
+#sec-globe #country-list::-webkit-scrollbar,
+#sec-globe .news-list::-webkit-scrollbar { width: 8px; }
+#sec-globe #country-list::-webkit-scrollbar-track,
+#sec-globe .news-list::-webkit-scrollbar-track {
+  background: rgba(100, 140, 27, .15);
+  border-radius: 30px;
+}
+#sec-globe #country-list::-webkit-scrollbar-thumb,
+#sec-globe .news-list::-webkit-scrollbar-thumb {
+  background: #43744B;
+  border-radius: 30px;
+}
+
+/* Пока в поиске что-то набрано, «Топ-5» уходит: его место занимает
+   список найденных стран (класс ставит src/ui.js). */
+#sec-globe.is-searching #panel-top5 { display: none; }
+#sec-globe.is-searching.is-map #country-list { top: 90px; height: 668px; }
 
 /* ---- правая колонка: объём за год и лента новостей ---- */
 
-#sec-globe.is-map #panel-summary { top: 40px; }
-#sec-globe #panel-summary .sum-main { height: 244px; }
+#sec-globe.is-map #panel-summary {
+  left: 1316px;
+  right: auto;
+  top: 64px;
+  width: 530px;
+  height: 234px;
+  padding: 32px;
+}
+#sec-globe #panel-summary .sum-main {
+  height: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+/* Сдвиг на 4 px вверх: у Inter линия прописных ниже, чем у макетного
+   Akkurat, и без него заголовок и число стоят ниже, чем в кадре. */
+#sec-globe #summary-head,
+#sec-globe #country-name {
+  display: block;
+  width: 100%;
+  margin: -4px 0 0;
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
+  letter-spacing: 0;
+  color: var(--text);
+}
+#sec-globe #panel-summary .metric,
+#sec-globe #panel-country .metric {
+  margin-top: 22px;
+  gap: 10px;
+  align-items: baseline;
+}
+#sec-globe .metric-value {
+  font-family: inherit;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
+  color: var(--num);
+}
+#sec-globe .metric-unit {
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+}
+#sec-globe .metric-caption {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text);
+}
 
 #sec-globe #panel-news {
   position: absolute;
-  right: 40px;
-  top: 300px;
-  width: 530px;
-  height: 596px;
-  padding: 22px 12px 22px 24px;
-  border-radius: 18px;
+  left: 1315px;
+  right: auto;
+  top: 302px;
+  width: 529px;
+  height: 572px;
+  padding: 32px;
+  border-radius: 24px;
   z-index: 4;
 }
+/* Полоса прокрутки ленты в кадре стоит снаружи панели: отрицательное
+   поле выносит правый край списка за неё, внутренний отступ возвращает
+   пунктам их ширину (465 px). */
 #sec-globe .news-list {
   height: 100%;
-  padding-right: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-right: -40px;
+  padding-right: 32px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #D9B36A rgba(217, 179, 106, .12);
-}
-#sec-globe .news-list::-webkit-scrollbar { width: 6px; }
-#sec-globe .news-list::-webkit-scrollbar-track {
-  background: rgba(217, 179, 106, .12);
-  border-radius: 3px;
-}
-#sec-globe .news-list::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #E4C27A, #7FB9A4);
-  border-radius: 3px;
 }
 
 /* пункт ленты: номер в плашке, заголовок, круглая кнопка справа */
 #sec-globe .news-item {
   position: relative;
-  margin-bottom: 10px;
-  padding: 12px 14px;
-  border-radius: 14px;
+  flex: none;
+  margin: 0;
+  padding: 8px;
+  border: 0;
+  border-radius: 16px;
   background: rgba(255, 255, 255, .05);
-  border: 1px solid var(--line);
 }
 #sec-globe .news-head {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
-  padding: 0 44px 0 0;
+  padding: 0 43px 0 0;
   border: 0;
   background: none;
   text-align: left;
@@ -1591,49 +1868,51 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  background: rgba(217, 179, 106, .16);
-  border: 1px solid var(--pick-line);
-  font-family: var(--mono);
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  border: 0;
+  background: rgba(255, 255, 255, .05);
+  font-family: inherit;
   font-style: normal;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
 }
 #sec-globe .news-t {
   flex: 1;
   min-width: 0;
-  padding-top: 6px;
-  font-family: var(--body);
-  font-size: 16px;
-  line-height: 22px;
-  color: var(--strong);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, .55);
+  padding-top: 0;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--text);
+  text-shadow: none;
 }
 #sec-globe .news-x {
   position: absolute;
-  right: 12px;
-  top: 12px;
+  right: 8px;
+  top: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 35px;
+  height: 33px;
   border-radius: 50%;
+  border: 0;
   background: rgba(255, 255, 255, .06);
-  border: 1px solid var(--line);
   font-style: normal;
   font-size: 15px;
   color: var(--icon);
 }
 #sec-globe .news-p {
-  margin: 10px 0 0 50px;
-  padding-right: 34px;
-  font-size: 15px;
-  line-height: 21px;
-  color: var(--muted);
+  margin: 6px 0 0 72px;
+  padding-right: 43px;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--text);
 }
 #sec-globe .news-item.is-off .news-p { display: none; }
 #sec-globe .news-note {
@@ -1643,39 +1922,187 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   color: var(--hint);
 }
 
-/* ---- панель годов: 2015–2026, год без данных неактивен ---- */
+/* ---- панель годов: 2015–2026, год без данных неактивен ----
+   Общая для кадров «Карта» и «Страна»: 1170x124 на месте из кадра. */
 
-#sec-globe .year-pill { width: 80px; }
+#sec-globe #timeline {
+  left: 686px;
+  right: auto;
+  top: 892px;
+  bottom: auto;
+  width: 1170px;
+  height: 124px;
+  padding: 32px;
+  border-radius: 24px;
+  z-index: 5;
+}
+#sec-globe #timeline::before {
+  left: 32px;
+  right: 32px;
+  top: 95px;
+  height: 1px;
+}
+#sec-globe .years {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 4px;
+  height: auto;
+}
+#sec-globe .year-pill {
+  position: relative;
+  flex: none;
+  width: auto;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+#sec-globe .year-pill .mb { display: none; }
+#sec-globe .year-pill .yr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;      /* в кадре чип 88 px: 12 чипов и 11 зазоров по 4 */
+  height: 48px;
+  padding: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  letter-spacing: 0;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+}
+#sec-globe .year-pill .dot {
+  position: absolute;
+  top: 58px;
+  width: 10px;
+  height: 10px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--year-dot);
+}
+#sec-globe .year-pill.is-active .yr {
+  background: #EBC669;
+  color: #10231F;
+}
+#sec-globe .year-pill.is-active .dot {
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(242, 184, 75, .9);
+}
 #sec-globe .year-pill.is-off { opacity: .35; pointer-events: none; }
 
+/* «Главное меню» и кнопка сброса вида: в кадре карты их нет, ставим
+   в свободный просвет между списком стран и панелью годов */
+#sec-globe.is-map #reset-view {
+  left: 590px;
+  top: 960px;
+  right: auto;
+  bottom: auto;
+}
+
 /* ======================== кадр «Страна» ========================
-   Панель та же, что была, только шире: продукция в две колонки
-   и строка «N место среди стран-импортёров российского зерна». */
+   Две панели справа: карточка страны (530 px, сверху) и таблица
+   продукции (529x517, под ней). */
 
 #sec-globe.is-country #panel-country {
-  right: 40px;
-  top: 40px;
+  left: 1326px;
+  right: auto;
+  top: 64px;
+  bottom: auto;
   width: 530px;
-  bottom: 150px;
+  height: auto;
+  padding: 32px;
+  border-radius: 24px;
   display: block;
+  overflow: hidden;
 }
-#sec-globe.is-country #panel-country .metric-caption { margin-top: 8px; }
-#sec-globe.is-country .rank-row b { font-size: 17px; }
-#sec-globe.is-country .rank-row span { max-width: 330px; font-size: 14px; }
-/* Таблица продукции: две колонки с одинаковым шагом строк. Высота
-   ограничена 12 строками в колонке — что не влезло, считается строкой
-   «и ещё N позиций», поэтому панель всегда заканчивается выше годов.
-   Короткому списку панель ужимается по содержимому. */
-#sec-globe.is-country #panel-country { height: auto; bottom: auto; overflow: hidden; }
+#sec-globe.is-country .rank-row {
+  margin-top: 26px;
+  gap: 10px;
+  align-items: center;
+}
+/* Плашка «N место»: высота 48, но у Inter строка стоит ниже, чем
+   у макетного Akkurat, поэтому отступы сверху и снизу разные. */
+#sec-globe.is-country .rank-row b {
+  display: flex;
+  align-items: center;
+  padding: 3px 16px 13px;
+  border: 0;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
+  font-family: inherit;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 32px;
+  color: var(--text);
+}
+#sec-globe.is-country .rank-row span {
+  max-width: 300px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 24px;
+  color: var(--text);
+}
+
+#sec-globe #panel-products {
+  position: absolute;
+  left: 1325px;
+  top: 356px;
+  width: 529px;
+  height: 517px;
+  padding: 32px;
+  border-radius: 24px;
+  z-index: 4;
+  overflow: hidden;
+}
+#sec-globe .prod-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  height: 48px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+}
+#sec-globe #country-more {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+/* Таблица продукции: две колонки по 12 строк на 401 px высоты —
+   ровно столько, сколько остаётся в панели под шапкой. */
 #sec-globe.is-country .product-grid {
-  column-gap: 30px;
-  max-height: 396px;
+  margin: 4px 0 0;
+  height: 401px;
+  columns: 2;
+  column-gap: 16px;
   overflow: hidden;
 }
 #sec-globe.is-country .product-item {
-  align-items: center;
-  height: 33px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  height: 33.4px;
+  margin: 0;
   padding: 0;
+  break-inside: avoid;
 }
 #sec-globe.is-country .product-item .pn {
   flex: 1 1 auto;
@@ -1683,34 +2110,33 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 14.5px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: var(--text);
 }
-#sec-globe.is-country .product-item .pv { flex: none; }
+#sec-globe.is-country .product-item .pv {
+  flex: none;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
 
 /* «← К странам назначения» слева внизу */
 #sec-globe.is-country #back-map {
-  left: 60px;
+  left: 64px;
   right: auto;
-  bottom: 70px;
-  height: 56px;
-  padding: 0 30px;
-  border-radius: 999px;
-  font-size: 17px;
+  top: 908px;
+  bottom: auto;
+  width: 480px;
+  height: 108px;
+  padding: 0;
+  border-radius: 32px;
 }
 
 /* кнопка сброса вида на кадре страны не нужна: оттуда возвращаются
    к списку стран, а вид сбрасывается сам */
 #sec-globe.is-country #reset-view { display: none; }
-
-/* Подпись про источник данных в старой раскладке была прижата к низу
-   карточки; теперь под ней список продукции, поэтому она встаёт в поток. */
-#sec-globe.is-country .card-foot {
-  position: static;
-  display: block;
-  margin-top: 14px;
-}
-
-/* Пока в поиске что-то набрано, «Топ-5» уходит: его место занимает
-   список найденных стран (класс ставит src/ui.js). */
-#sec-globe.is-searching #panel-top5 { display: none; }
-#sec-globe.is-searching #country-list { top: 262px; }
