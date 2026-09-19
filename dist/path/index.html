@@ -2494,6 +2494,17 @@ body.path-screen #brand { right: 60px; bottom: 20px; }
     });
   })();
 
+  /* Служебные пометки («[VIDEO]», «тексты предоставит заказчик» и т. п.)
+     нужны при работе над стендом, но не посетителю. По умолчанию скрыты,
+     показать: ?notes=1 в адресе. Элементы помечаются классом is-note
+     или перечислены ниже. */
+  (function notes() {
+    if (/[?&]notes=1\b/.test(global.location.search)) return;
+    var st = global.document.createElement('style');
+    st.textContent = '.is-note,.orb-tag,.news-note,.mn-pres-todo{display:none !important}';
+    (global.document.head || global.document.documentElement).appendChild(st);
+  })();
+
   global.U = {
     sectionUrl: sectionUrl,
     goSection: goSection,

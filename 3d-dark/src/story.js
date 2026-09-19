@@ -1120,8 +1120,7 @@
 
   /** Демонстрационный расчёт дозы: текст под крупным значением. */
   function f2(f) {
-    return 'Демонстрационный расчёт: ' + f.dose + ' — ' + f.hint +
-      '\nФормулу и коэффициенты предоставит заказчик.';
+    return 'Демонстрационный расчёт: ' + f.dose + ' — ' + f.hint;
   }
 
   /* Ползунки экранов: имя из справочника → описание для sliderEl. */
@@ -1380,15 +1379,39 @@
     foodNext: function () { st.tab = foodTab().next.tab; st.level = null; rerender(); },
     feedNext: function () { st.tab = feedState().next.tab; st.sel = null; rerender(); },
 
-    /** Экран 21: окно «Пакет документов». Кадра в макетах нет —
-        показываем стеклянную заглушку в общем стиле. */
+    /** Экран 21: окно «Пакет документов». Кадра в макетах нет, образцов
+        документов тоже, поэтому окно собрано из того, что есть на экране:
+        четыре документа с их пояснениями. На месте скана — нейтральный
+        лист; настоящие образцы встанут сюда полем img у документа.
+        Служебных надписей посетитель видеть не должен. */
     showDocs: function () {
       var over = el('div', 'sc-over');
-      var panel = el('div', 'sc-over-panel');
+      var panel = el('div', 'sc-over-panel is-docs');
+      var country = find(C.countries, selKey());
       panel.appendChild(el('div', 'sc-panel-cap', 'Пакет документов'));
-      panel.appendChild(el('h3', 'sc-panel-t', '[CONTENT]'));
-      panel.appendChild(el('p', 'sc-panel-p',
-        'Окна с пакетом документов в макетах нет.\nОбразцы и вёрстку окна предоставит заказчик.'));
+      panel.appendChild(el('h3', 'sc-panel-t',
+        'Сопроводительные документы' + (country && country.key !== 'other' ? ' · ' + country.name : '')));
+      var grid = el('div', 'sc-docs');
+      C.exportDocs.forEach(function (d, i) {
+        var card = el('div', 'sc-doc');
+        var sheet = el('div', 'sc-doc-sheet');
+        if (d[2]) {
+          var im = new Image();
+          im.src = U.asset(d[2]);
+          im.alt = d[0];
+          sheet.appendChild(im);
+        } else {
+          sheet.appendChild(el('span', 'sc-doc-n', '0' + (i + 1)));
+          for (var k = 0; k < 5; k++) sheet.appendChild(el('i'));
+        }
+        card.appendChild(sheet);
+        var t = el('div', 'sc-doc-t');
+        t.appendChild(el('div', 'sc-doc-k', d[0]));
+        t.appendChild(el('div', 'sc-doc-v', d[1]));
+        card.appendChild(t);
+        grid.appendChild(card);
+      });
+      panel.appendChild(grid);
       panel.appendChild(button({ label: 'Закрыть', action: 'closeOver' }, 'sc-btn'));
       over.appendChild(panel);
       over.addEventListener('click', function (e) { if (e.target === over) over.remove(); });
