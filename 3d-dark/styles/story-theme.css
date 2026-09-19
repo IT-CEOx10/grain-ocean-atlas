@@ -286,6 +286,19 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 19.6px;
   color: var(--sc-muted);
 }
+/* панель отчёта (кадр 12): надпись и пометка крупнее обычных */
+#sec-story .sc-panel.is-report .sc-panel-cap {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+}
+#sec-story .sc-panel.is-report .sc-note {
+  margin-top: 26px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
 
 #sec-story .sc-panel-p {
   margin: 26px 0 0;
@@ -361,6 +374,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 32px;
   color: var(--sc-muted);
 }
+/* кадр 05: пояснения в панелях набраны мельче обычного — 20/28 */
+#sec-story .sc-panel.is-sub20 .sc-panel-sub {
+  font-size: 20px;
+  line-height: 28px;
+}
 #sec-story .sc-panel-cap + .sc-panel-sub,
 #sec-story .sc-panel-sub:first-child,
 #sec-story .sc-panel-t.is-small { margin-top: 0; }
@@ -379,28 +397,26 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* пары «подпись — значение» столбиком (панель результатов исследования) */
+/* кадр 12: пары «что — как» набраны одним кеглем 24/32 белым,
+   шаг между парами 26 px */
 #sec-story .sc-defs { margin-top: 26px; }
-#sec-story .sc-def { margin-top: 22px; }
+#sec-story .sc-def { margin-top: 26px; }
 #sec-story .sc-def:first-child { margin-top: 0; }
-#sec-story .sc-def-k {
-  font-size: 20px;
-  line-height: 26px;
-  color: var(--sc-muted);
-}
+#sec-story .sc-def-k,
 #sec-story .sc-def-v {
-  margin-top: 2px;
-  font-size: 23px;
+  font-size: 24px;
+  font-weight: 300;
   line-height: 32px;
   color: var(--sc-text);
 }
 
 /* абзацы с жирным зачином (панель «Дальнейшее использование») */
 #sec-story .sc-lead {
-  margin: 22px 0 0;
+  margin: 26px 0 0;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 28px;
-  color: var(--sc-muted);
+  color: var(--sc-text);
 }
 #sec-story .sc-lead:first-child { margin-top: 0; }
 #sec-story .sc-lead b {
@@ -417,7 +433,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   display: grid;
   gap: 16px;
 }
-#sec-story .sc-panel .sc-grid { margin-top: 40px; }
+#sec-story .sc-panel .sc-grid { margin-top: 26px; }
 
 #sec-story .sc-pick {
   display: flex;
@@ -437,7 +453,13 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   text-align: center;
   transition: background .18s ease, box-shadow .18s ease;
 }
-#sec-story .sc-grid.is-mid .sc-pick { justify-content: center; }
+/* плитки выбора элемента (кадр 05): кегль 24/32, высота 80 */
+#sec-story .sc-grid.is-mid .sc-pick {
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+}
 /* высокая плитка с подписью слева (показатели качества зерна) */
 #sec-story .sc-grid.is-tall .sc-pick { min-height: 102px; padding: 0 26px; }
 
@@ -484,15 +506,16 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    Тонкая дорожка, круглая ручка, подписи по краям. Тянут за прозрачный
    системный ползунок поверх — так работает и мышью, и пальцем. */
 
-#sec-story .sc-slider { margin-top: 32px; }
+#sec-story .sc-slider { margin-top: 26px; }
 
 #sec-story .sc-slider-top {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 18px;
-  line-height: 24px;
+  gap: 24px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 30px;
   color: var(--sc-text);
 }
 #sec-story .sc-slider-unit { color: var(--sc-muted); }
@@ -500,23 +523,23 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-track {
   position: relative;
   height: 28px;
-  margin-top: 6px;
+  margin-top: 0;
 }
 #sec-story .sc-rail {
   position: absolute;
   left: 0;
   right: 0;
-  top: 11px;
-  height: 6px;
-  border-radius: 3px;
+  top: 10px;
+  height: 8px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, .20);
 }
 #sec-story .sc-fill {
   position: absolute;
   left: 0;
-  top: 11px;
-  height: 6px;
-  border-radius: 3px;
+  top: 10px;
+  height: 8px;
+  border-radius: 16px;
   background: var(--sc-gold);
 }
 #sec-story .sc-knob {
@@ -546,10 +569,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-ends {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
-  font-size: 15px;
-  line-height: 20px;
-  color: var(--sc-dim);
+  margin-top: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: #AEAEAE;
 }
 
 /* ------------------------ шкала показателя ------------------------
@@ -628,9 +652,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 4px;
-  border-radius: 24px;
-  background: var(--sc-glass-soft);
+  gap: 16px;
+  padding: 8px 8px 20px;
+  border-radius: 32px;
+  background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
   box-shadow: inset 0 0 0 1px var(--sc-glass-line);
@@ -639,11 +664,12 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   transition: box-shadow .18s ease;
 }
 #sec-story .sc-card2.is-on {
-  box-shadow: inset 0 0 0 2px #D59229;
+  box-shadow: inset 0 0 0 1px #D59229;
 }
 #sec-story .sc-card2-pic {
+  flex: none;
   height: 186px;
-  border-radius: 20px;
+  border-radius: 28px;
   overflow: hidden;
 }
 #sec-story .sc-card2-pic img {
@@ -653,29 +679,32 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   object-fit: cover;
 }
 #sec-story .sc-card2-name {
-  flex: 1;
+  flex: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
-  white-space: pre-line;
-  font-size: 22px;
-  line-height: 30px;
+  padding: 0 8px;
+  /* строки подписи разбиты вручную, как в кадре, и не переносятся */
+  white-space: pre;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
   text-align: center;
 }
 #sec-story .sc-card2-ok {
   position: absolute;
-  right: 18px;
-  top: 18px;
+  right: 25px;
+  top: 23px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 29px;
+  height: 29px;
   border-radius: 50%;
-  background: #E2A63A;
-  color: #22303A;
-  font-size: 18px;
+  background: #D59229;
+  color: #000;
+  font-size: 20px;
 }
 
 /* --------------------- радио-метка на сцене ---------------------
@@ -687,24 +716,32 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   display: flex;
   align-items: center;
   gap: 16px;
-  height: 60px;
-  padding: 0 28px;
+  height: 64px;
+  padding: 0 32px;
   border-radius: 16px;
-  background: rgba(30, 43, 49, .82);
+  /* по кадру 08: плашка #17252C с тонкой светлой обводкой; у выбранной
+     сверху лежит светлая заливка 10 % и обводка ярче */
+  background: #17252C;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   color: var(--sc-text);
   font-family: var(--body);
-  font-size: 22px;
-  font-weight: 400;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
   white-space: nowrap;
   transition: background .18s ease;
+}
+#sec-story .sc-radio.is-on {
+  background: linear-gradient(0deg, rgba(246, 246, 246, .1), rgba(246, 246, 246, .1)), #17252C;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7);
 }
 #sec-story .sc-radio-d {
   flex: none;
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .72);
 }
@@ -730,6 +767,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* единственная кнопка в коробке занимает её целиком: высоту задаёт
    коробка (в кадре 09 кнопки 128 px, а не обычные 108) */
 #sec-story .sc-box > .sc-btn:only-child { height: 100%; }
+/* панель в коробке с заданной высотой тянется на всю её высоту */
+#sec-story .sc-box > .sc-panel:only-child { flex: 1; }
 #sec-story .sc-box.is-row { flex-direction: row; }
 #sec-story .sc-box.is-row > * { flex: 1; height: 100%; }
 
@@ -738,7 +777,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: absolute;
   z-index: 4;
   font-size: 20px;
-  line-height: 26px;
+  font-weight: 300;
+  line-height: 28px;
   color: var(--sc-muted);
 }
 
@@ -986,20 +1026,27 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-panel-btn { margin-top: 28px; }
 
 /* пары «название — пояснение» столбиком: сопроводительные документы */
-#sec-story .sc-leads2 { margin-top: 24px; }
-#sec-story .sc-lead2 { margin-top: 26px; }
-#sec-story .sc-lead2:first-child { margin-top: 0; }
+/* кадр 21: строки пакета документов идут шагом 96 px без зазоров,
+   под ними сразу золотая кнопка */
+#sec-story .sc-leads2 { margin-top: 0; }
+#sec-story .sc-lead2 {
+  height: 96px;
+  padding: 16px 0;
+}
 #sec-story .sc-lead2-k {
   font-size: 24px;
-  line-height: 32px;
+  font-weight: 400;
+  line-height: 28.8px;
   color: var(--sc-text);
 }
 #sec-story .sc-lead2-v {
-  margin-top: 2px;
+  margin-top: 8px;
   font-size: 20px;
+  font-weight: 300;
   line-height: 28px;
   color: var(--sc-muted);
 }
+#sec-story .sc-leads2 + .sc-panel-btn { margin-top: 0; }
 
 /* полоски долей: несоответствия за сезон */
 #sec-story .sc-bars {
@@ -1146,36 +1193,54 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* выпадающий выбор страны: плашка и золотая круглая стрелка */
 #sec-story .sc-select {
   position: relative;
+  align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-#sec-story .sc-select-head {
-  height: 58px;
-  padding: 0 30px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 36px;
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-select-head {
+  width: 124px;
+  height: 54px;
+  padding: 0 12px;
+  border-radius: var(--sc-r-btn);
+  background: rgba(246, 246, 246, .01);
+  box-shadow: var(--sc-btn-glow);
   color: var(--sc-text);
   font-family: var(--body);
-  font-size: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
 }
 #sec-story .sc-select-go {
   flex: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 54px;
+  border-radius: 999px;
   background: var(--sc-gold-bg);
-  box-shadow: var(--sc-gold-glow);
-  color: #FFFFFF;
-  font-size: 18px;
+  box-shadow: var(--sc-gold-glow), inset 0 0 0 1px var(--sc-btn-line);
+}
+/* уголок-стрелка «раскрыть» */
+#sec-story .sc-select-go i {
+  display: block;
+  width: 13px;
+  height: 13px;
+  margin-top: -6px;
+  border-right: 2px solid #FFFFFF;
+  border-bottom: 2px solid #FFFFFF;
+  transform: rotate(45deg);
 }
 #sec-story .sc-select-menu {
   position: absolute;
   left: 0;
-  top: 66px;
+  top: 74px;
   z-index: 2;
   width: 320px;
   padding: 8px;
@@ -1252,9 +1317,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px var(--sc-ok-text);
+  /* в кадре галочка плотная, как в иконке el:ok-circle */
+  box-shadow: inset 0 0 0 2px var(--sc-ok-text);
   color: var(--sc-ok-text);
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
 }
 #sec-story .sc-menu-i.is-on {
   background: var(--sc-pick);
@@ -1471,7 +1538,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* ползунок во всю ширину панели и подписи по делениям */
-#sec-story .sc-panel.is-slim { padding: 26px var(--sc-pad) 24px; }
+#sec-story .sc-panel.is-slim { padding: var(--sc-pad); }
 #sec-story .sc-slider.is-wide { margin-top: 0; }
 #sec-story .sc-slider.is-wide .sc-slider-top { font-size: 24px; line-height: 32px; }
 #sec-story .sc-slider.is-wide .sc-track { margin-top: 18px; }

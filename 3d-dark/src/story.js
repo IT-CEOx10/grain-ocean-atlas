@@ -153,7 +153,8 @@
    * [слева, сверху, ширина, высота] в числах выгрузки Figma; без него
    * кадр просто обрезается по месту.
    */
-  var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1, 'store-1': 1 };
+  var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1,
+    'store-1': 1, 'store-2': 1 };
 
   function sceneLayer(scr) {
     var p = sceneFor(scr).pic || null;
@@ -333,8 +334,10 @@
 
     var head = el('button', 'sc-select-head', cur2.name);
     head.type = 'button';
-    var arrow = el('button', 'sc-select-go', '▾');
+    var arrow = el('button', 'sc-select-go');
     arrow.type = 'button';
+    /* стрелка «раскрыть» нарисована уголком: в шрифте нужного знака нет */
+    arrow.appendChild(el('i'));
     function toggle() { resetIdle(); st.open = !st.open; rerender(); }
     head.addEventListener('click', toggle);
     arrow.addEventListener('click', toggle);
@@ -1024,8 +1027,8 @@
     /* --- экран 21: требования выбранной страны --- */
     countryCard: function () {
       var c = find(C.countries, selKey());
-      return panelEl({ title: 'Требования\nнаправления', text: c.text,
-        note: 'Точный перечень требований предоставит заказчик' });
+      /* в кадре 21 пометки под текстом нет */
+      return panelEl({ title: 'Требования\nнаправления', text: c.text });
     }
   };
 
@@ -1045,6 +1048,9 @@
     var box = el('div', 'sc-col is-' + side + ' is-' + (spec.at || 'top') +
       (spec.hasNav ? ' has-nav' : ''));
     if (spec.width) box.style.width = spec.width + 'px';
+    /* edge — свой отступ колонки от края экрана: в паре кадров Figma
+       панель стоит не на общих 64 px */
+    if (spec.edge != null) box.style[side === 'left' ? 'left' : 'right'] = spec.edge + 'px';
     if (top || spec.top) box.style.top = (top || spec.top) + 'px';
     if (spec.gap != null) box.style.gap = spec.gap + 'px';
     (spec.items || []).forEach(function (item) { box.appendChild(slotEl(item)); });

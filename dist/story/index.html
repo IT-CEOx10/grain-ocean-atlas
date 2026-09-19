@@ -2018,6 +2018,19 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 19.6px;
   color: var(--sc-muted);
 }
+/* панель отчёта (кадр 12): надпись и пометка крупнее обычных */
+#sec-story .sc-panel.is-report .sc-panel-cap {
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+}
+#sec-story .sc-panel.is-report .sc-note {
+  margin-top: 26px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--sc-muted);
+}
 
 #sec-story .sc-panel-p {
   margin: 26px 0 0;
@@ -2093,6 +2106,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 32px;
   color: var(--sc-muted);
 }
+/* кадр 05: пояснения в панелях набраны мельче обычного — 20/28 */
+#sec-story .sc-panel.is-sub20 .sc-panel-sub {
+  font-size: 20px;
+  line-height: 28px;
+}
 #sec-story .sc-panel-cap + .sc-panel-sub,
 #sec-story .sc-panel-sub:first-child,
 #sec-story .sc-panel-t.is-small { margin-top: 0; }
@@ -2111,28 +2129,26 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* пары «подпись — значение» столбиком (панель результатов исследования) */
+/* кадр 12: пары «что — как» набраны одним кеглем 24/32 белым,
+   шаг между парами 26 px */
 #sec-story .sc-defs { margin-top: 26px; }
-#sec-story .sc-def { margin-top: 22px; }
+#sec-story .sc-def { margin-top: 26px; }
 #sec-story .sc-def:first-child { margin-top: 0; }
-#sec-story .sc-def-k {
-  font-size: 20px;
-  line-height: 26px;
-  color: var(--sc-muted);
-}
+#sec-story .sc-def-k,
 #sec-story .sc-def-v {
-  margin-top: 2px;
-  font-size: 23px;
+  font-size: 24px;
+  font-weight: 300;
   line-height: 32px;
   color: var(--sc-text);
 }
 
 /* абзацы с жирным зачином (панель «Дальнейшее использование») */
 #sec-story .sc-lead {
-  margin: 22px 0 0;
+  margin: 26px 0 0;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 300;
   line-height: 28px;
-  color: var(--sc-muted);
+  color: var(--sc-text);
 }
 #sec-story .sc-lead:first-child { margin-top: 0; }
 #sec-story .sc-lead b {
@@ -2149,7 +2165,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   display: grid;
   gap: 16px;
 }
-#sec-story .sc-panel .sc-grid { margin-top: 40px; }
+#sec-story .sc-panel .sc-grid { margin-top: 26px; }
 
 #sec-story .sc-pick {
   display: flex;
@@ -2169,7 +2185,13 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   text-align: center;
   transition: background .18s ease, box-shadow .18s ease;
 }
-#sec-story .sc-grid.is-mid .sc-pick { justify-content: center; }
+/* плитки выбора элемента (кадр 05): кегль 24/32, высота 80 */
+#sec-story .sc-grid.is-mid .sc-pick {
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
+}
 /* высокая плитка с подписью слева (показатели качества зерна) */
 #sec-story .sc-grid.is-tall .sc-pick { min-height: 102px; padding: 0 26px; }
 
@@ -2216,15 +2238,16 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    Тонкая дорожка, круглая ручка, подписи по краям. Тянут за прозрачный
    системный ползунок поверх — так работает и мышью, и пальцем. */
 
-#sec-story .sc-slider { margin-top: 32px; }
+#sec-story .sc-slider { margin-top: 26px; }
 
 #sec-story .sc-slider-top {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 18px;
-  line-height: 24px;
+  gap: 24px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 30px;
   color: var(--sc-text);
 }
 #sec-story .sc-slider-unit { color: var(--sc-muted); }
@@ -2232,23 +2255,23 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-track {
   position: relative;
   height: 28px;
-  margin-top: 6px;
+  margin-top: 0;
 }
 #sec-story .sc-rail {
   position: absolute;
   left: 0;
   right: 0;
-  top: 11px;
-  height: 6px;
-  border-radius: 3px;
+  top: 10px;
+  height: 8px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, .20);
 }
 #sec-story .sc-fill {
   position: absolute;
   left: 0;
-  top: 11px;
-  height: 6px;
-  border-radius: 3px;
+  top: 10px;
+  height: 8px;
+  border-radius: 16px;
   background: var(--sc-gold);
 }
 #sec-story .sc-knob {
@@ -2278,10 +2301,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-ends {
   display: flex;
   justify-content: space-between;
-  margin-top: 12px;
-  font-size: 15px;
-  line-height: 20px;
-  color: var(--sc-dim);
+  margin-top: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: #AEAEAE;
 }
 
 /* ------------------------ шкала показателя ------------------------
@@ -2360,9 +2384,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: 4px;
-  border-radius: 24px;
-  background: var(--sc-glass-soft);
+  gap: 16px;
+  padding: 8px 8px 20px;
+  border-radius: 32px;
+  background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
   box-shadow: inset 0 0 0 1px var(--sc-glass-line);
@@ -2371,11 +2396,12 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   transition: box-shadow .18s ease;
 }
 #sec-story .sc-card2.is-on {
-  box-shadow: inset 0 0 0 2px #D59229;
+  box-shadow: inset 0 0 0 1px #D59229;
 }
 #sec-story .sc-card2-pic {
+  flex: none;
   height: 186px;
-  border-radius: 20px;
+  border-radius: 28px;
   overflow: hidden;
 }
 #sec-story .sc-card2-pic img {
@@ -2385,29 +2411,32 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   object-fit: cover;
 }
 #sec-story .sc-card2-name {
-  flex: 1;
+  flex: none;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 16px;
-  white-space: pre-line;
-  font-size: 22px;
-  line-height: 30px;
+  padding: 0 8px;
+  /* строки подписи разбиты вручную, как в кадре, и не переносятся */
+  white-space: pre;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
   text-align: center;
 }
 #sec-story .sc-card2-ok {
   position: absolute;
-  right: 18px;
-  top: 18px;
+  right: 25px;
+  top: 23px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 29px;
+  height: 29px;
   border-radius: 50%;
-  background: #E2A63A;
-  color: #22303A;
-  font-size: 18px;
+  background: #D59229;
+  color: #000;
+  font-size: 20px;
 }
 
 /* --------------------- радио-метка на сцене ---------------------
@@ -2419,24 +2448,32 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   display: flex;
   align-items: center;
   gap: 16px;
-  height: 60px;
-  padding: 0 28px;
+  height: 64px;
+  padding: 0 32px;
   border-radius: 16px;
-  background: rgba(30, 43, 49, .82);
+  /* по кадру 08: плашка #17252C с тонкой светлой обводкой; у выбранной
+     сверху лежит светлая заливка 10 % и обводка ярче */
+  background: #17252C;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2);
   -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   color: var(--sc-text);
   font-family: var(--body);
-  font-size: 22px;
-  font-weight: 400;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 32px;
   white-space: nowrap;
   transition: background .18s ease;
+}
+#sec-story .sc-radio.is-on {
+  background: linear-gradient(0deg, rgba(246, 246, 246, .1), rgba(246, 246, 246, .1)), #17252C;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .7);
 }
 #sec-story .sc-radio-d {
   flex: none;
   position: relative;
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .72);
 }
@@ -2462,6 +2499,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* единственная кнопка в коробке занимает её целиком: высоту задаёт
    коробка (в кадре 09 кнопки 128 px, а не обычные 108) */
 #sec-story .sc-box > .sc-btn:only-child { height: 100%; }
+/* панель в коробке с заданной высотой тянется на всю её высоту */
+#sec-story .sc-box > .sc-panel:only-child { flex: 1; }
 #sec-story .sc-box.is-row { flex-direction: row; }
 #sec-story .sc-box.is-row > * { flex: 1; height: 100%; }
 
@@ -2470,7 +2509,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: absolute;
   z-index: 4;
   font-size: 20px;
-  line-height: 26px;
+  font-weight: 300;
+  line-height: 28px;
   color: var(--sc-muted);
 }
 
@@ -2718,20 +2758,27 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-panel-btn { margin-top: 28px; }
 
 /* пары «название — пояснение» столбиком: сопроводительные документы */
-#sec-story .sc-leads2 { margin-top: 24px; }
-#sec-story .sc-lead2 { margin-top: 26px; }
-#sec-story .sc-lead2:first-child { margin-top: 0; }
+/* кадр 21: строки пакета документов идут шагом 96 px без зазоров,
+   под ними сразу золотая кнопка */
+#sec-story .sc-leads2 { margin-top: 0; }
+#sec-story .sc-lead2 {
+  height: 96px;
+  padding: 16px 0;
+}
 #sec-story .sc-lead2-k {
   font-size: 24px;
-  line-height: 32px;
+  font-weight: 400;
+  line-height: 28.8px;
   color: var(--sc-text);
 }
 #sec-story .sc-lead2-v {
-  margin-top: 2px;
+  margin-top: 8px;
   font-size: 20px;
+  font-weight: 300;
   line-height: 28px;
   color: var(--sc-muted);
 }
+#sec-story .sc-leads2 + .sc-panel-btn { margin-top: 0; }
 
 /* полоски долей: несоответствия за сезон */
 #sec-story .sc-bars {
@@ -2878,36 +2925,54 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* выпадающий выбор страны: плашка и золотая круглая стрелка */
 #sec-story .sc-select {
   position: relative;
+  align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 12px;
-}
-#sec-story .sc-select-head {
-  height: 58px;
-  padding: 0 30px;
-  border-radius: 999px;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 36px;
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
+}
+#sec-story .sc-select-head {
+  width: 124px;
+  height: 54px;
+  padding: 0 12px;
+  border-radius: var(--sc-r-btn);
+  background: rgba(246, 246, 246, .01);
+  box-shadow: var(--sc-btn-glow);
   color: var(--sc-text);
   font-family: var(--body);
-  font-size: 20px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
 }
 #sec-story .sc-select-go {
   flex: none;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 54px;
+  border-radius: 999px;
   background: var(--sc-gold-bg);
-  box-shadow: var(--sc-gold-glow);
-  color: #FFFFFF;
-  font-size: 18px;
+  box-shadow: var(--sc-gold-glow), inset 0 0 0 1px var(--sc-btn-line);
+}
+/* уголок-стрелка «раскрыть» */
+#sec-story .sc-select-go i {
+  display: block;
+  width: 13px;
+  height: 13px;
+  margin-top: -6px;
+  border-right: 2px solid #FFFFFF;
+  border-bottom: 2px solid #FFFFFF;
+  transform: rotate(45deg);
 }
 #sec-story .sc-select-menu {
   position: absolute;
   left: 0;
-  top: 66px;
+  top: 74px;
   z-index: 2;
   width: 320px;
   padding: 8px;
@@ -2984,9 +3049,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px var(--sc-ok-text);
+  /* в кадре галочка плотная, как в иконке el:ok-circle */
+  box-shadow: inset 0 0 0 2px var(--sc-ok-text);
   color: var(--sc-ok-text);
-  font-size: 16px;
+  font-size: 17px;
+  font-weight: 600;
 }
 #sec-story .sc-menu-i.is-on {
   background: var(--sc-pick);
@@ -3203,7 +3270,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* ползунок во всю ширину панели и подписи по делениям */
-#sec-story .sc-panel.is-slim { padding: 26px var(--sc-pad) 24px; }
+#sec-story .sc-panel.is-slim { padding: var(--sc-pad); }
 #sec-story .sc-slider.is-wide { margin-top: 0; }
 #sec-story .sc-slider.is-wide .sc-slider-top { font-size: 24px; line-height: 32px; }
 #sec-story .sc-slider.is-wide .sc-track { margin-top: 18px; }
@@ -3493,15 +3560,18 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       rgba(40, 62, 48, .12) 55%, rgba(20, 34, 32, 0) 82%),
     linear-gradient(160deg, #1B2A2A 0%, #14201F 48%, #0F1A19 100%);
 }
-/* финал: панорама светлая, сверху лежит затемняющая полоса,
-   справа — мягкое затемнение под карточками (так в макете) */
+/* финал: панорама светлая, читаемость держат три размытых пятна
+   из макета (22-final-a.code.txt) — два плоских эллипса поперёк неба
+   и высокий эллипс справа, под карточками. Размеры и центры взяты
+   из выгрузки, к полуосям добавлено 100 px на размытие. */
 .sc-shade.is-final {
   background:
-    linear-gradient(180deg, rgba(6, 14, 18, .9) 0%,
-      rgba(6, 14, 18, .82) 12%, rgba(6, 14, 18, .45) 19%,
-      rgba(6, 14, 18, 0) 27%),
-    linear-gradient(270deg, rgba(6, 14, 18, .5) 0%, rgba(6, 14, 18, 0) 36%),
-    linear-gradient(0deg, rgba(6, 14, 18, .5) 0%, rgba(6, 14, 18, 0) 17%);
+    radial-gradient(1368px 360px at 840px -82px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 52%, rgba(6, 14, 18, 0) 100%),
+    radial-gradient(1368px 360px at 831px -10px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 52%, rgba(6, 14, 18, 0) 100%),
+    radial-gradient(645px 802px at 1757px 633px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 85%, rgba(6, 14, 18, 0) 100%);
 }
 .sc-shade.is-soft {
   background: radial-gradient(120% 90% at 50% 40%, rgba(0, 0, 0, 0) 46%,
@@ -3567,10 +3637,12 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   height: 1080px;
 }
 
+/* координаты коллажа даны в кадре 1920x1080, а лежит он внутри
+   .sc-cover со сдвигом 16 px — поэтому отнимаем эти 16 px */
 .sc-collage {
   position: absolute;
-  left: 233px;
-  top: 112px;
+  left: 217px;
+  top: 96px;
   width: 1352px;
   height: 750px;
 }
@@ -3580,12 +3652,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: absolute;
   left: 0;
   right: 0;
-  top: 901px;
+  top: 889px;                  /* 905 в кадре минус сдвиг .sc-cover */
   margin: 0;
-  font-size: 74px;
-  font-weight: 300;
-  line-height: 80px;
-  letter-spacing: .02em;
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 72px;
   text-transform: uppercase;
   text-align: center;
   color: var(--sc-gold);
@@ -3595,9 +3666,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   position: absolute;
   left: 0;
   right: 0;
-  top: 995px;
+  top: 977px;                  /* 993 в кадре минус сдвиг .sc-cover */
   font-size: 24px;
-  font-weight: 400;
+  font-weight: 300;
+  line-height: 32px;
   text-align: center;
   color: var(--sc-muted);
 }
@@ -4153,11 +4225,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   /* Экран 8: две области исследования прямо на сцене. Координаты меток —
      левый верхний угол в пикселях кадра 1920x1080. */
   var SEED_ZONES = [
-    { key: 'sort', label: 'Подтверждение сорта', x: 480, y: 574,
+    { key: 'sort', label: 'Подтверждение сорта', x: 478, y: 572,
       title: 'Сортовая апробация',
       text: 'Специалисты подтверждают, что растения соответствуют ' +
             'заявленному сорту' },
-    { key: 'leaf', label: 'Диагностика по листьям', x: 1062, y: 434,
+    { key: 'leaf', label: 'Диагностика по листьям', x: 1061, y: 435,
       title: 'Ранняя диагностика',
       text: 'Исследование листьев выявляет болезни до появления ' +
             'видимых симптомов' }
@@ -4227,8 +4299,12 @@ body.story-screen { background: var(--sc-bg, #141D23); }
      свой кадр — тот же ангар с рабочим. Подсветки пола и решётки,
      поток воздуха и таблетка лежат отдельными слоями поверх
      (см. поле marks у шага). */
+  /* В кадрах Figma сцену ангара двигали от шага к шагу (от [-22,-6]
+     до [12,13]); в демке она стоит на месте — иначе ангар прыгает при
+     переключении шагов. Берём среднее положение [0,-7] (совпадает
+     с кадрами 13-store-3 и 13-store-5), метки пересчитаны под него. */
   var STORE_SCENES = {
-    empty: storeScene('store-scene', [0, -14, 1888, 1062]),
+    empty: storeScene('store-scene', [0, -7, 1888, 1062]),
     clean: storeScene('store-scene-clean', [-5, 0, 1893, 1065])
   };
 
@@ -4253,13 +4329,14 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       sub: 'Коснитесь отмеченного\nучастка пола',
       btn: 'К подготовке →',
       cap: 'Увеличенный фрагмент',
-      card: 'Обнаружены вредители',
+      /* в кадре заголовок карточки стоит в две строки */
+      card: 'Обнаружены\nвредители',
       text: 'Осмотр вентиляционных элементов — часть подготовки ' +
             'хранилища перед закладкой зерна.',
       shot: shot('store-pest', 205),
       note: 'В увеличении видны вредители рядом с остатками зерна, ' +
             'требуется подготовка помещения',
-      marker: { key: 'pest', n: 1, label: 'Вредители', x: 570, y: 597 } },
+      marker: { key: 'pest', n: 1, label: 'Вредители', x: 592, y: 596 } },
 
     { n: 2, sec: 'prep', scene: 'clean',
       title: 'Очистите помещение',
@@ -4310,8 +4387,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       shot: shot('store-grate', 301),
       status: { warn: true, text: 'Вентиляция открыта',
                 done: 'Вентиляция закрыта' },
-      marks: [layer('grate', [967, 483, 38.4, 23])],
-      spots: [{ key: 'grate', at: [947, 463, 78, 62] }] },
+      marks: [layer('grate', [967, 500, 38.4, 23])],
+      spots: [{ key: 'grate', at: [947, 481, 78, 62] }] },
 
     { n: 7, sec: 'work', scene: 'empty',
       title: 'Проветривание\nпомещения',
@@ -4320,8 +4397,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       cap: 'После обработки',
       card: 'Откройте вентиляцию\nдля проветривания',
       shot: shot('store-grate', 301),
-      marks: [layer('air1', [629, 503, 369.5, 66]),
-              layer('air2', [622.5, 503, 375.5, 126])],
+      marks: [layer('air1', [629, 496, 369.5, 66]),
+              layer('air2', [622.5, 496, 375.5, 126])],
       note: 'После проветривания переходят к инструментальному контролю' },
 
     { n: 8, sec: 'check', scene: 'empty',
@@ -4329,7 +4406,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       sub: 'После нескольких дней\nнужно проветрить помещение',
       btn: 'Измерить остаточный газ →',
       cap: 'Инструментальный контроль',
-      card: 'Контроль остаточного газа',
+      card: 'Контроль остаточного\nгаза',
       shot: shot('store-gas', 301),
       note: 'Показания прибора позволяют оценить остаточный газ' },
 
@@ -4340,7 +4417,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       btnBack: 'Посмотреть после обработки →',
       cap: 'Эффективность обработки',
       card: 'Вредители погибли',
-      cardBefore: 'Обнаружены вредители',
+      cardBefore: 'Обнаружены\nвредители',
       shot: shot('store-pest-dead', 301),
       shotBefore: shot('store-pest', 301),
       toggle: ['До', 'После'] }
@@ -4475,7 +4552,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
      по каждой стране предоставит заказчик. */
   var COUNTRIES = [
     { key: 'tr', name: 'Турция',
-      text: 'Качество, безопасность\nи фитосанитарное состояние\nпартии. Условия уточняют\nпо стране, по стране\nназначения и положениям\nмеждународного контракта' },
+      text: 'Качество, безопасность\nи фитосанитарное состояние\nпартии. Условия уточняют\nпо стране назначения\nи положениям международного\nконтракта' },
     { key: 'cn', name: 'Китай',
       text: 'Регистрация экспортёра, перечень\nкарантинных объектов,\nподтверждение фитосанитарного\nсостояния партии.' },
     { key: 'eg', name: 'Египет',
@@ -4584,6 +4661,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
         top: 188,
         width: 445,
         items: [{
+          cls: 'is-sub20',
           title: 'Содержание элементов',
           sub: 'Выберите элемент и задайте его\nконцентрацию в почве',
           grid: { src: 'soilElements', cols: 3, mid: true },
@@ -4595,7 +4673,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
         width: 488,
         gap: 8,
         items: [
-          { title: 'Что исследует\nлаборатория',
+          { cls: 'is-sub20',
+            title: 'Что исследует\nлаборатория',
             sub: 'Агрохимический анализ (pH),\nгумус, NPK и микроэлементы\n' +
                  'Токсилогический анализ почв' },
           { title: 'Оценка показателя', gauge: 'soil' },
@@ -4612,7 +4691,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       eyebrow: 'Станция 1 · Почва и обеспечение плодородия',
       title: 'Сохранение и восстановление земельного ресурса',
       scene: { pic: pic('Изометрический участок поля с бороздами',
-        'assets/photos/concept/soil-2-scene.webp', 'фото', '', [-35, -19, 1959, 1086]) },
+        'assets/photos/concept/soil-2-scene.webp', 'фото', '', [-34, -26, 1959, 1086]) },
       topRight: { label: 'В Центр', to: 'hub' },
       defaultSel: 'min',
       left: {
@@ -4626,9 +4705,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
           { label: 'Рассчитать дозу удобрений', action: 'calcDose', gold: true }
         ]
       },
+      /* в кадре правая пара панелей шириной 399 стоит в 1451…1850 */
       right: {
-        top: 188,
-        width: 406,
+        top: 194,
+        width: 399,
+        edge: 70,
         gap: 8,
         items: [{ dyn: 'doseValue' }, { dyn: 'doseNote' }]
       },
@@ -4652,20 +4733,20 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       topRight: { label: 'В Центр', to: 'hub' },
       /* в исходном состоянии ни одно направление не выбрано — так в кадре */
       curtain: {
-        at: [537, 166, 866, 866],
+        at: [521, 150, 866, 866],
         img: 'assets/photos/concept/seed-1-grain-bad.webp',
         cap: 'Зерно с внешними повреждениями',
         /* целая оболочка нарисована в своём размере внутри того же блока */
         top: { img: 'assets/photos/concept/seed-1-grain-ok.webp',
           at: [20, 89, 770, 771], cap: 'Зерно с целой оболочкой' },
-        x: 48.7, y: 280, h: 763, knob: 349
+        x: 48.7, y: 264, h: 763, knob: 349
       },
       /* подписи стоят по краям шторки, зерно не перекрывают */
       caps: [
         /* правая — из кадра: блок 621 px с центром на x = 1288; левой в кадре нет — стоит слева от зерна,
            выше кнопки «назад», не касаясь ни зерна, ни кнопки */
-        { text: 'Без внешних повреждений', x: 59, y: 846, w: 621, right: true },
-        { text: 'С внешними повреждениями', x: 978, y: 877, w: 621, center: true }
+        { text: 'Без внешних повреждений', x: 59, y: 861, w: 621, right: true },
+        { text: 'С внешними повреждениями', x: 962, y: 861, w: 621, center: true }
       ],
       left: {
         top: 188,
@@ -4679,7 +4760,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
         gap: 8,
         items: [
           { cls: 'is-slim', title: 'Направления исследования', small: true },
-          { grid: { src: 'seedChecks', cols: 2, ico: true, gap: 8 } }
+          { grid: { src: 'seedChecks', cols: 2, ico: true, gap: 4 } }
         ]
       },
       nav: {
@@ -4697,7 +4778,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       title: 'Выездная экспертиза в период вегетации',
       sub: 'Выберите область исследования',
       scene: { pic: pic('Агроном на изометрическом участке поля',
-        'assets/photos/concept/seed-2-scene.webp') },
+        'assets/photos/concept/seed-2-scene.webp', 'фото', '', [-36, -27, 1960, 1103]) },
       topRight: { label: 'В Центр', to: 'hub' },
       defaultSel: 'sort',
       radios: SEED_ZONES,
@@ -4722,7 +4803,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
         iso: { pic: pic('Поле с высоты, изометрия',
           'assets/photos/concept/seed-3-iso.webp', 'фото', '', [-26, -25, 2020, 1092]) },
         photo: { pic: pic('Фотография пшеничного поля',
-          'assets/photos/concept/seed-3-photo.webp') },
+          'assets/photos/concept/seed-3-photo.webp', 'фото', '', [-23, -13, 1935, 1075]) },
         drone: { pic: pic('Поле сверху и беспилотник',
           'assets/photos/concept/seed-3-drone.webp', 'фото', '', [-62, -88, 2016, 1172]) }
       },
@@ -4819,8 +4900,9 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       scene: { pic: pic('Светящееся зерно в лабораторном цилиндре',
         'assets/photos/concept/quality-2-scene.webp', 'фото', '', [-323, -24, 2231, 1072]) },
       topRight: { label: 'В Центр', to: 'hub' },
-      boxes: [{ at: [735, 241, 520], items: [{
-        cap: 'Результаты исследования',
+      boxes: [{ at: [736, 242, 520, 633], items: [{
+        cls: 'is-report',
+        cap: 'РЕЗУЛЬТАТЫ ИССЛЕДОВАНИЯ',
         title: 'Пшеница · образец урожая',
         defs: [
           ['Класс зерна', '3-й · демонстрационный пример'],
@@ -4830,9 +4912,9 @@ body.story-screen { background: var(--sc-bg, #141D23); }
         note: 'Учебный образец, не официальный документ'
       }] }],
       right: {
-        top: 241,
+        top: 242,
         width: 596,
-        gap: 8,
+        gap: 4,
         items: [
           { title: 'Зачем нужна оценка',
             sub: 'Исследования помогают подтвердить\nкачество, обосновать стоимость урожая\n' +
@@ -5071,7 +5153,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
       eyebrow: 'Станция 7 · Экспорт',
       title: 'Готовность к международной поставке',
       scene: { pic: pic('Сухогруз и вагоны-зерновозы',
-        'assets/photos/concept/export-2-scene.webp') },
+        'assets/photos/concept/export-2-scene.webp', 'фото', '', [-15, -15, 1918, 1079]) },
       topRight: { label: 'В Центр', to: 'hub' },
       defaultSel: 'tr',
       left: {
@@ -5308,7 +5390,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    * [слева, сверху, ширина, высота] в числах выгрузки Figma; без него
    * кадр просто обрезается по месту.
    */
-  var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1, 'store-1': 1 };
+  var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1,
+    'store-1': 1, 'store-2': 1 };
 
   function sceneLayer(scr) {
     var p = sceneFor(scr).pic || null;
@@ -5488,8 +5571,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 
     var head = el('button', 'sc-select-head', cur2.name);
     head.type = 'button';
-    var arrow = el('button', 'sc-select-go', '▾');
+    var arrow = el('button', 'sc-select-go');
     arrow.type = 'button';
+    /* стрелка «раскрыть» нарисована уголком: в шрифте нужного знака нет */
+    arrow.appendChild(el('i'));
     function toggle() { resetIdle(); st.open = !st.open; rerender(); }
     head.addEventListener('click', toggle);
     arrow.addEventListener('click', toggle);
@@ -6179,8 +6264,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
     /* --- экран 21: требования выбранной страны --- */
     countryCard: function () {
       var c = find(C.countries, selKey());
-      return panelEl({ title: 'Требования\nнаправления', text: c.text,
-        note: 'Точный перечень требований предоставит заказчик' });
+      /* в кадре 21 пометки под текстом нет */
+      return panelEl({ title: 'Требования\nнаправления', text: c.text });
     }
   };
 
@@ -6200,6 +6285,9 @@ body.story-screen { background: var(--sc-bg, #141D23); }
     var box = el('div', 'sc-col is-' + side + ' is-' + (spec.at || 'top') +
       (spec.hasNav ? ' has-nav' : ''));
     if (spec.width) box.style.width = spec.width + 'px';
+    /* edge — свой отступ колонки от края экрана: в паре кадров Figma
+       панель стоит не на общих 64 px */
+    if (spec.edge != null) box.style[side === 'left' ? 'left' : 'right'] = spec.edge + 'px';
     if (top || spec.top) box.style.top = (top || spec.top) + 'px';
     if (spec.gap != null) box.style.gap = spec.gap + 'px';
     (spec.items || []).forEach(function (item) { box.appendChild(slotEl(item)); });

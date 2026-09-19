@@ -107,15 +107,18 @@
       rgba(40, 62, 48, .12) 55%, rgba(20, 34, 32, 0) 82%),
     linear-gradient(160deg, #1B2A2A 0%, #14201F 48%, #0F1A19 100%);
 }
-/* финал: панорама светлая, сверху лежит затемняющая полоса,
-   справа — мягкое затемнение под карточками (так в макете) */
+/* финал: панорама светлая, читаемость держат три размытых пятна
+   из макета (22-final-a.code.txt) — два плоских эллипса поперёк неба
+   и высокий эллипс справа, под карточками. Размеры и центры взяты
+   из выгрузки, к полуосям добавлено 100 px на размытие. */
 .sc-shade.is-final {
   background:
-    linear-gradient(180deg, rgba(6, 14, 18, .9) 0%,
-      rgba(6, 14, 18, .82) 12%, rgba(6, 14, 18, .45) 19%,
-      rgba(6, 14, 18, 0) 27%),
-    linear-gradient(270deg, rgba(6, 14, 18, .5) 0%, rgba(6, 14, 18, 0) 36%),
-    linear-gradient(0deg, rgba(6, 14, 18, .5) 0%, rgba(6, 14, 18, 0) 17%);
+    radial-gradient(1368px 360px at 840px -82px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 52%, rgba(6, 14, 18, 0) 100%),
+    radial-gradient(1368px 360px at 831px -10px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 52%, rgba(6, 14, 18, 0) 100%),
+    radial-gradient(645px 802px at 1757px 633px,
+      rgba(6, 14, 18, .38) 0%, rgba(6, 14, 18, .38) 85%, rgba(6, 14, 18, 0) 100%);
 }
 .sc-shade.is-soft {
   background: radial-gradient(120% 90% at 50% 40%, rgba(0, 0, 0, 0) 46%,
@@ -181,10 +184,12 @@
   height: 1080px;
 }
 
+/* координаты коллажа даны в кадре 1920x1080, а лежит он внутри
+   .sc-cover со сдвигом 16 px — поэтому отнимаем эти 16 px */
 .sc-collage {
   position: absolute;
-  left: 233px;
-  top: 112px;
+  left: 217px;
+  top: 96px;
   width: 1352px;
   height: 750px;
 }
@@ -194,12 +199,11 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 901px;
+  top: 889px;                  /* 905 в кадре минус сдвиг .sc-cover */
   margin: 0;
-  font-size: 74px;
-  font-weight: 300;
-  line-height: 80px;
-  letter-spacing: .02em;
+  font-size: 72px;
+  font-weight: 400;
+  line-height: 72px;
   text-transform: uppercase;
   text-align: center;
   color: var(--sc-gold);
@@ -209,9 +213,10 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: 995px;
+  top: 977px;                  /* 993 в кадре минус сдвиг .sc-cover */
   font-size: 24px;
-  font-weight: 400;
+  font-weight: 300;
+  line-height: 32px;
   text-align: center;
   color: var(--sc-muted);
 }
