@@ -107,9 +107,9 @@
      красноватое — превышение. Цвета сняты с кадра 05-soil-1. */
   --sc-ok: #478E7A;
   --sc-bad: #9A5148;
-  --sc-ok-bg: rgba(20, 74, 56, .62);
+  --sc-ok-bg: rgba(0, 72, 55, .45);
   --sc-ok-line: rgba(95, 191, 143, .38);
-  --sc-ok-text: #6FD3A0;
+  --sc-ok-text: #19C899;
   --sc-bad-bg: rgba(96, 40, 34, .62);
   --sc-bad-line: rgba(214, 128, 112, .40);
   --sc-bad-text: #E7A395;
@@ -385,14 +385,19 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* панель-подпись: заголовок в размер обычного текста (кадр 07) */
 #sec-story .sc-panel-t.is-small { font-size: 24px; line-height: 32px; }
 /* подзаголовок экрана меню крупнее обычного */
-#sec-story .sc-sub.is-big { font-size: 24px; line-height: 32px; }
+/* в кадре 02 подзаголовок стоит на 183 px: заголовок в две строки
+   кончается на 160, зазор 23 */
+#sec-story .sc-sub.is-big { font-size: 24px; line-height: 32px; margin-top: 23px; }
 
 /* крупное слово-значение (панель «Доза удобрения») */
+/* Кадр 06: значение набрано 64 px с обрезкой рамки по прописной
+   (text-box-trim): в CSS это интерлиньяж 64 x 0,7275 = 46,6.
+   Отступ сверху — зазор панели 26. */
 #sec-story .sc-big {
-  margin-top: 18px;
-  font-size: 54px;
+  margin-top: 26px;
+  font-size: 64px;
   font-weight: 300;
-  line-height: 60px;
+  line-height: 46.6px;
   color: var(--sc-gold);
 }
 
@@ -413,6 +418,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* абзацы с жирным зачином (панель «Дальнейшее использование») */
 #sec-story .sc-lead {
   margin: 26px 0 0;
+  /* переносы внутри строки расставлены вручную, как в кадре 12 */
+  white-space: pre-line;
   font-size: 20px;
   font-weight: 300;
   line-height: 28px;
@@ -420,7 +427,7 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 #sec-story .sc-lead:first-child { margin-top: 0; }
 #sec-story .sc-lead b {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sc-text);
 }
 
@@ -456,12 +463,26 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 /* плитки выбора элемента (кадр 05): кегль 24/32, высота 80 */
 #sec-story .sc-grid.is-mid .sc-pick {
   justify-content: center;
+  /* в кадре отступ 16 и текст не переносится: длинное слово («Кобальт»)
+     просто занимает плитку целиком, ширина плиток остаётся равной */
+  padding: 0 16px;
+  white-space: nowrap;
   font-size: 24px;
   font-weight: 300;
   line-height: 32px;
 }
-/* высокая плитка с подписью слева (показатели качества зерна) */
-#sec-story .sc-grid.is-tall .sc-pick { min-height: 102px; padding: 0 26px; }
+/* Высокая плитка с подписью слева (показатели качества зерна, кадр 11):
+   сетка 775x228 — плитка 112 в высоту, отступ 24, текст Regular 24/28.8,
+   зазоры 4 по вертикали и 2 по горизонтали. Длинное название
+   («Тяжелые металлы») встаёт в две строки. */
+#sec-story .sc-grid.is-tall { gap: 4px 2px; }
+#sec-story .sc-grid.is-tall .sc-pick {
+  min-height: 112px;
+  padding: 0 24px;
+  font-size: 24px;
+  line-height: 28.8px;
+  text-align: left;
+}
 
 #sec-story .sc-pick.is-on {
   background: var(--sc-pick);
@@ -485,6 +506,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 19.6px;
   color: var(--sc-muted);
 }
+/* нижняя плитка во всю ширину: подпись в одну строку, в кадре она 146 px */
+#sec-story .sc-grid.is-ico .sc-pick:last-child:nth-child(odd) { min-height: 146px; }
 #sec-story .sc-grid.is-ico .sc-pick.is-on {
   background: var(--sc-pick);
   box-shadow: var(--sc-pick-glow);
@@ -580,56 +603,67 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    Символ элемента крупно, рядом формула, под ними дорожка: зелёная
    зона до норматива, красная за ним, ручка — текущая концентрация. */
 
-#sec-story .sc-gauge { margin-top: 22px; }
+/* В кадре 05 блок шкалы стоит через зазор панели 26 от заголовка. */
+#sec-story .sc-gauge { margin-top: 26px; }
 
 #sec-story .sc-gauge-head {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   gap: 16px;
 }
+/* Символ элемента: в кадре Inter Light 96/96 с обрезкой рамки по
+   прописной букве (text-box-trim). В CSS та же рамка получается,
+   если задать интерлиньяж по высоте прописной: 96 x 0,7275 = 70.
+   Формула рядом — Regular 32, её рамка 32 x 0,7275 = 23,3. */
 #sec-story .sc-gauge-sym {
-  font-size: 72px;
+  font-size: 96px;
   font-weight: 300;
-  line-height: 76px;
+  line-height: 70px;
   color: var(--sc-gold);
 }
 #sec-story .sc-gauge-f {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 400;
+  line-height: 23.3px;
   color: var(--sc-muted);
 }
 
-#sec-story .sc-gauge .sc-track { margin-top: 10px; height: 22px; }
+/* дорожка: 8 px, зазор 26 сверху и 8 до подписей — как в кадре */
+#sec-story .sc-gauge .sc-track { margin-top: 26px; height: 8px; }
 #sec-story .sc-gauge .sc-rail {
-  top: 8px;
-  background: linear-gradient(90deg, var(--sc-ok) 0 70%, var(--sc-bad) 70% 100%);
+  top: 0;
+  background: linear-gradient(90deg, var(--sc-ok) 0 76%, var(--sc-bad) 76% 100%);
 }
 #sec-story .sc-gauge .sc-knob {
-  top: 0;
-  width: 22px;
-  height: 22px;
-  margin-left: -11px;
+  top: -8.5px;
+  width: 25px;
+  height: 25px;
+  margin-left: -12.5px;
   background: var(--sc-ok);
   box-shadow: 0 0 0 3px rgba(23, 37, 44, .55);
 }
+#sec-story .sc-gauge .sc-ends { margin-top: 8px; }
 #sec-story .sc-gauge.is-bad .sc-knob { background: var(--sc-bad); }
 
 /* --------------------------- плашка-статус --------------------------- */
 
+/* Кадр 05: плашка 125 px с текстом по центру, радиус 32, кегль 24/28 Light. */
 #sec-story .sc-status {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  padding: 26px var(--sc-pad);
-  border-radius: var(--sc-r);
+  min-height: 125px;
+  padding: 24px var(--sc-pad);
+  border-radius: var(--sc-r-btn);
   background: var(--sc-ok-bg);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-ok-line);
+  box-shadow: inset 0 0 4px rgba(209, 255, 249, .25),
+    inset 0 0 35px rgba(60, 207, 114, .35);
   color: var(--sc-ok-text);
   font-size: 24px;
-  font-weight: 400;
-  line-height: 32px;
+  font-weight: 300;
+  line-height: 28px;
 }
 #sec-story .sc-status.is-bad {
   background: var(--sc-bad-bg);
@@ -748,7 +782,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-radio.is-on .sc-radio-d::after {
   content: '';
   position: absolute;
-  inset: 5px;
+  /* в кадре точка внутри кольца мелкая — около 8 px */
+  inset: 8px;
   border-radius: 50%;
   background: #FFFFFF;
 }
@@ -913,7 +948,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   align-items: center;
   gap: 16px;
   height: 65px;
-  padding: 0 16px;
+  /* в кадре 03 у метки отступ 24 */
+  padding: 0 24px;
   border-radius: var(--sc-r-btn);
   background: var(--sc-dark);
   -webkit-backdrop-filter: var(--sc-btn-blur);
@@ -962,15 +998,16 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 
 /* чипы кормового маршрута (кадры 16): тот же крупный чип, подпись
    слева и в две строки, ширина по макету */
+/* В кадре чип ровно 64 в высоту, отступ 24, а подпись стоит
+   в колонке шириной 188 — и в одну, и в две строки. */
 #sec-story .sc-marker-feed {
-  height: auto;
-  min-height: 64px;
-  min-width: 236px;
-  padding: 8px 24px;
+  height: 64px;
+  padding: 0 24px;
   justify-content: flex-start;
   text-align: left;
   white-space: pre-line;
 }
+#sec-story .sc-marker-feed .sc-marker-t { width: 188px; }
 
 /* линии между станциями рисуются SVG поверх сцены */
 #sec-story .sc-links {
@@ -1079,47 +1116,52 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-bar-v { flex: none; width: 76px; text-align: right; }
 
 /* шаги 01–03 отдельными плашками (контроль экспорта) */
+/* Шаги экспортного контроля (кадр 20): плашки 134 через 4, отступ 32,
+   зазор 26 от номера до текста. Номер Regular 64/64, название
+   Regular 24/28.8, пояснение Light 20/28 через 8. */
 #sec-story .sc-steps {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 #sec-story .sc-step {
   display: flex;
-  align-items: center;
-  gap: 28px;
-  height: 138px;
-  padding: 0 var(--sc-pad);
+  align-items: flex-start;
+  gap: 26px;
+  height: 134px;
+  padding: var(--sc-pad);
   border-radius: var(--sc-r);
-  background: var(--sc-glass-soft);
+  background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
 }
-/* последний шаг в макете подсвечен: на нём останавливается рассказ */
 #sec-story .sc-step.is-on { background: var(--sc-glass); }
 #sec-story .sc-step-n {
   flex: none;
-  width: 92px;
-  font-size: 54px;
-  font-weight: 300;
-  line-height: 58px;
+  font-size: 64px;
+  font-weight: 400;
+  line-height: 64px;
+  white-space: nowrap;
   color: var(--sc-text);
 }
+#sec-story .sc-step-t { flex: 1; min-width: 0; }
 #sec-story .sc-step-k {
   font-size: 24px;
-  line-height: 32px;
+  font-weight: 400;
+  line-height: 28.8px;
   color: var(--sc-text);
 }
 #sec-story .sc-step-v {
-  margin-top: 2px;
+  margin-top: 8px;
   font-size: 20px;
+  font-weight: 300;
   line-height: 28px;
   color: var(--sc-muted);
 }
 
 /* карточка с одним снимком: «увеличенный фрагмент» на хранении */
 #sec-story .sc-shot {
+  position: relative;
   flex: none;
   border-radius: var(--sc-r);
   background: var(--sc-glass-soft);
@@ -1131,39 +1173,49 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   height: 100%;
   object-fit: cover;
 }
+/* кадр, поставленный по координатам выгрузки Figma */
+#sec-story .sc-shot img.is-at { position: absolute; object-fit: fill; }
 
 /* плитка со значением: «Жир 3,2 %» на кормовом маршруте */
-#sec-story .sc-stats { display: flex; gap: 8px; }
+/* Плитки значений кормового маршрута (кадр 17): две по 316 через 4,
+   отступ 32, зазор между строками 26, радиус 24.
+   Название Light 32/38.4, число Regular 42/48, «%» Light 20/28 через 12,
+   пометка Regular 14/19.6. */
+#sec-story .sc-stats { display: flex; gap: 4px; }
 #sec-story .sc-stat {
   flex: 1;
-  padding: 24px var(--sc-pad) 22px;
+  padding: var(--sc-pad);
   border-radius: var(--sc-r);
   background: var(--sc-glass);
   -webkit-backdrop-filter: var(--sc-blur);
   backdrop-filter: var(--sc-blur);
-  box-shadow: inset 0 0 0 1px var(--sc-glass-line);
 }
 #sec-story .sc-stat-k {
-  font-size: 26px;
-  line-height: 34px;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
   color: var(--sc-text);
 }
 #sec-story .sc-stat-v {
-  margin-top: 8px;
-  font-size: 52px;
-  font-weight: 300;
-  line-height: 56px;
+  margin-top: 26px;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 48px;
   color: var(--sc-text);
 }
 #sec-story .sc-stat-u {
-  margin-left: 8px;
+  margin-left: 12px;
   font-size: 20px;
-  color: var(--sc-muted);
+  font-weight: 300;
+  line-height: 28px;
+  color: var(--sc-text);
 }
 #sec-story .sc-stat-note {
-  margin-top: 10px;
-  font-size: 15px;
-  color: var(--sc-dim);
+  margin-top: 26px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 19.6px;
+  color: var(--sc-muted);
 }
 
 /* переключатель «До / После» под снимком */
@@ -1318,10 +1370,10 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   height: 30px;
   border-radius: 50%;
   /* в кадре галочка плотная, как в иконке el:ok-circle */
-  box-shadow: inset 0 0 0 2px var(--sc-ok-text);
+  box-shadow: inset 0 0 0 3px var(--sc-ok-text);
   color: var(--sc-ok-text);
-  font-size: 17px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
 }
 #sec-story .sc-menu-i.is-on {
   background: var(--sc-pick);
@@ -1539,10 +1591,32 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 
 /* ползунок во всю ширину панели и подписи по делениям */
 #sec-story .sc-panel.is-slim { padding: var(--sc-pad); }
+/* Кадры 16-*: блок ползунка 644x100 — подпись Regular 24/28.8, зазор 16,
+   дорожка 6 px с ручкой 32, снизу строка 32 с подписями Light 20/28. */
 #sec-story .sc-slider.is-wide { margin-top: 0; }
-#sec-story .sc-slider.is-wide .sc-slider-top { font-size: 24px; line-height: 32px; }
-#sec-story .sc-slider.is-wide .sc-track { margin-top: 18px; }
-#sec-story .sc-ends span.is-on { color: var(--sc-text); }
+#sec-story .sc-slider.is-wide .sc-slider-top {
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 28.8px;
+}
+#sec-story .sc-slider.is-wide .sc-track { margin-top: 16px; height: 6px; }
+#sec-story .sc-slider.is-wide .sc-rail,
+#sec-story .sc-slider.is-wide .sc-fill { top: 0; height: 6px; }
+#sec-story .sc-slider.is-wide .sc-knob {
+  top: -13px;
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+}
+#sec-story .sc-slider.is-wide .sc-ends {
+  margin-top: 16px;
+  height: 32px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+}
+/* в кадрах 16 все подписи под дорожкой одного тона — активную не светлим */
+#sec-story .sc-ends span.is-on { color: inherit; }
 
 /* ---------------- панель ключевых показателей (Центр) ----------------
    Заголовок мельче обычного, строки — плашка с номером и плашка
@@ -1646,11 +1720,13 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* надпись-заглушка биотопливного маршрута */
+/* кадр 18: надпись стоит на 541 с интерлиньяжем 48 и без разрядки */
 #sec-story .sc-hero {
   top: 541px;
   font-size: 64px;
   font-weight: 400;
-  line-height: 72px;
+  line-height: 48px;
+  letter-spacing: normal;
 }
 
 /* --------------------- шторка сравнения: два кадра ---------------------
@@ -1691,6 +1767,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    салатовая у «готов»; отступ 33, между точкой и текстом 26 */
 #sec-story .sc-status.is-dot {
   gap: 26px;
+  /* высота плашки хранения — по содержимому (94), а не 125 как в кадре 05 */
+  min-height: 0;
   padding: 33px;
   box-shadow: inset 0 0 0 1px rgba(139, 245, 46, .4);
   color: rgba(139, 245, 46, .6);

@@ -177,6 +177,19 @@
       }
       box.appendChild(im);
     }
+    /* Предметы, лежащие на сцене отдельным слоем (беспилотник на кадре 09-c):
+       координаты at — как у сцены, внутри блока 1888x1048. */
+    (sceneFor(scr).objs || []).forEach(function (o) {
+      var oi = new Image();
+      oi.src = U.asset(o.img);
+      oi.alt = o.cap || '';
+      oi.className = 'is-at is-obj';
+      oi.style.left = o.at[0] + 'px';
+      oi.style.top = o.at[1] + 'px';
+      oi.style.width = o.at[2] + 'px';
+      oi.style.height = o.at[3] + 'px';
+      box.appendChild(oi);
+    });
     return box;
   }
 
@@ -194,6 +207,9 @@
   /** Стеклянная панель: надпись, заголовок, текст, строки, пометка. */
   function panelEl(p) {
     var n = el('section', 'sc-panel' + (p.cls ? ' ' + p.cls : ''));
+    /* у части панелей в кадрах задана точная высота — она больше или
+       меньше содержимого, и по ней встают соседи в колонке */
+    if (p.h) n.style.height = p.h + 'px';
     if (p.cap) n.appendChild(el('div', 'sc-panel-cap', p.cap));
     if (p.title) n.appendChild(el('h3', 'sc-panel-t' + (p.small ? ' is-small' : ''), p.title));
     if (p.sub) n.appendChild(el('div', 'sc-panel-sub', p.sub));
@@ -293,6 +309,16 @@
     var im = new Image();
     im.src = U.asset(s.img);
     im.alt = s.cap || '';
+    /* at — место кадра внутри карточки по выгрузке Figma:
+       [слева, сверху, ширина, высота]. Без него снимок просто
+       обрезается по центру. */
+    if (s.at) {
+      im.className = 'is-at';
+      im.style.left = s.at[0] + 'px';
+      im.style.top = s.at[1] + 'px';
+      im.style.width = s.at[2] + 'px';
+      im.style.height = s.at[3] + 'px';
+    }
     box.appendChild(im);
     return box;
   }
@@ -402,7 +428,10 @@
   function gridEl(g) {
     var box = el('div', 'sc-grid' + (g.mid ? ' is-mid' : '') +
       (g.ico ? ' is-ico' : '') + (g.tall ? ' is-tall' : ''));
-    box.style.gridTemplateColumns = 'repeat(' + (g.cols || 3) + ', 1fr)';
+    /* minmax(0, 1fr), а не 1fr: иначе длинное слово («Кобальт», «Кадмий»)
+       раздувает свой столбец, плитки перестают быть равными и вылезают
+       за отступ панели. В макетах столбцы всегда равной ширины. */
+    box.style.gridTemplateColumns = 'repeat(' + (g.cols || 3) + ', minmax(0, 1fr))';
     if (g.gap != null) box.style.gap = g.gap + 'px';
     (C[g.src] || []).forEach(function (it) {
       var b = el('button', 'sc-pick' + (selKey() === it.key ? ' is-on' : ''));
@@ -519,8 +548,10 @@
   function statusEl(s) {
     var kind = s.bad ? ' is-bad' : (s.warn ? ' is-warn' : '');
     var n = el('div', 'sc-status' + kind + (s.dot ? ' is-dot' : ''));
-    n.appendChild(el('span', 'sc-status-m', s.dot ? '' : (s.bad ? '!' : '✓')));
-    n.appendChild(el('span', null, s.text));
+    if (s.dot) n.appendChild(el('span', 'sc-status-m', ''));
+    /* Знак стоит в самой строке, а не отдельной колонкой: в кадре 05
+       вторая строка начинается от края панели, а не под текстом. */
+    n.appendChild(el('span', null, s.dot ? s.text : (s.bad ? '! ' : '✓ ') + s.text));
     st.status = n;
     return n;
   }
@@ -984,7 +1015,7 @@
     },
     foodSlider: function () {
       var f = foodTab();
-      if (st.level == null) st.level = 0.86;   // ручка справа, как в макете
+      if (st.level == null) st.level = 0.90;   // ручка справа, как в макете
       return panelEl({ cls: 'is-slim', slider: {
         label: f.slider, marks: f.marks, value: st.level, wide: true,
         on: function (v) { st.level = v; }
@@ -1082,8 +1113,8 @@
     if (st.status) {
       st.status.className = 'sc-status' + (over ? ' is-bad' : '');
       st.status.innerHTML = '';
-      st.status.appendChild(el('span', 'sc-status-m', over ? '!' : '✓'));
-      st.status.appendChild(el('span', null, over ? C.soilStatus.bad : C.soilStatus.ok));
+      st.status.appendChild(el('span', null, (over ? '! ' : '✓ ') +
+        (over ? C.soilStatus.bad : C.soilStatus.ok)));
     }
   }
 
@@ -1174,6 +1205,13 @@
         var im = new Image();
         im.src = U.asset(t.img);
         im.alt = t.name;
+        if (t.at) {
+          im.className = 'is-at';
+          im.style.left = t.at[0] + 'px';
+          im.style.top = t.at[1] + 'px';
+          im.style.width = t.at[2] + 'px';
+          im.style.height = t.at[3] + 'px';
+        }
         ph.appendChild(im);
       }
       b.appendChild(ph);

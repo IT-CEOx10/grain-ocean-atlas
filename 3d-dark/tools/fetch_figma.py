@@ -43,6 +43,8 @@ PNG = {
     "seed-3-iso": "ff6d807d39f80100267a019f045b3fc15b97a9ec",
     "seed-3-photo": "502942577998108db47c440054024becfb824db5",
     "seed-3-drone": "87f791a827787337798520ec52bc90ca739d3f7f",
+    # сам беспилотник лежит на сцене отдельным слоем (кадр 09-c)
+    "seed-3-drone-obj": "1a837452cb7a60f6291aba66b36a2666a7fb9eba",
     # качество
     "quality-1-scene": "3a38367960cb0d9d7d8631213bd090b53e528260",
     "quality-2-scene": "7ebfc5a692b6383d7d5d3b82883a6d53fcf5ae9e",

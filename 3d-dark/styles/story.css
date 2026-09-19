@@ -71,6 +71,8 @@
 }
 /* кадр, поставленный по координатам выгрузки Figma */
 .sc-scene img.is-at { position: absolute; object-fit: fill; }
+/* предмет поверх сцены (беспилотник): прозрачный фон, вписывается целиком */
+.sc-scene img.is-obj { z-index: 1; object-fit: contain; }
 /* сцены с вырезанным фоном (остров Центра) ложатся целиком */
 .sc-scene.is-contain img { object-fit: contain; }
 
@@ -272,6 +274,9 @@
   overflow: hidden;
 }
 .sc-tile-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* картинка плитки, поставленная по координатам кадра 02 */
+.sc-tile-pic { position: relative; }
+.sc-tile-pic img.is-at { position: absolute; max-width: none; object-fit: fill; }
 
 .sc-tile-body {
   flex: 1;

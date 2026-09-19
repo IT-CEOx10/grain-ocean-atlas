@@ -1,6 +1,6 @@
 import sys, glob, os
 from PIL import Image, ImageChops, ImageFilter, ImageDraw
-REF=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","docs","mockup","concept-18-09")+"/"
+REF=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","docs","mockup","figma-1920")+"/"  # кадры 1920x1080 из экспорта Figma
 S=sys.argv[1] if len(sys.argv)>1 else os.path.dirname(os.path.abspath(__file__))
 rows=[]
 for f in sorted(glob.glob(S+"/full/*.png")):
