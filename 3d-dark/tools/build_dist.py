@@ -205,6 +205,12 @@ def main(theme=None, out_path=None, entry=None, max_mb=None):
             assets.setdefault(a, None)
         inlined.append("<!-- %s -->\n<script>\n%s\n</script>" % (rel, code))
 
+    # Пути из config.json (постеры и ролики глобусов) в коде не встречаются,
+    # поэтому ищем их отдельно — иначе на сайте шары входного экрана пустые.
+    for a in ASSET_RE.findall(read(os.path.join(ROOT, "config.json"))):
+        if os.path.exists(os.path.join(ROOT, a)):
+            assets.setdefault(a, None)
+
     # 4a. файлы из assets/, на которые ссылаются скрипты (текстуры глобуса)
     assets_bytes = 0
     for rel in list(assets):
