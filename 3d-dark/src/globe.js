@@ -39,14 +39,20 @@
    * tools/build_dist.py не найдёт их в коде и не вошьёт в один файл.
    */
   var TEX_LAND = {
-    // Синяя тема — тот же шар, что в зелёной, только перекрашенный:
-    // обработка снимка та же, палитра другая (суша естественная, океан
-    // синий). Файлы с суффиксом _blue, их делает tools/make_earth_textures.py
-    // (тема navy_blue). Прежняя холодная подложка earth_land_4096.jpg
-    // осталась в assets на случай возврата.
+    // Синяя тема — дневная Земля со спутника по эталону из фигмы: снимок
+    // NASA почти как есть, только сочнее и с вытянутым рельефом, океан
+    // перекрашен в глубокий синий со светлым шельфом. Файлы с суффиксом
+    // _figma, их делает tools/make_earth_textures.py (тема navy_figma).
+    // Основной размер — 8192: стенд это панель 50" в 4K, на 4096 при
+    // приближении видно мыло. Если видеокарта столько не тянет, pickTexture
+    // возьмёт 4096 или 2048 — так же, как у ночных огней.
+    // Прежние подложки синей темы — earth_land_4096_blue.jpg (перекрашенный
+    // шар зелёной темы) и earth_land_4096.jpg (холодная, самая первая) —
+    // остались в assets на случай возврата.
     navy: [
-      { size: 4096, path: 'assets/textures/earth_land_4096_blue.jpg' },
-      { size: 2048, path: 'assets/textures/earth_land_2048_blue.jpg' }
+      { size: 8192, path: 'assets/textures/earth_land_8192_figma.jpg' },
+      { size: 4096, path: 'assets/textures/earth_land_4096_figma.jpg' },
+      { size: 2048, path: 'assets/textures/earth_land_2048_figma.jpg' }
     ],
     green: [
       { size: 4096, path: 'assets/textures/earth_land_4096_green.jpg' },
@@ -577,6 +583,18 @@
   var ARC_START_LEN = 0.02;             // на какой доле пути выходит на полную
   var ARC_WIDTH = 1;                    // множитель толщины дуг
 
+  /*
+   * Приглушение золота у поверхности. Все три множителя по умолчанию равны
+   * единице — то есть ничего не меняют; тема перебивает их полями
+   * globe.arcOpacity, globe.arcHalo и globe.dotScale (см. init).
+   * Нужны синей теме: на дневной текстуре веер дуг и точки стран забивали
+   * сушу, а в эталоне заказчика золото — это тонкие линии и мелкие точки,
+   * сквозь которые материки читаются.
+   */
+  var ARC_OPACITY = 1;                  // множитель непрозрачности дуг
+  var ARC_HALO_K = 1;                   // множитель ширины ореола вокруг дуги
+  var DOT_SCALE = 1;                    // множитель размера и яркости точек
+
   var ARC_VERT =
     'uniform float uBase; uniform float uHalf; uniform float uPxK;' +
     'varying vec3 vN; varying vec3 vP; varying float vT;' +
@@ -639,6 +657,9 @@
     ARC_START = num(gcfg.arcStart, 1);
     ARC_START_LEN = num(gcfg.arcStartLen, 0.02);
     ARC_WIDTH = num(gcfg.arcWidth, 1);
+    ARC_OPACITY = num(gcfg.arcOpacity, 1);
+    ARC_HALO_K = num(gcfg.arcHalo, 1);
+    DOT_SCALE = num(gcfg.dotScale, 1);
     view.fx = HOME.fx;
     view.fy = HOME.fy;
     view.zoom = gcfg.defaultZoom;
@@ -766,6 +787,7 @@
     var o = cfg.origin;
     originDot = new THREE.Sprite(new THREE.SpriteMaterial({
       map: TEX_WHITE, transparent: true, sizeAttenuation: false,
+      opacity: Math.min(1, DOT_SCALE),
       blending: THREE.AdditiveBlending, depthWrite: false
     }));
     originDot.position.copy(toVec3(o.lat, o.lon, R * 1.004));
@@ -825,7 +847,7 @@
   function setPxSizes(h) {
     // мировая длина, дающая один пиксель по вертикали на расстоянии 1 от камеры
     uPxK.value = 2 * Math.tan(camera.fov * DEG / 2) / h;
-    if (originDot) originDot.scale.setScalar(PX.origin * uPxK.value);
+    if (originDot) originDot.scale.setScalar(PX.origin * DOT_SCALE * uPxK.value);
     if (shipDot) shipDot.scale.setScalar(PX.ship * uPxK.value);
   }
 
@@ -860,7 +882,7 @@
     // ищем внутри обёртки раздела: в app.html рядом лежат ещё два раздела
     labelHost = U.scope('globe').querySelector('[id="glabels"]');
     originLabel = makeLabel('is-port');
-    setLabelText(originLabel, cfg.origin.name, 'порт отправления');
+    setLabelText(originLabel, cfg.origin.name, cfg.origin.note || '');
     selLabel = makeLabel('is-port');
     // до подгрузки шрифтов ширина подписей меряется неверно — пересчитываем
     if (document.fonts && document.fonts.ready) {
@@ -1054,9 +1076,10 @@
 
       // полуширина светящейся сердцевины в пикселях экрана — по лог-шкале объёма
       var half = (0.80 + 1.30 * norm * norm) * ARC_WIDTH;
-      var opacity = 0.42 + 0.55 * norm;
+      var opacity = (0.42 + 0.55 * norm) * ARC_OPACITY;
       var geo = new THREE.TubeGeometry(curve, N, ARC_BASE, 8, false);
-      var mesh = new THREE.Mesh(geo, arcMaterial(colors.route, half * ARC_HALO, opacity));
+      var mesh = new THREE.Mesh(geo,
+        arcMaterial(colors.route, half * ARC_HALO * ARC_HALO_K, opacity));
       mesh.renderOrder = 3;
       arcGroup.add(mesh);
 
@@ -1071,8 +1094,8 @@
 
     // светящиеся точки на концах: два размера — крупные направления заметнее
     var big = routes.slice(0, 8), small = routes.slice(8);
-    endPointsBig = endPoints(big, PX.endBig, 0.95);
-    endPointsSmall = endPoints(small, PX.endSmall, 0.75);
+    endPointsBig = endPoints(big, PX.endBig * DOT_SCALE, 0.95 * DOT_SCALE);
+    endPointsSmall = endPoints(small, PX.endSmall * DOT_SCALE, 0.75 * DOT_SCALE);
 
     // бегущие частицы: один Points-объект на все дуги
     if (routes.length) {
@@ -1080,8 +1103,8 @@
       g.setAttribute('position',
         new THREE.Float32BufferAttribute(new Float32Array(routes.length * PPA * 3), 3));
       particles = new THREE.Points(g, new THREE.PointsMaterial({
-        size: PX.particle, sizeAttenuation: false, map: TEX_GOLD,
-        color: 0xFFD9A0, transparent: true, opacity: 0.9,
+        size: PX.particle * DOT_SCALE, sizeAttenuation: false, map: TEX_GOLD,
+        color: 0xFFD9A0, transparent: true, opacity: 0.9 * DOT_SCALE,
         blending: THREE.AdditiveBlending, depthWrite: false
       }));
       particles.renderOrder = 5;
@@ -1143,7 +1166,7 @@
       if (!selected) {
         u.uColor.value.set(colors.route);
         u.uOpacity.value = r.baseOpacity;
-        u.uHalf.value = r.baseHalf * ARC_HALO;
+        u.uHalf.value = r.baseHalf * ARC_HALO * ARC_HALO_K;
       } else if (isSel) {
         u.uColor.value.set(colors.routeActive);
         u.uOpacity.value = 1.0;
@@ -1151,7 +1174,7 @@
       } else {
         u.uColor.value.set(colors.route);
         u.uOpacity.value = r.baseOpacity * 0.15;   // остальные приглушены
-        u.uHalf.value = r.baseHalf * ARC_HALO;
+        u.uHalf.value = r.baseHalf * ARC_HALO * ARC_HALO_K;
       }
     });
     var dim = selected ? 0.18 : 1;

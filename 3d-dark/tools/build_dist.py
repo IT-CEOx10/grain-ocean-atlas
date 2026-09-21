@@ -66,9 +66,14 @@ MAX_VIDEO_MB = 60
 MAX_DIST_MB = 8
 
 # Ролик из assets/ тяжелее этого в страницу не вшивается: он ляжет рядом
-# с собранным index.html обычным файлом (см. шаг 4a). Картинки и текстуры
-# вшиваются всегда, какого бы размера ни были.
+# с собранным index.html обычным файлом (см. шаг 4a).
 INLINE_MAX_ASSET_MB = 1.0
+
+# То же для картинок, но порог выше: почти все текстуры лёгкие и удобнее,
+# когда они внутри страницы. Не влезает сюда только подложка суши 8192
+# (около 3,6 МБ) — она ляжет рядом со страницей. В base64 она раздулась бы
+# почти до 5 МБ, а нужна лишь там, где видеокарта её тянет.
+INLINE_MAX_IMAGE_MB = 3.0
 
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
@@ -233,7 +238,8 @@ def main(theme=None, out_path=None, entry=None, max_mb=None):
             die("нет файла %s, на который ссылается код" % rel)
         size = os.path.getsize(src)
         video = rel.lower().endswith((".mp4", ".webm"))
-        if video and size > INLINE_MAX_ASSET_MB * 1024 * 1024:
+        limit = INLINE_MAX_ASSET_MB if video else INLINE_MAX_IMAGE_MB
+        if size > limit * 1024 * 1024:
             del assets[rel]
             sidecars.append((rel, src, size))
             continue

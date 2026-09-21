@@ -53,7 +53,9 @@ TEX = os.path.join(ROOT, "assets", "textures")
 
 REF_W = 4096.0        # ширина, для которой заданы радиусы размытия
 
-# (исходник, размер в имени результата, качество JPEG)
+# (исходник, размер в имени результата, качество JPEG). Если ширина снимка
+# не совпадает с размером в имени, снимок уменьшается LANCZOS-ом — так из
+# одного большого оригинала получаются все рабочие размеры сразу.
 LAND_JOBS = [
     ("nasa_blue_marble_4096.jpg", 4096, 90),
     ("nasa_blue_marble_2048.jpg", 2048, 92),
@@ -143,6 +145,56 @@ LAND_THEMES = {
         "ocean_floor": 0.30,
         "ocean_span": 0.46,
         "quality": {4096: 80, 2048: 85},
+    },
+    # Синяя тема по эталону из фигмы: дневная Земля со спутника почти как есть.
+    # Главная мысль — снимок NASA сам по себе уже такой, как на эталоне
+    # (песочная Сахара, тёмно-зелёные леса, серые хребты, снег на Гималаях),
+    # поэтому суша не перекрашивается двумя оттенками, как в зелёной теме,
+    # а только подкручивается: цвет сочнее (land_sat > 1), лёгкая S-кривая
+    # по яркости и нерезкая маска в два радиуса — крупный радиус даёт
+    # локальный контраст (рельеф, складки гор), мелкий добавляет резкости.
+    # Океан рисуется заново по батиметрии снимка: линейка от глубокого
+    # ocean_deep к шельфовому ocean_shelf, плюс подсветка у самого берега
+    # по размытой маске суши (coast_*).
+    "navy_figma": {
+        "suffix": "_figma",
+        # Свой набор размеров и свой исходник: стенд — панель 50" в 4K,
+        # на ней подложке нужен 8192, иначе при приближении видно мыло.
+        # Все три размера уменьшаются LANCZOS-ом из оригинала 21600×10800
+        # (Blue Marble NG, июль 2004, topo+bathy) — он чище, чем прежний
+        # снимок 4096. Оригинал в репозиторий не кладётся, см. .gitignore
+        # и README, раздел «Текстуры Земли»
+        "jobs": [("nasa_blue_marble_21600_src.jpg", 8192, 84),
+                 ("nasa_blue_marble_21600_src.jpg", 4096, 88),
+                 ("nasa_blue_marble_21600_src.jpg", 2048, 90)],
+        # чуть выше единицы: цвет сочнее исходного снимка, но песок Сахары
+        # остаётся спокойно-бежевым, а не рыжим — заказчик просил, чтобы
+        # жёлтого на шаре было меньше
+        "land_sat": 1.08,
+        "land_gamma": 0.92,                  # едва заметный подъём полутонов
+        "land_knee": 0.80,                   # света поджимаются поздно:
+        "land_knee_slope": 0.62,             # снег и пустыни не выгорают
+        "land_floor": 0.045,
+        "land_ceil": 1.00,
+        "land_tint": (1.03, 1.00, 0.95),     # чуть тёплее, без перекраски
+        # нерезкая маска: (радиус px по 4096, сила %, порог). Радиусы
+        # пересчитываются под ширину снимка, поэтому рельеф на 8192 и на 2048
+        # выглядит одинаково. Сила умеренная: оригинал 21600 сам по себе
+        # резкий, сильнее — и вдоль берегов пойдут светлые ореолы
+        "unsharp": [(14.0, 52, 3),           # крупный радиус — рельеф
+                    (1.6, 60, 4)],           # мелкий — резкость деталей
+        "ocean_deep": "#0a1f4a",             # глубокая вода
+        "ocean_shelf": "#123a7a",            # шельф у берегов
+        "ocean_lo": 0.16,                    # диапазон батиметрии снимка,
+        "ocean_hi": 0.52,                    # который растягивается на линейку
+        "ocean_gamma": 0.85,
+        "coast_r": 9.0,                      # подсветка у берега: радиус px/4096
+        "coast_w": 0.55,                     # и её сила
+        "coast_tint": "#1a4a92",
+        # качество по размеру: на 8192 ниже, иначе файл уходит за 4 МБ,
+        # а вшивать его в страницу всё равно не нужно — build_dist.py кладёт
+        # тяжёлые файлы рядом со страницей
+        "quality": {8192: 84, 4096: 88, 2048: 90},
     },
     # Зелёная тема: заказчик просил «ярче и сочнее». Суша поднята гаммой
     # и диапазоном, а вместо одного оттенка у неё два — по яркости снимка:
@@ -286,13 +338,52 @@ def ocean_lut(theme):
             for i in range(256)]
 
 
+def hex_rgb(s):
+    s = s.lstrip("#")
+    return tuple(int(s[i:i + 2], 16) / 255.0 for i in (0, 2, 4))
+
+
+def ocean_ramp(theme):
+    """Батиметрия снимка -> три LUT: линейка от глубокой воды к шельфу.
+
+    Вместо «серый × множитель» (как в старых темах) океан красится
+    явными цветами: ocean_deep на глубине, ocean_shelf на мелководье.
+    """
+    deep = hex_rgb(theme["ocean_deep"])
+    shelf = hex_rgb(theme["ocean_shelf"])
+    lo = theme.get("ocean_lo", 0.16)
+    hi = theme.get("ocean_hi", 0.52)
+    gamma = theme.get("ocean_gamma", 1.0)
+    luts = []
+    for c in range(3):
+        lut = []
+        for i in range(256):
+            t = min(1.0, max(0.0, (i / 255.0 - lo) / float(hi - lo))) ** gamma
+            lut.append(clamp8(255 * (deep[c] + (shelf[c] - deep[c]) * t)))
+        luts.append(lut)
+    return luts
+
+
 def tint(img, factors):
     return Image.merge("RGB", [scale_channel(ch, f)
                                for ch, f in zip(img.split(), factors)])
 
 
-def make_land(src_name, size, quality, theme):
+def load_land_src(src_name, size):
+    """Открывает снимок и, если надо, уменьшает его до нужной ширины.
+
+    LANCZOS на понижении усредняет по большому окну: мелкие детали не
+    рассыпаются в шум, а собираются в честные полутона. Именно поэтому
+    4096, полученный из оригинала 21600, заметно чище готового снимка 4096.
+    """
     img = Image.open(os.path.join(TEX, src_name)).convert("RGB")
+    if img.size[0] != size:
+        img = img.resize((size, size // 2), Image.LANCZOS)
+    return img
+
+
+def make_land(src_name, size, quality, theme):
+    img = load_land_src(src_name, size)
     k = img.size[0] / REF_W
     r, g, b = img.split()
     grey = img.convert("L")
@@ -303,6 +394,11 @@ def make_land(src_name, size, quality, theme):
 
     land = Image.blend(grey.convert("RGB"), img, theme["land_sat"])
     land = land.point(land_lut(theme) * 3)
+    for radius, percent, threshold in theme.get("unsharp", []):
+        # крупный радиус работает как high-pass: вытаскивает рельеф,
+        # мелкий добавляет резкости. Радиус пересчитан под размер снимка
+        land = land.filter(ImageFilter.UnsharpMask(
+            radius=max(0.5, radius * k), percent=percent, threshold=threshold))
     if theme.get("land_tint_hi"):
         # два оттенка по яркости снимка: тёмное — зелёное, светлое — оливковое
         land = Image.composite(tint(land, theme["land_tint_hi"]),
@@ -311,7 +407,21 @@ def make_land(src_name, size, quality, theme):
     else:
         land = tint(land, theme["land_tint"])
 
-    ocean = tint(grey.point(ocean_lut(theme)).convert("RGB"), theme["ocean_tint"])
+    if theme.get("ocean_deep"):
+        # океан красится явной линейкой «глубина -> шельф»
+        ocean = Image.merge("RGB", [grey.point(l) for l in ocean_ramp(theme)])
+        if theme.get("coast_w"):
+            # у самого берега вода ещё чуть светлее: размытая маска суши
+            coast = ImageChops.invert(mask).filter(
+                ImageFilter.GaussianBlur(theme["coast_r"] * k))
+            coast = scale_channel(coast, theme["coast_w"])
+            ocean = Image.composite(
+                Image.new("RGB", img.size,
+                          tuple(clamp8(255 * v)
+                                for v in hex_rgb(theme["coast_tint"]))),
+                ocean, coast)
+    else:
+        ocean = tint(grey.point(ocean_lut(theme)).convert("RGB"), theme["ocean_tint"])
 
     out_name = "earth_land_%d%s.jpg" % (size, theme["suffix"])
     quality = theme.get("quality", {}).get(size, quality)
@@ -322,6 +432,7 @@ def main():
     Image.MAX_IMAGE_PIXELS = None
     srcs = [j[0] for t in NIGHT_THEMES.values() for j in t["jobs"]]
     srcs += [j[0] for j in LAND_JOBS]
+    srcs += [j[0] for t in LAND_THEMES.values() for j in t.get("jobs", [])]
     for src in srcs:
         if not os.path.exists(os.path.join(TEX, src)):
             raise SystemExit("нет файла assets/textures/%s" % src)
@@ -331,9 +442,10 @@ def main():
         for src, size, q in theme["jobs"]:
             make_night(src, "earth_night_%d%s.jpg" % (size, theme["suffix"]), q, theme)
     for name in sorted(LAND_THEMES):
+        theme = LAND_THEMES[name]
         print("Суша, тема %s:" % name)
-        for src, size, q in LAND_JOBS:
-            make_land(src, size, q, LAND_THEMES[name])
+        for src, size, q in theme.get("jobs", LAND_JOBS):
+            make_land(src, size, q, theme)
 
 
 if __name__ == "__main__":

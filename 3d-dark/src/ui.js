@@ -74,6 +74,43 @@
     $('intro-go').addEventListener('click', function () { handlers.onIntroGo(); });
     $('back-map').addEventListener('click', function () { handlers.onBackToMap(); });
     $('reset-view').addEventListener('click', function () { handlers.onResetView(); });
+
+    bindScrollbar(els.list, $('sb-countries'));
+    bindScrollbar(els.news, $('sb-news'));
+  }
+
+  /* --------------------------- полосы прокрутки ---------------------------
+     Нативную полосу браузер на стенде рисует по-своему (в macOS её вовсе
+     не видно), а в кадре это тонкая зелёная линия в строго заданном месте.
+     Поэтому полосу рисуем сами: дорожка стоит по координатам кадра
+     (правила в styles/app.css), бегунок двигается за прокруткой списка.
+     Полоса ничего не ловит — список листается пальцем и колесом. */
+
+  function bindScrollbar(box, bar) {
+    if (!box || !bar) return;
+    var thumb = bar.firstElementChild;
+    function sync() {
+      var h = box.clientHeight, all = box.scrollHeight;
+      if (!h || all <= h + 1) { bar.classList.add('is-off'); return; }
+      bar.classList.remove('is-off');
+      var track = bar.clientHeight;
+      var th = Math.max(40, Math.round(track * h / all));
+      var max = all - h;
+      var y = max > 0 ? Math.round((track - th) * (box.scrollTop / max)) : 0;
+      thumb.style.height = th + 'px';
+      thumb.style.top = y + 'px';
+    }
+    box.addEventListener('scroll', sync, { passive: true });
+    bar._sync = sync;
+    sync();
+  }
+
+  /** Пересчитать бегунки после перерисовки списков. */
+  function syncScrollbars() {
+    ['sb-countries', 'sb-news'].forEach(function (id) {
+      var bar = $(id);
+      if (bar && bar._sync) bar._sync();
+    });
   }
 
   /* --------------------------- звёздное зерно --------------------------- */
@@ -249,9 +286,11 @@
     els.list.innerHTML = '';
     if (!items.length) {
       els.list.appendChild(U.el('div', 'list-hint', 'Ничего не найдено'));
+      syncScrollbars();
       return;
     }
     items.forEach(function (it) { els.list.appendChild(row(it)); });
+    syncScrollbars();
   }
 
   function clearSearch() { setSearch(''); }
@@ -306,6 +345,7 @@
       box.appendChild(U.el('div', 'news-p', n.text));
       els.news.appendChild(box);
     });
+    syncScrollbars();
   }
 
   /* -------------------------- карточка страны -------------------------- */
@@ -339,6 +379,7 @@
     ROOT.classList.remove('is-intro', 'is-map', 'is-country');
     ROOT.classList.add('is-' + state);
     playVideos(state);
+    syncScrollbars();
   }
 
   function hideLoading() {

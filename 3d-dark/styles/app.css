@@ -1379,11 +1379,31 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 /* ------------------------- общий вид плашек -------------------------
    В кадрах у всех панелей раздела радиус 24 и размытие 35. */
 
+/* Стекло панели: светлая заливка 10 % из кадра ЛЕЖИТ НА ТЁМНОЙ ПОДЛОЖКЕ,
+   а всё, что под панелью, размывается и приглушается (saturate + brightness).
+   Без этого панель над светлой сушей и золотыми дугами выцветает в жёлто-
+   песочную, и белый текст на ней почти не читается. Над космосом цвет
+   совпадает с кадром (примерно rgb(27,29,33)).
+   Заливка — переменная --panel (config.json, themes.navy.colors.panelBg).
+   Рамок и теней у панелей в кадрах нет — снимаем их тоже. */
 #sec-globe .panel {
+  border: 0;
   border-radius: 24px;
+  box-shadow: none;
   -webkit-backdrop-filter: blur(35px);
   backdrop-filter: blur(35px);
   box-sizing: border-box;
+}
+/* Приглушение того, что под панелью, — только в синей теме: в зелёной
+   свои, более плотные заливки, и трогать её вид не нужно. */
+#sec-globe.theme-navy .panel,
+#sec-globe.theme-navy #panel-left .search {
+  -webkit-backdrop-filter: blur(35px) saturate(.7) brightness(.35);
+  backdrop-filter: blur(35px) saturate(.7) brightness(.35);
+}
+#sec-globe.theme-navy #panel-top5 {
+  -webkit-backdrop-filter: blur(25px) saturate(.7) brightness(.35);
+  backdrop-filter: blur(25px) saturate(.7) brightness(.35);
 }
 
 /* «призрачные» кнопки кадров: «Главное меню» и «← К странам назначения» */
@@ -1649,6 +1669,8 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   padding: 0 16px;
   border-radius: 999px;
   box-sizing: border-box;
+  border: 0;
+  box-shadow: none;
   background: var(--panel);
   -webkit-backdrop-filter: blur(25px);
   backdrop-filter: blur(25px);
@@ -1692,7 +1714,13 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   gap: 6px;
   width: 373px;
   padding: 16px;
+  border: 0;
   border-radius: 16px;
+  box-shadow: none;
+  /* в кадре подложка блока зеленоватая (bg-[rgba(186,240,138,0.2)]);
+     под ней та же тёмная основа, что у остальных панелей */
+  background: linear-gradient(rgba(186, 240, 138, .2), rgba(186, 240, 138, .2)),
+    rgba(8, 12, 22, .45);
   -webkit-backdrop-filter: blur(25px);
   backdrop-filter: blur(25px);
 }
@@ -1723,7 +1751,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   padding: 0 16px;
   border: 0;
   border-radius: 16px;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(246, 246, 246, .1);
 }
 #sec-globe .country-row .nm {
   /* у Inter линия прописных ниже, чем у макетного Akkurat: без сдвига
@@ -1749,24 +1777,44 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   gap: 4px;
   width: 385px;
   height: 354px;
-  padding: 0 4px 0 0;
+  /* 385 = 373 строка + 4 зазор + 8 полоса прокрутки (она рисуется
+     отдельным элементом .sb поверх, см. ниже) */
+  padding: 0 12px 0 0;
   box-sizing: border-box;
   overflow-y: auto;
   /* scrollbar-width не ставим: в Chrome оно перебивает ::-webkit-scrollbar,
      и вместо полосы из кадра получается системная (на macOS невидимая) */
 }
+/* Полосы прокрутки рисуем сами: нативную Chrome на стенде либо прячет
+   (overlay-полосы macOS), либо рисует по-своему. Свои элементы создаёт
+   src/ui.js (scrollbar), места и размеры — из кадра:
+   список стран  — (441; 348) 8x668, лента новостей — (1836; 446) 8x415.
+   Дорожка rgba(100,140,27,.15), бегунок #43744B, радиус 30. */
+#sec-globe #country-list,
+#sec-globe .news-list { scrollbar-width: none; }
 #sec-globe #country-list::-webkit-scrollbar,
-#sec-globe .news-list::-webkit-scrollbar { width: 8px; }
-#sec-globe #country-list::-webkit-scrollbar-track,
-#sec-globe .news-list::-webkit-scrollbar-track {
+#sec-globe .news-list::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+#sec-globe .sb {
+  position: absolute;
+  z-index: 5;
+  width: 8px;
+  border-radius: 30px;
   background: var(--sb-track, rgba(100, 140, 27, .15));
-  border-radius: 30px;
+  pointer-events: none;
 }
-#sec-globe #country-list::-webkit-scrollbar-thumb,
-#sec-globe .news-list::-webkit-scrollbar-thumb {
+#sec-globe .sb > i {
+  position: absolute;
+  left: 0;
+  width: 8px;
+  border-radius: 30px;
   background: var(--sb-thumb, #43744B);
-  border-radius: 30px;
 }
+#sec-globe .sb.is-off { display: none; }
+#sec-globe #sb-countries { left: 441px; top: 348px; height: 668px; }
+#sec-globe #sb-news { left: 1836px; top: 446px; height: 415px; }
+#sec-globe:not(.is-map) .sb { display: none; }
+#sec-globe.is-map.is-nonews #sb-news { display: none; }
 
 /* Пока в поиске что-то набрано, «Топ-5» уходит: его место занимает
    список найденных стран (класс ставит src/ui.js). */
@@ -1777,6 +1825,9 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 
 /* В обновлённом макете правая колонка опущена под кнопку «Главное меню»:
    плашка с объёмом начинается на 188, лента новостей — на 426. */
+/* Заливку тут приходится назначать заново: старое правило зелёной темы
+   (html.theme-green #panel-summary) снимает фон у всей колонки, а в
+   кадре это цельная тёмная стеклянная панель с радиусом 24. */
 #sec-globe.is-map #panel-summary {
   left: 1326px;
   right: auto;
@@ -1784,13 +1835,23 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   width: 530px;
   height: 234px;
   padding: 32px;
+  background: var(--panel);
+  border: 0;
+  border-radius: 24px;
+  box-shadow: none;
+  -webkit-backdrop-filter: blur(35px);
+  backdrop-filter: blur(35px);
 }
+/* Внутри плашки сводки лежит .sum-main — в зелёной теме это отдельная
+   карточка со своим фоном, рамкой и тенью. В кадре плашка одна: снимаем
+   у неё всё оформление, иначе поверх панели видна вторая рамка. */
 #sec-globe #panel-summary .sum-main {
   height: auto;
   padding: 0;
   background: none;
   border: 0;
   border-radius: 0;
+  box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -1859,16 +1920,13 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   border-radius: 24px;
   z-index: 4;
 }
-/* Полоса прокрутки ленты в кадре стоит снаружи панели: отрицательное
-   поле выносит правый край списка за неё, внутренний отступ возвращает
-   пунктам их ширину (465 px). */
+/* Пункты ленты занимают всю ширину панели за вычетом отступов (465 px);
+   полоса прокрутки лежит поверх правого отступа отдельным элементом. */
 #sec-globe .news-list {
   height: 100%;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-right: -40px;
-  padding-right: 32px;
   overflow-y: auto;
 }
 
@@ -1880,7 +1938,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   padding: 8px;
   border: 0;
   border-radius: 16px;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(246, 246, 246, .1);
 }
 #sec-globe .news-head {
   display: flex;
@@ -1902,7 +1960,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   height: 56px;
   border-radius: 16px;
   border: 0;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(246, 246, 246, .1);
   font-family: inherit;
   font-style: normal;
   font-size: 14px;
@@ -1995,7 +2053,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   height: 48px;
   padding: 0;
   border-radius: 16px;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(246, 246, 246, .1);
   font-family: inherit;
   font-size: 20px;
   font-weight: 400;
@@ -2024,14 +2082,11 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 }
 #sec-globe .year-pill.is-off { opacity: .35; pointer-events: none; }
 
-/* «Главное меню» и кнопка сброса вида: в кадре карты их нет, ставим
-   в свободный просвет между списком стран и панелью годов */
-#sec-globe.is-map #reset-view {
-  left: 590px;
-  top: 960px;
-  right: auto;
-  bottom: auto;
-}
+/* Круглой кнопки сброса вида в кадрах фигмы нет, и на стенде она
+   не нужна: шар сам возвращается в исходное положение по бездействию
+   (аттрактор, src/globe.js) и при уходе со страны. Прячем на всех
+   кадрах раздела. */
+#sec-globe #reset-view { display: none !important; }
 
 /* ======================== кадр «Страна» ========================
    Две панели справа: карточка страны (530 px, сверху) и таблица
@@ -2062,7 +2117,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   padding: 3px 16px 13px;
   border: 0;
   border-radius: 16px;
-  background: rgba(255, 255, 255, .05);
+  background: rgba(246, 246, 246, .1);
   font-family: inherit;
   font-size: 32px;
   font-weight: 400;
@@ -2240,8 +2295,10 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   --orb-ring-soft: rgba(96, 156, 255, .22);
   --orb-glow: rgba(70, 130, 235, .22);
   --ghost-bg: rgba(18, 26, 42, .55);
-  --sb-track: rgba(255, 255, 255, .06);
-  --sb-thumb: rgba(150, 180, 230, .38);
+  /* полосы прокрутки как в кадре: дорожка rgba(100,140,27,.15),
+     бегунок #43744B (те же, что на карте России) */
+  --sb-track: rgba(100, 140, 27, .15);
+  --sb-thumb: #43744B;
 
   /* Фон раздела — снимок космоса от заказчика: тёмно-синяя туманность
      с мелкими звёздами (assets/textures/bg_space.webp, 1920x1080, сжат
@@ -2260,6 +2317,37 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 
 /* Зерно и мягкие пятна с канваса тут не нужны: звёзды уже есть на снимке. */
 #sec-globe.theme-navy #stars { display: none; }
+
+/* ---------------------------- рамка кадра ----------------------------
+   В кадрах фигмы интерфейс лежит на прямоугольнике 1888x1048 с отступом
+   16 px от краёв и радиусом 32 — так же сделаны презентация и карта
+   России. Панели раздела в макете стоят в координатах кадра 1920x1080,
+   поэтому рамку делаем «паспарту»: холст шара, космос и виньетку режем
+   по скруглению, а раскладку панелей не трогаем.
+
+   Фон-космос переезжает с обёртки раздела на #card: обёртка становится
+   полем рамки (#141d23), #card — самой сценой. Размер тот же 1920x1080,
+   картинка встаёт как стояла. */
+
+#sec-globe.theme-navy {
+  background-color: #141d23;
+  background-image: none;
+}
+#sec-globe.theme-navy #card {
+  background-color: #05070C;
+  background-image:
+    radial-gradient(120% 90% at 50% 45%,
+      rgba(0, 0, 0, 0) 45%, rgba(2, 4, 9, .35) 80%, rgba(2, 4, 9, .70) 100%),
+    url(../assets/textures/bg_space.webp);
+  background-repeat: no-repeat, no-repeat;
+  background-size: auto, cover;
+  background-position: center, center;
+  clip-path: inset(16px round 32px);
+}
+
+/* Панели раздела — светлое стекло 10 %, как в кадрах и на карте России
+   (в старом прототипе тут была глухая тёмно-синяя заливка). */
+#sec-globe.theme-navy { --panel: rgba(246, 246, 246, .1); }
 
 /* На тёмном фоне мягкая тень зелёной темы под буквами не нужна. */
 #sec-globe.theme-navy .country-row .nm,

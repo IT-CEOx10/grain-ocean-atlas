@@ -422,10 +422,10 @@ body.mon-screen { background: #141d23; }
   line-height: 1.3;
   color: var(--mn-text);
 }
-/* В кадре видны ровно четыре строки (4 x 48 + 3 x 4 = 204), ниже пусто,
-   а полоса прокрутки стоит СНАРУЖИ панели — в 4 px справа от неё.
-   Отрицательное поле выносит правый край списка за панель, внутренний
-   отступ возвращает строки на их ширину (465 px). */
+/* Список строк. Полосу прокрутки рисуем сами (нативную Chrome на стенде
+   показывает по-своему, а в macOS её вовсе не видно): в кадре это
+   дорожка 8x334 с радиусом 30 в 22 px от правого края панели, бегунок
+   #43744b. Ширина строки в кадре — 411 (475 − 2x32). */
 #sec-monitoring .mn-top-list {
   flex: 1;
   min-height: 0;
@@ -434,21 +434,28 @@ body.mon-screen { background: #141d23; }
   gap: 4px;
   overflow-y: auto;
   overflow-x: hidden;
-  margin-right: -44px;
-  padding-right: 37px;
-  /* scrollbar-width здесь не ставим: в Chrome это свойство перебивает
-     ::-webkit-scrollbar, и вместо полосы из кадра получается системная,
-     на macOS — вовсе невидимая */
+  scrollbar-width: none;
 }
-#sec-monitoring .mn-top-list::-webkit-scrollbar { width: 8px; }
-#sec-monitoring .mn-top-list::-webkit-scrollbar-track {
+#sec-monitoring .mn-top-list::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
+#sec-monitoring .mn-sb {
+  position: absolute;
+  right: 22px;
+  top: 90px;
+  bottom: 32px;
+  width: 8px;
+  border-radius: 30px;
   background: var(--mn-scroll-track);
-  border-radius: 30px;
+  pointer-events: none;
 }
-#sec-monitoring .mn-top-list::-webkit-scrollbar-thumb {
+#sec-monitoring .mn-sb > i {
+  position: absolute;
+  left: 0;
+  width: 8px;
+  border-radius: 30px;
   background: var(--mn-scroll-thumb);
-  border-radius: 30px;
 }
+#sec-monitoring .mn-sb.is-off { display: none; }
 
 #sec-monitoring .t-row {
   flex: none;

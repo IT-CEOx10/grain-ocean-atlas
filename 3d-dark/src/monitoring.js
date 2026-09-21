@@ -88,14 +88,11 @@
   var PRES_PICK = [230, 180, 47];
   var LAB_DOT = '#F6E3BB';
 
-  /* Метки-цифры вокруг цилиндра на экране региона: кружок и подпись
-     над ним, координаты из кадра 24-region. Первая переключает вид
-     пшеницы, остальные подсвечивают панель, о которой говорят. */
-  var MARKS = [
-    { n: 1, label: 'Культура', x: 614, y: 302, lx: 642, ly: 266, lw: 136, act: 'kind' },
-    { n: 2, label: 'Объём', x: 516, y: 572, lx: 544, ly: 534, lw: 136, act: 'vol' },
-    { n: 3, label: 'Классы', x: 1180, y: 584, lx: 1208, ly: 548, lw: 100, act: 'cls' }
-  ];
+  /* Меток-цифр вокруг цилиндра («Культура», «Объём», «Классы») в новом
+     кадре 24-region нет — список пуст, и вокруг зерна ничего не рисуется.
+     Вид пшеницы переключается на карте (точки на плашке «Всего по
+     России») и параметром адреса kind. */
+  var MARKS = [];
 
   var KINDS = [
     { key: 'soft', label: 'Мягкая пшеница' },
@@ -644,6 +641,7 @@
     box.textContent = '';
     if (!arr.length) {
       box.appendChild(el('div', 't-empty', 'Ничего не нашлось. Проверьте название региона.'));
+      syncTopBar();
       return;
     }
     var top = volume(arr[0].id) || 1;
@@ -674,6 +672,26 @@
     setTimeout(function () {
       bars.forEach(function (b) { b[0].style.width = (b[1] > 0 ? Math.max(3, b[1] * 100) : 0) + '%'; });
     }, 30);
+    syncTopBar();
+  }
+
+  /* Своя полоса прокрутки «Топ-10»: нативную браузер на стенде рисует
+     по-своему, а в кадре это тонкая зелёная линия у правого края панели
+     (место и цвета — в styles/monitoring.css). Полоса ничего не ловит,
+     список листается пальцем и колесом. */
+  function syncTopBar() {
+    var box = $('top-body'), bar = $('top-sb');
+    if (!box || !bar) return;
+    var thumb = bar.firstElementChild;
+    var h = box.clientHeight, all = box.scrollHeight;
+    if (!h || all <= h + 1) { bar.classList.add('is-off'); return; }
+    bar.classList.remove('is-off');
+    var track = bar.clientHeight;
+    var th = Math.max(40, Math.round(track * h / all));
+    var max = all - h;
+    var y = max > 0 ? Math.round((track - th) * (box.scrollTop / max)) : 0;
+    thumb.style.height = th + 'px';
+    thumb.style.top = y + 'px';
   }
 
   function setHover(id) {
@@ -1140,6 +1158,8 @@
       if (q.q) { setQuery(q.q); $('search').value = q.q; }
       drawTop();
       bindMap();
+
+      $('top-body').addEventListener('scroll', syncTopBar, { passive: true });
 
       $('search').addEventListener('input', function () {
         resetIdle();
