@@ -1753,6 +1753,15 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   border-radius: 16px;
   background: rgba(246, 246, 246, .1);
 }
+/* Строки списка «остальные страны» в синей теме — то же тёмное стекло
+   с размытием, что у панелей: иначе сквозь них видны шар и дуги.
+   content-visibility не даёт браузеру считать размытие у строк за краем списка. */
+#sec-globe.theme-navy #country-list .country-row {
+  -webkit-backdrop-filter: blur(25px) saturate(.7) brightness(.35);
+  backdrop-filter: blur(25px) saturate(.7) brightness(.35);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 44px;
+}
 #sec-globe .country-row .nm {
   /* у Inter линия прописных ниже, чем у макетного Akkurat: без сдвига
      название страны стоит в плашке на 3 px ниже, чем в кадре */

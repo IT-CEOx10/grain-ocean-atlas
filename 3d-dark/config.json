@@ -60,7 +60,7 @@
         "halo": "#2F86FF",
         "edge": "#6FB8FF",
         "edgeCore": "#EAF4FF",
-        "border": "rgba(150,180,230,.22)",
+        "border": "rgba(236,242,252,.62)",
         "highlight": "rgba(255,199,110,.75)",
         "highlightFill": "rgba(242,184,75,.08)",
         "stars": "180,205,245",
