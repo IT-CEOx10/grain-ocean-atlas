@@ -1048,11 +1048,19 @@
         : { label: s.next.label, action: 'feedNext' }, 'sc-btn');
     },
 
-    /* --- экран 19: карточка выбранного продукта --- */
+    /* --- экран 19: карточка выбранного продукта ---
+       У продукта может быть своё пояснение (C.productAbout); если его
+       нет — показываем общий текст с кадра. */
     productCard: function () {
       var p = find(C.products, selKey());
+      var a = C.productAbout[p.key] || C.productText;
       return panelEl({ title: 'Выбран продукт · ' + p.name.toLowerCase(),
-        text: C.productText.lead });
+        text: a.lead });
+    },
+    productCheck: function () {
+      var p = find(C.products, selKey());
+      var a = C.productAbout[p.key] || C.productText;
+      return panelEl({ title: 'Что проверяют', sub: a.check });
     },
 
     /* --- экран 21: требования выбранной страны --- */
@@ -1166,6 +1174,9 @@
       b.type = 'button';
       b.style.left = m.x + 'px';
       b.style.top = m.y + 'px';
+      /* длинные подписи в кадре стоят в чипе заданной ширины и
+         переносятся на вторую строку (кадр 19: «Кондитерские изделия») */
+      if (m.w) { b.style.width = m.w + 'px'; b.classList.add('is-wrap'); }
       if (m.n) b.appendChild(el('span', 'sc-marker-n', String(m.n)));
       b.appendChild(el('span', 'sc-marker-t', m.label));
       b.addEventListener('click', function () {

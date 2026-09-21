@@ -1,0 +1,127 @@
+const imgChatGptImage1520261535311 = "http://localhost:3845/assets/b6c9de4d9e7eb388f9171268d6b39eeeff16844d.png";
+const imgChatGptImage1520261535312 = "http://localhost:3845/assets/3a38367960cb0d9d7d8631213bd090b53e528260.png";
+type GrainGrainClassBreakdownRowProps = {
+  className?: string;
+  propValue?: string;
+  propValue1?: string;
+  propValue2?: string;
+};
+
+function GrainGrainClassBreakdownRow({ className, propValue = "Класс 2", propValue1 = "4,80 тыс. т", propValue2 = "5 %" }: GrainGrainClassBreakdownRowProps) {
+  return (
+    <div className={className || "[word-break:break-word] content-stretch flex gap-[var(--grain-space-16,16px)] h-[88px] items-center justify-between not-italic relative w-[480px] whitespace-nowrap"} data-node-id="441:1012" data-name="Grain/GrainClassBreakdown/Row">
+      <div className="content-stretch flex flex-col gap-[var(--grain-space-4,4px)] items-start overflow-clip relative shrink-0 w-[300px]" data-node-id="441:1013" data-name="Класс и объём">
+        <p className="font-['Inter:Regular'] font-normal leading-[28.8px] relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)]" data-node-id="441:1014">
+          {propValue}
+        </p>
+        <p className="font-['Inter:Light'] font-light leading-[28px] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))]" data-node-id="441:1015">
+          {propValue1}
+        </p>
+      </div>
+      <p className="font-['Inter:Light'] font-light leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)]" data-node-id="441:1016">
+        {propValue2}
+      </p>
+    </div>
+  );
+}
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="502:2432" data-name="23 · Северная Осетия — Алания">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="502:2433" data-name="01 · Макрозерно · единое пространство">
+        <div aria-hidden className="absolute bg-[#0c1813] inset-0 pointer-events-none rounded-[32px]" />
+        <div className="absolute h-[1099px] left-[-18px] top-[-12px] w-[1924px]" data-node-id="502:2434" data-name="ChatGPT Image 15 сент. 2026 г., 15_35_31 1">
+          <div aria-hidden className="absolute inset-0 pointer-events-none">
+            <img alt="" className="absolute max-w-none object-bottom size-full" src={imgChatGptImage1520261535311} />
+            <div className="absolute inset-0 overflow-hidden">
+              <img alt="" className="absolute h-[99.85%] left-[0.01%] max-w-none top-[0.09%] w-[99.97%]" src={imgChatGptImage1520261535312} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_250px_0px_#172d31]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[30px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[64px] w-[1400px]" data-node-id="502:2435">
+        ГОСМОНИТОРИНГ ПШЕНИЦЫ · 2026
+      </p>
+      <p className="[word-break:break-word] absolute font-['Inter:Regular'] font-normal leading-[48px] left-[64px] not-italic text-[42px] text-[color:var(--grain-color-accent,#ddc195)] top-[110px] uppercase w-[1450px]" data-node-id="502:2436">
+        Республика СЕВЕРНАЯ ОСЕТИЯ — АЛАНИЯ
+      </p>
+      <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1556px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[64px] w-[300px]" data-node-id="502:2437" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2437;164:647">
+          Главное меню
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+      </div>
+      <div className="absolute backdrop-blur-[35px] content-stretch flex flex-col items-start left-[64px] overflow-clip rounded-[36px] top-[310px]" data-node-id="502:2438" data-name="Объёмы · демонстрационные">
+        <div className="relative shrink-0" data-node-id="502:2439">
+          <div className="[word-break:break-word] bg-clip-padding border-0 border-[transparent] border-solid content-stretch flex flex-col gap-[4px] items-start not-italic relative size-full">
+            <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] h-[211px] items-start p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-[400px]" data-node-id="502:2440" data-name="Grain/Metric">
+              <p className="font-['Inter:Light'] font-light leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2440;168:641">
+                Валовой сбор
+              </p>
+              <div className="content-stretch flex gap-[12px] items-baseline overflow-clip relative shrink-0 text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2440;182:666" data-name="Число и единица">
+                <p className="font-['Inter:Regular'] font-normal leading-[48px] relative shrink-0 text-[42px]" data-node-id="I502:2440;168:642">
+                  120,0
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[28px] relative shrink-0 text-[20px]" data-node-id="I502:2440;182:667">
+                  тыс. т
+                </p>
+              </div>
+              <p className="font-['Inter:Light'] font-light leading-[28px] min-w-full relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="I502:2440;168:643">
+                Урожай 2026 · демоданные
+              </p>
+            </div>
+            <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] h-[211px] items-start p-[var(--grain-space-32,32px)] relative rounded-[24px] shrink-0 w-[400px]" data-node-id="502:2441" data-name="Grain/Metric">
+              <p className="font-['Inter:Light'] font-light leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2441;168:641">
+                Обследовано зерна
+              </p>
+              <div className="content-stretch flex gap-[12px] items-baseline overflow-clip relative shrink-0 text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2441;182:666" data-name="Число и единица">
+                <p className="font-['Inter:Regular'] font-normal leading-[48px] relative shrink-0 text-[42px]" data-node-id="I502:2441;168:642">
+                  96,0
+                </p>
+                <p className="font-['Inter:Light'] font-light leading-[28px] relative shrink-0 text-[20px]" data-node-id="I502:2441;182:667">
+                  тыс. т
+                </p>
+              </div>
+              <p className="font-['Inter:Light'] font-light leading-[28px] min-w-full relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[min-content]" data-node-id="I502:2441;168:643">
+                80 % валового сбора · демо
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="[word-break:break-word] absolute font-['Inter:Light'] font-light h-[32px] leading-[28px] left-[64px] not-italic text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] top-[174px] w-[960px] whitespace-pre-wrap" data-node-id="502:2442">{`Мягкая пшеница  ·  Демонстрационные данные`}</p>
+      <div className="[word-break:break-word] absolute backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] h-[548px] items-start left-[1280px] not-italic overflow-clip p-[var(--grain-space-32,32px)] rounded-[24px] top-[270px] w-[576px]" data-node-id="502:2443" data-name="Классы зерна · распределение обследованного объёма">
+        <p className="font-['Inter:Light'] font-light h-[40px] leading-[38.4px] relative shrink-0 text-[32px] text-[color:var(--grain-color-text,white)] w-[512px]" data-node-id="502:2444">
+          Классы зерна
+        </p>
+        <div className="font-['Inter:Light'] font-light h-[40px] leading-[0] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[512px]" data-node-id="502:2445">
+          <p className="leading-[28px] mb-0">Доля от обследованного объёма</p>
+          <p className="leading-[28px]">96,0 тыс. т · демоданные</p>
+        </div>
+        <div className="content-stretch flex flex-col gap-[var(--grain-space-4,4px)] items-start overflow-clip relative shrink-0 w-[512px] whitespace-nowrap" data-node-id="502:2446" data-name="Разбивка по классам · не рейтинг">
+          <GrainGrainClassBreakdownRow className="content-stretch flex gap-[var(--grain-space-16,16px)] h-[76px] items-center justify-between relative shrink-0 w-[512px]" />
+          <GrainGrainClassBreakdownRow className="content-stretch flex gap-[var(--grain-space-16,16px)] h-[76px] items-center justify-between relative shrink-0 w-[512px]" propValue="Класс 3" propValue1="52,80 тыс. т" propValue2="55 %" />
+          <GrainGrainClassBreakdownRow className="content-stretch flex gap-[var(--grain-space-16,16px)] h-[76px] items-center justify-between relative shrink-0 w-[512px]" propValue="Класс 4" propValue1="28,80 тыс. т" propValue2="30 %" />
+          <GrainGrainClassBreakdownRow className="content-stretch flex gap-[var(--grain-space-16,16px)] h-[76px] items-center justify-between relative shrink-0 w-[512px]" propValue="Класс 5" propValue1="9,60 тыс. т" propValue2="10 %" />
+        </div>
+        <p className="font-['Inter:Light'] font-light h-[40px] leading-[28px] relative shrink-0 text-[20px] text-[color:var(--grain-color-muted,rgba(255,255,255,0.7))] w-[512px]" data-node-id="502:2451">
+          Значения для показа структуры
+        </p>
+      </div>
+      <div className="absolute content-stretch flex gap-[var(--grain-space-0,0px)] h-[78px] items-start justify-between left-[64px] p-[var(--grain-space-0,0px)] top-[938px] w-[1792px]" data-node-id="502:2452" data-name="Grain/RouteNavigation">
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-[78px] items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="I502:2452;396:693" data-name="PreviousSlot">
+          <div className="content-stretch flex gap-[16px] h-[78px] items-center justify-center p-[24px] relative rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px] shrink-0 w-[480px]" data-node-id="I502:2452;396:694" data-name="Previous">
+            <div aria-hidden className="absolute bg-[rgba(246,246,246,0.01)] inset-0 pointer-events-none rounded-bl-[var(--grain-radius-32,32px)] rounded-br-[32px] rounded-tl-[32px] rounded-tr-[32px]" />
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:2452;396:694;164:647">
+              ← К карте России
+            </p>
+            <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+          </div>
+        </div>
+        <div className="content-stretch flex gap-[var(--grain-space-0,0px)] h-[78px] items-start overflow-clip p-[var(--grain-space-0,0px)] relative shrink-0 w-[480px]" data-node-id="I502:2452;396:701" data-name="NextSlot" />
+      </div>
+    </div>
+  );
+}

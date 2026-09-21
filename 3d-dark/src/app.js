@@ -295,6 +295,7 @@
       setYear(start, true);
       renderIntro();
       UI.setState('intro');
+      if (!live) UI.pauseVideos();     // раздел готовился в фоне — не крутим
       UI.hideLoading();
       U.revealPage();
       resetIdle();
@@ -346,14 +347,27 @@
 
   /**
    * Выбор темы: поле `theme` в config.json, поверх — параметр ?theme=green.
-   * Тема добавляет классу <html> имя `theme-<ключ>` (по нему работает CSS)
-   * и подменяет CFG.colors и часть CFG.globe, откуда их берёт globe.js.
+   * Тема подменяет CFG.colors и часть CFG.globe (их берёт globe.js) и
+   * ставит класс `theme-<ключ>`, по которому работает CSS.
+   *
+   * Отдельная страница index.html красится целиком: класс уходит на
+   * <html>. В едином приложении app.html рядом лежат презентация и
+   * мониторинг — они зелёные, поэтому класс зелёной темы остаётся на
+   * <html>, а раздел глобуса получает свой класс на обёртку #sec-globe.
+   * Какая тема у раздела в app.html — поле `appGlobeTheme` в config.json
+   * (сейчас navy; «green» одной строкой возвращает зелёный раздел).
    * Темы описаны в config.json в блоке `themes`, см. README, раздел «Темы».
    */
+  function themeScope() {
+    return global.Shell ? (ROOT || document.documentElement) : document.documentElement;
+  }
+
   function applyTheme() {
     var themes = CFG.themes || {};
-    var want = U.query('globe').theme || CFG.theme;
-    var name = themes[want] ? want : (themes[CFG.theme] ? CFG.theme : Object.keys(themes)[0]);
+    var inShell = !!global.Shell;
+    var base = inShell ? (CFG.appGlobeTheme || CFG.theme) : CFG.theme;
+    var want = U.query('globe').theme || base;
+    var name = themes[want] ? want : (themes[base] ? base : Object.keys(themes)[0]);
     if (!name) return;                 // конфиг без тем — всё как в CSS по умолчанию
 
     THEME = name;
@@ -363,12 +377,18 @@
     if (th.globe) {
       Object.keys(th.globe).forEach(function (k) { CFG.globe[k] = th.globe[k]; });
     }
-    document.documentElement.classList.add('theme-' + name);
+    if (inShell) {
+      // на <html> — зелёная тема соседних разделов, на обёртке — своя
+      document.documentElement.classList.add('theme-green');
+      themeScope().classList.add('theme-' + name);
+    } else {
+      document.documentElement.classList.add('theme-' + name);
+    }
   }
 
   function applyColors(c) {
     if (!c) return;
-    var root = document.documentElement.style;
+    var root = themeScope().style;
     if (c.pageBg) root.setProperty('--page-bg', c.pageBg);
     if (c.cardBg) root.setProperty('--card-bg', c.cardBg);
     if (c.panelBg) root.setProperty('--panel', c.panelBg);
@@ -397,11 +417,14 @@
         // исключение — кадр, заданный адресом при запуске (для снимков)
         if (urlState) { urlState = false; }
         else if (state !== 'intro') goIntro();
+        // уже были на входном кадре: ролики шаров заводим сначала
+        else UI.setState('intro');
         if (state === 'map') flashHint();
       },
       hide: function () {
         live = false;
         Globe.stop();
+        UI.pauseVideos();               // ролики шаров не крутятся вхолостую
       },
       reset: function () {
         if (!DATA) return;

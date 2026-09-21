@@ -9,14 +9,14 @@
   "shipVideo": "assets/video/ship.mp4",
   "_globeVideo": "Глобусы раздела «Маршруты экспорта» станут видеороликами. Положите файл в assets/video/ и впишите путь: ролик заменит заглушку, код править не нужно. intro2016 и intro2025 — два круглых глобуса на входном кадре, main — общий ролик под кадрами «Карта» и «Страна» (пока путь пустой, там работает живая сцена three.js).",
   "globeVideo": {
-    "intro2016": "",
-    "intro2025": "",
+    "intro2016": "assets/video/globe-2016.mp4",
+    "intro2025": "assets/video/globe-2025.mp4",
     "main": ""
   },
-  "_globeVideoPoster": "Первый кадр ролика. Пока ролика нет, постер виден сам по себе — сейчас это снимки нашего же глобуса за нужный год (assets/globe).",
+  "_globeVideoPoster": "Картинка, которая видна, пока ролик не начал играть. Сейчас это кадр из самого ролика — шар уже в дугах, чтобы до старта видео он не выглядел пустым.",
   "globeVideoPoster": {
-    "intro2016": "assets/globe/intro-2016.webp",
-    "intro2025": "assets/globe/intro-2025.webp",
+    "intro2016": "assets/globe/globe-2016.webp",
+    "intro2025": "assets/globe/globe-2025.webp",
     "main": ""
   },
   "_intro": "Входной кадр: два года, за которые показаны глобусы и цифры. Цифры считаются по нашим данным (data/export.json). Оба года в данных есть, поэтому блок demo пуст; он остаётся запасным вариантом — если год из данных пропадёт, цифры возьмутся оттуда и появится служебная пометка.",
@@ -34,9 +34,11 @@
     "2026": "на 30.06.2026"
   },
   "theme": "navy",
+  "_appGlobeTheme": "Тема раздела «Маршруты экспорта» в едином приложении app.html. По решению заказчика раздел синий (navy), презентация и мониторинг остаются зелёными. Чтобы вернуть зелёный раздел, поставьте \"green\". Поле `theme` выше — тема отдельной страницы index.html.",
+  "appGlobeTheme": "navy",
   "themes": {
     "navy": {
-      "title": "Синяя (ночная Земля)",
+      "title": "Синяя (тот же шар, что в зелёной, в синих цветах)",
       "colors": {
         "pageBg": "#05070C",
         "cardBg": "#070B14",
@@ -46,19 +48,40 @@
         "textMuted": "#8E98AC",
         "route": "#F2B84B",
         "routeActive": "#FFD37A",
-        "land": "#E3EAF7",
-        "ocean": "#0B1220",
-        "cityLights": "#FFE9CC",
-        "sunLight": "#9FC0FF",
-        "atmosphere": "#3D7BFF",
-        "halo": "#2E61E6",
+        "land": "#F7FAFF",
+        "ocean": "#122A4A",
+        "cityLights": "#FFDFAE",
+        "sunLight": "#CFE2FF",
+        "atmosphere": "#5FB0FF",
+        "halo": "#2F86FF",
+        "edge": "#6FB8FF",
+        "edgeCore": "#EAF4FF",
         "border": "rgba(150,180,230,.22)",
         "highlight": "rgba(255,199,110,.75)",
         "highlightFill": "rgba(242,184,75,.08)",
-        "stars": "190,208,240",
-        "starGlow": "180,205,255"
+        "stars": "180,205,245",
+        "starGlow": "130,175,255"
       },
-      "globe": {}
+      "_globe": "Всё как в зелёной теме — тот же шар, те же свет, кромка, дуги, границы и положение. Синяя тема отличается только палитрой (блок colors выше) и своими текстурами earth_land_*_blue.jpg.",
+      "globe": {
+        "lightScale": 1.20,
+        "lightsIntensity": 1.85,
+        "rimStrength": 0,
+        "haloStrength": 0,
+        "edgeStrength": 6.50,
+        "edgePower": 24.0,
+        "edgeRadius": 1.002,
+        "edgeBias": 0.06,
+        "edgeSoftness": 6.0,
+        "arcStart": 0.07,
+        "arcStartLen": 0.18,
+        "arcWidth": 0.75,
+        "borderWidth": 0.75,
+        "borderOpacity": 0.85,
+        "defaultZoom": 3.85,
+        "homeX": 0.466,
+        "homeY": 0.5
+      }
     },
     "green": {
       "title": "Зелёная (изумруд и золото)",

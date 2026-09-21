@@ -215,48 +215,49 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-title {
   position: absolute;
   z-index: 6;
-  left: 65px;
-  top: 57px;
+  left: 48px;
+  top: 48px;
   margin: 0;
-  font-size: 64px;
+  font-size: 42px;
   font-weight: 400;
-  /* в кадре шаг строк 65 px, а не «нормальный» интерлиньяж шрифта */
-  line-height: 65px;
+  line-height: 48px;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--mn-gold);
   white-space: pre-line;
 }
 
-#sec-monitoring .map-tabs { left: 62px; top: 207px; width: 1040px; }
+#sec-monitoring .map-tabs { left: 48px; top: 175px; width: 680px; }
 
-/* поиск: пилюля со значком и золотой кнопкой «Искать» */
+/* поиск: одно поле «Поиск по регионам» слева от «Главного меню» */
 #sec-monitoring .mn-search {
   position: absolute;
   z-index: 6;
-  left: 1153px;
-  top: 63px;
+  left: 833px;
+  top: 48px;
   display: flex;
   align-items: center;
+  gap: 16px;
   width: 691px;
-  height: 88px;
-  padding: 0 8px 0 16px;
-  border-radius: 999px;
-  background: var(--mn-btn-map);
-  -webkit-backdrop-filter: var(--mn-blur);
-  backdrop-filter: var(--mn-blur);
+  height: 108px;
+  padding: 0 24px;
+  box-sizing: border-box;
+  border-radius: 32px;
+  background: rgba(15, 40, 28, .2);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--mn-btn-line);
 }
 #sec-monitoring .mn-search-ico {
   flex: none;
   width: 48px;
   height: 48px;
-  margin-right: 16px;
   fill: #fff;
 }
 #sec-monitoring .mn-search input {
   flex: 1;
   min-width: 0;
-  height: 64px;
+  height: 48px;
   border: 0;
   outline: none;
   background: none;
@@ -268,123 +269,149 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-search input::placeholder { color: rgba(255, 255, 255, .4); }
 #sec-monitoring .mn-search input::-webkit-search-cancel-button { display: none; }
 
-#sec-monitoring .mn-search-btn {
-  flex: none;
-  width: 166px;
-  height: 78px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--mn-gold);
-  color: rgba(0, 0, 0, .8);
-  font-family: inherit;
+/* «Главное меню» справа сверху — та же кнопка 300x108, что на глобусе.
+   Селектор с двумя id: в styles/app.css у #home-btn своя раскладка
+   для зелёной темы (слева внизу), и она перебивает класс. */
+#sec-monitoring #home-btn.mn-home {
+  left: 1540px;
+  right: auto;
+  top: 48px;
+  bottom: auto;
+  width: 300px;
+  height: 108px;
+  padding: 0;
+  border-radius: 32px;
+  background: rgba(15, 40, 28, .2);
   font-size: 24px;
   font-weight: 300;
-  cursor: pointer;
 }
-#sec-monitoring .mn-search-btn:active { background: #c9ab7e; }
 
-#sec-monitoring .mn-globe {
+/* Лента годов под картой: оформление повторяет ленту глобуса —
+   чип 48 px высотой, точка под ним и тонкая линия через всю панель. */
+#sec-monitoring .mn-timeline {
   position: absolute;
-  z-index: 6;
-  left: 1060px;
-  top: 63px;
-  width: 89px;
-  height: 87px;
-}
-
-/* «Главное меню» и годы: в кадре карты их нет. Обе ставим в свободную
-   строку под поиском, правее табов, — композицию кадра это не трогает. */
-/* селектор с двумя id: в styles/app.css у #home-btn своя раскладка
-   для зелёной темы (слева внизу), и она перебивает класс */
-#sec-monitoring #home-btn.mn-home {
-  left: auto;
-  right: 44px;
-  top: 207px;
-  bottom: auto;
-  width: 232px;
-  height: 64px;
-  padding: 0;
-  border-radius: 16px;
-  background: var(--mn-btn-ghost);
-  font-size: 20px;
-  font-weight: 300;
-}
-
-#sec-monitoring .mn-years {
-  position: absolute;
-  z-index: 6;
-  left: 1116px;
-  top: 207px;
-  display: flex;
-  gap: 4px;
-  height: 64px;
-  padding: 4px;
-  border-radius: 16px;
-  background: var(--mn-tabs-bg);
+  z-index: 5;
+  left: 555px;
+  top: 876px;
+  width: 1170px;
+  height: 124px;
+  padding: 32px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background: var(--mn-panel);
   -webkit-backdrop-filter: var(--mn-blur);
   backdrop-filter: var(--mn-blur);
 }
+#sec-monitoring .mn-timeline::before {
+  content: "";
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 95px;
+  height: 1px;
+  background: rgba(255, 255, 255, .18);
+}
+#sec-monitoring .mn-years { display: flex; align-items: flex-start; gap: 4px; }
 #sec-monitoring .mn-year {
-  width: 64px;
-  height: 56px;
+  position: relative;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   border: 0;
-  border-radius: 16px;
+  padding: 0;
   background: none;
-  color: var(--mn-text);
+  cursor: pointer;
+}
+#sec-monitoring .mn-year .yr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;          /* 12 чипов и 11 зазоров по 4 — ровно 1106 px */
+  height: 48px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, .05);
   font-family: inherit;
   font-size: 20px;
-  font-weight: 300;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--mn-text);
   font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  transition: background .18s ease;
 }
-#sec-monitoring .mn-year.is-on { background: var(--mn-panel); }
+#sec-monitoring .mn-year .dot {
+  position: absolute;
+  top: 58px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .28);
+}
+#sec-monitoring .mn-year.is-on .yr { background: var(--mn-bar-fill); color: #10231F; }
+#sec-monitoring .mn-year.is-on .dot {
+  background: var(--mn-gold);
+  box-shadow: 0 0 12px rgba(242, 184, 75, .9);
+}
+/* год, которого нет в данных, не нажимается */
+#sec-monitoring .mn-year.is-off { opacity: .35; pointer-events: none; }
 
-/* левая колонка: сводка, две плитки, топ-10 */
+/* левая колонка: сводка с листалкой, доля ГОСТ, топ-10 */
 
 #sec-monitoring .mn-col {
   position: absolute;
   z-index: 5;
-  left: 62px;
-  top: 290px;
+  left: 48px;
+  top: 255px;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 530px;
-  height: 711px;
+  width: 463px;
+  height: 745px;
 }
-#sec-monitoring .mn-col .mn-panel { position: relative; }
+#sec-monitoring .mn-col .mn-panel {
+  position: relative;
+  width: 463px;
+  box-sizing: border-box;
+}
 
 #sec-monitoring .mn-total {
   display: flex;
   flex-direction: column;
   gap: 26px;
-  height: 234px;
+  height: 216px;
+  touch-action: pan-y;
 }
+#sec-monitoring .mn-gost { height: 148px; }
 
 /* Кадр нарисован в Akkurat, у нас Inter: у него выше линия прописных,
    и строка внутри своей высоты стоит ниже. Эти сдвиги возвращают
    заголовок, число и подпись ровно на места из кадра. */
 #sec-monitoring .mn-total .mn-cap,
 #sec-monitoring .mn-total .mn-num { margin-top: -4px; }
-#sec-monitoring .mn-tile .mn-num { margin-top: -8px; }
+#sec-monitoring .mn-gost .mn-num { margin-top: -8px; }
 
-#sec-monitoring .mn-tiles { display: flex; gap: 4px; }
-#sec-monitoring .mn-tile {
-  flex: none;
-  width: 263px;
-  height: 158px;
-  padding: var(--mn-pad);
-  border-radius: var(--mn-r);
-  background: var(--mn-panel);
-  -webkit-backdrop-filter: var(--mn-blur);
-  backdrop-filter: var(--mn-blur);
-  box-sizing: border-box;
+/* листалка: две точки справа сверху, переключают вид пшеницы */
+#sec-monitoring .mn-dots {
+  position: absolute;
+  left: 391px;
+  top: 32px;
+  display: flex;
+  gap: 12px;
 }
+#sec-monitoring .mn-dots button {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .3);
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .mn-dots button.is-on { background: #fff; }
 
 #sec-monitoring .mn-top {
-  flex: 1;
-  min-height: 0;
+  flex: none;
+  height: 373px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -400,8 +427,8 @@ body.mon-screen { background: #141d23; }
    Отрицательное поле выносит правый край списка за панель, внутренний
    отступ возвращает строки на их ширину (465 px). */
 #sec-monitoring .mn-top-list {
-  flex: none;
-  height: 204px;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -507,8 +534,8 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-legend {
   position: absolute;
   z-index: 5;
-  left: 641px;
-  top: 893px;
+  left: 563px;
+  top: 752px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -538,7 +565,7 @@ body.mon-screen { background: #141d23; }
   position: absolute;
   z-index: 5;
   left: 1180px;
-  top: 974px;
+  top: 837px;
   font-size: 24px;
   font-weight: 400;
   line-height: 1.2;
@@ -623,8 +650,8 @@ body.mon-screen { background: #141d23; }
 /* кнопки масштаба справа снизу */
 #sec-monitoring #map-tools {
   position: absolute;
-  right: 61px;
-  bottom: 45px;
+  right: 48px;
+  bottom: 48px;
   z-index: 6;
   display: flex;
   flex-direction: column;
@@ -766,7 +793,9 @@ body.mon-screen { background: #141d23; }
   left: 1264px;
   top: 254px;
   width: 576px;
-  height: 548px;
+  /* в кадре панель на 548 px и четыре класса; у заказчика классов
+     бывает пять, поэтому панель выше, а список при нужде прокручивается */
+  height: 620px;
   display: flex;
   flex-direction: column;
   gap: 26px;
@@ -787,9 +816,13 @@ body.mon-screen { background: #141d23; }
   white-space: pre-line;
 }
 #sec-monitoring .mn-cls-list {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 #sec-monitoring .c-row {
   flex: none;
@@ -797,7 +830,7 @@ body.mon-screen { background: #141d23; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  height: 76px;
+  height: 64px;
 }
 #sec-monitoring .c-name {
   display: flex;
@@ -829,6 +862,37 @@ body.mon-screen { background: #141d23; }
   font-weight: 300;
   line-height: 28px;
   color: var(--mn-muted);
+}
+
+/* спец. характеристики зерна: третья панель левой колонки */
+#sec-monitoring .mn-spec {
+  height: auto !important;
+  min-height: 0;
+  padding: 16px 32px;
+}
+#sec-monitoring .mn-spec:empty,
+#sec-monitoring .mn-spec > div:empty { display: none; }
+#sec-monitoring .s-head {
+  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--mn-muted);
+}
+#sec-monitoring .s-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 18px;
+  font-weight: 300;
+  line-height: 24px;
+  color: var(--mn-text);
+}
+#sec-monitoring .s-row b {
+  font-weight: 400;
+  color: var(--mn-gold);
+  font-variant-numeric: tabular-nums;
 }
 
 /* метки-цифры вокруг цилиндра: кружок и подпись над ним */

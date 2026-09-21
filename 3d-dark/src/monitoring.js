@@ -26,8 +26,10 @@
      data/monitoring.json            цифры мониторинга (tools/make_monitoring.py)
      data/presence.json              филиалы и лаборатории ЦОК АПК
 
-   ЦИФРЫ ДЕМОНСТРАЦИОННЫЕ. Об этом написано внизу экранов, и это
-   не должно потеряться при правках.
+   ЦИФРЫ НАСТОЯЩИЕ: data/monitoring.json собирается из таблиц заказчика
+   (tools/make_monitoring.py, исходники в data/monitoring-src). Где
+   в таблице пусто — на экране пишется «нет данных», ничего не
+   достраиваем.
    =================================================================== */
 (function (global) {
   'use strict';
@@ -51,7 +53,7 @@
      присутствия карта занимает почти весь кадр. Числа сняты с кадров
      docs/mockup/concept-18-09. */
   var FIT = {
-    map: [612, 256, 1880, 936],
+    map: [530, 200, 1878, 864],
     presence: [44, 184, 1884, 996]
   };
 
@@ -73,10 +75,9 @@
       : (byId[id] ? 'нет данных' : 'нет госмониторинга');
   }
 
-  /* «Сильная пшеница»: в данных отдельного признака нет, поэтому
-     берём ближайшее, что есть, — долю 2 класса не ниже порога.
-     Настоящий признак должен прийти от заказчика. */
-  var STRONG_CLASS2 = 2.0;
+  /* «Сильная пшеница» — признак из таблицы заказчика «Регионы
+     с сильной пшеницей» (белок выше 13,5 %, клейковина выше 28 %).
+     Такие субъекты на карте золотые. */
 
   var BORDER = 'rgba(229,199,115,.55)';
   var BORDER_HOT = '#F6E8C8';
@@ -184,15 +185,17 @@
     return ys ? (ys[k || kind] || null) : null;
   }
 
+  /** Обследовано по выбранному виду пшеницы: этим числом красится
+      карта, считается «Топ-10» и полоски в нём. */
   function volume(id) {
-    var b = rec(id, 'soft');
-    return b ? b.surveyed : 0;
+    var b = rec(id, kind);
+    return b && b.surveyed ? b.surveyed : 0;
   }
 
-  /** Сильная пшеница: доля 2 класса не ниже порога (см. STRONG_CLASS2). */
+  /** Сильная пшеница — признак из таблицы заказчика. */
   function isStrong(id) {
     var b = rec(id, 'soft');
-    return !!(b && b.classes && b.classes[0] >= STRONG_CLASS2);
+    return !!(b && b.strong);
   }
 
   /* ------------------------------ цвет региона ------------------------------ */
@@ -500,15 +503,24 @@
 
   /* ------------------------------ левая колонка ------------------------------ */
 
+  /** Лента годов под картой. Рисуем всю ленту из поля ribbon, но
+      нажимаются только годы, по которым есть данные (поле years). */
   function drawYears() {
     var box = $('years');
     box.textContent = '';
-    mon.years.forEach(function (y) {
-      var b = el('button', 'mn-year' + (y === year ? ' is-on' : ''), String(y));
+    var ribbon = mon.ribbon && mon.ribbon.length ? mon.ribbon : mon.years;
+    ribbon.forEach(function (y) {
+      var has = mon.years.indexOf(y) >= 0;
+      var b = el('button', 'mn-year' + (y === year ? ' is-on' : '') +
+        (has ? '' : ' is-off'));
       b.type = 'button';
+      b.disabled = !has;
+      b.appendChild(el('span', 'yr', String(y)));
+      b.appendChild(el('i', 'dot'));
+      b.title = has ? String(y) : y + ': данных пока нет';
       b.addEventListener('click', function () {
         resetIdle();
-        if (y === year) return;
+        if (!has || y === year) return;
         year = y;
         recalcMax();
         drawYears();
@@ -538,20 +550,65 @@
     if (note) box.appendChild(el('div', 'mn-note', note));
   }
 
-  function drawTotal() {
-    var r = mon.russia[String(year)] || {};
-    // в кадре 23-monitoring подпись без служебной пометки о демоданных
-    bigNum($('total-body'), fmt1(r.surveyed), 'тыс. т',
-      'обследовано зерна урожая ' + year);
+  /** Итог по стране за год и выбранный вид пшеницы. */
+  function totalRec() {
+    var r = mon.russia[String(year)];
+    return (r && (r[kind] || r.soft)) || null;
+  }
 
-    var tiles = $('total-tiles');
-    tiles.textContent = '';
-    [[dec1(r.compliance), '%', 'соответствует требованиям'],
-     [fmt1(r.samples), 'тыс.', 'исследовано проб']].forEach(function (t) {
-      var n = el('div', 'mn-tile');
-      bigNum(n, t[0], t[1], t[2]);
-      tiles.appendChild(n);
+  function drawTotal() {
+    var r = totalRec() || {};
+    var what = kind === 'durum' ? 'твёрдой пшеницы' : 'мягкой пшеницы';
+    bigNum($('total-body'), fmt1(r.surveyed), 'тыс. т',
+      'обследовано ' + what + ' урожая ' + year);
+    bigNum($('gost-body'), dec1(r.compliance), '%',
+      'соответствует требованиям ГОСТ');
+    drawDots();
+  }
+
+  /** Две точки справа сверху: слайд «Мягкая» и слайд «Твёрдая». */
+  function drawDots() {
+    var box = $('total-dots');
+    box.textContent = '';
+    KINDS.forEach(function (k) {
+      var b = el('button', k.key === kind ? 'is-on' : '');
+      b.type = 'button';
+      b.title = k.label;
+      b.setAttribute('aria-label', k.label);
+      b.addEventListener('click', function () { resetIdle(); setKind(k.key); });
+      box.appendChild(b);
     });
+  }
+
+  /** Вид пшеницы общий на весь раздел: карта, список, карточка региона. */
+  function setKind(k) {
+    if (k !== 'soft' && k !== 'durum') return;
+    if (kind === k) return;
+    kind = k;
+    recalcMax();
+    drawTotal();
+    drawTop();
+    if (regionId) drawRegion();
+    setUrl();
+    need = true;
+  }
+
+  /** Свайп по плашке «Всего по России» листает виды пшеницы. */
+  function bindKindSwipe() {
+    var box = document.querySelector('#sec-monitoring .mn-total') ||
+      document.querySelector('.mn-total');
+    if (!box) return;
+    var x0 = null;
+    box.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
+    box.addEventListener('pointerup', function (e) {
+      if (x0 == null) return;
+      var dx = e.clientX - x0;
+      x0 = null;
+      if (Math.abs(dx) < 40) return;
+      resetIdle();
+      setKind(dx < 0 ? 'durum' : 'soft');
+    });
+    box.addEventListener('pointercancel', function () { x0 = null; });
   }
 
   function norm(s) {
@@ -582,7 +639,7 @@
     var arr = listed();
     $('top-head').textContent = query
       ? 'Найдено регионов: ' + arr.length
-      : 'Топ-10 регионов';
+      : 'Топ-10 регионов · ' + kindLabel().toLowerCase();
     var box = $('top-body');
     box.textContent = '';
     if (!arr.length) {
@@ -728,30 +785,60 @@
     if (!b) { kind = 'soft'; b = rec(regionId, 'soft'); }
     if (!b) { drawEmptyRegion(); return; }
 
-    $('reg-sub').textContent = kindLabel() + '  ·  Демонстрационные данные';
+    $('reg-sub').textContent = kindLabel() + '  ·  урожай ' + year +
+      (b.strong ? '  ·  регион с сильной пшеницей' : '');
 
-    bigNum($('gross-body'), fmt1(b.gross), 'тыс. т', 'Урожай ' + year + ' · демоданные');
-    var share = b.gross > 0 ? Math.round(b.surveyed / b.gross * 100) : 0;
+    bigNum($('gross-body'), fmt1(b.gross), 'тыс. т', 'Урожай ' + year);
     bigNum($('surv-body'), fmt1(b.surveyed), 'тыс. т',
-      share + ' % валового сбора · демо');
+      b.cover != null ? dec1(b.cover) + ' % валового сбора' : 'нет данных');
 
     // классы: название, объём в тоннах от обследованного и доля.
-    // Полосок в кадре нет — только числа.
+    // Полосок в кадре нет — только числа. Классы, которых в регионе
+    // не нашли, не показываем: пустых строк в кадре нет.
     $('cls-sub').textContent = 'Доля от обследованного объёма\n' +
-      fmt1(b.surveyed) + ' тыс. т · демоданные';
+      fmt1(b.surveyed) + ' тыс. т';
     $('cls-foot').style.display = '';
+    $('cls-foot').textContent = b.bad
+      ? 'Не соответствует требованиям ГОСТ — ' + fmt1(b.bad) + ' тыс. т'
+      : 'Соответствует требованиям ГОСТ — ' + dec1(b.compliance) + ' %';
     var cls = $('cls-body');
     cls.textContent = '';
-    b.classes.forEach(function (p, i) {
+    (b.classes || []).forEach(function (p, i) {
+      if (!p) return;
       var row = el('div', 'c-row');
       var name = el('div', 'c-name');
-      name.appendChild(el('b', null, 'Класс ' + (i + 2)));
-      name.appendChild(el('span', null, fmt1(b.surveyed * p / 100) + ' тыс. т'));
+      name.appendChild(el('b', null, 'Класс ' + (i + 1)));
+      var t = (b.classT && b.classT[i]) || b.surveyed * p / 100;
+      name.appendChild(el('span', null, fmt1(t) + ' тыс. т'));
       row.appendChild(name);
       // мелкие доли округляются до десятых, крупные — до целых процентов
       row.appendChild(el('div', 'c-pct',
         (p < 10 ? dec1(p) : String(Math.round(p))) + ' %'));
       cls.appendChild(row);
+    });
+    drawSpec(b);
+  }
+
+  /** Спец. характеристики зерна: белок, клейковина, натура, ЧП,
+      стекловидность. Их дают не по всем субъектам — где нет, строки нет. */
+  function drawSpec(b) {
+    var box = $('cls-spec');
+    if (!box) return;
+    box.textContent = '';
+    var rows = [
+      ['Белок', b.protein, ' %'],
+      ['Клейковина', b.gluten, ' %'],
+      ['Натура', b.nature, ' г/л'],
+      ['Число падения', b.falling, ' с'],
+      ['Стекловидность', b.vitreous, ' %']
+    ].filter(function (r) { return r[1] != null; });
+    if (!rows.length) return;
+    box.appendChild(el('div', 's-head', 'Средневзвешенные показатели'));
+    rows.forEach(function (r) {
+      var line = el('div', 's-row');
+      line.appendChild(el('span', null, r[0]));
+      line.appendChild(el('b', null, dec1(r[1]) + r[2]));
+      box.appendChild(line);
     });
   }
 
@@ -762,17 +849,20 @@
     var noMon = !byId[regionId];
     var pending = !!PENDING[regionId];
     var note = pending ? 'Данные уточняются'
-      : noMon ? 'Госмониторинг не проводится' : 'Данных за ' + year + ' год нет';
+      : noMon ? 'Госмониторинг не проводится'
+      : kind === 'durum' ? 'Твёрдую пшеницу в регионе не возделывают'
+      : 'Данных за ' + year + ' год нет';
     $('reg-sub').textContent = pending
       ? 'Данные по региону уточняются'
       : noMon
       ? 'Госмониторинг в этом регионе не проводится'
-      : 'Пшеница в этом регионе не возделывалась · демоданные';
+      : kindLabel() + '  ·  ' + note;
     bigNum($('gross-body'), '—', '', note);
     bigNum($('surv-body'), '—', '', note);
     $('cls-sub').textContent = note;
     $('cls-body').textContent = '';
     $('cls-foot').style.display = 'none';
+    if ($('cls-spec')) $('cls-spec').textContent = '';
   }
 
   /* --------------------- экран «Регионы присутствия» --------------------- */
@@ -1046,6 +1136,7 @@
       drawYears();
       drawHead();
       drawTotal();
+      bindKindSwipe();
       if (q.q) { setQuery(q.q); $('search').value = q.q; }
       drawTop();
       bindMap();
@@ -1060,9 +1151,7 @@
         if (e.key !== 'Enter') return;
         openFirst();
       });
-      $('search-go').addEventListener('click', function () { resetIdle(); openFirst(); });
       $('back-map').addEventListener('click', function () { resetIdle(); backToMap(); });
-      $('globe-btn').addEventListener('click', function () { U.goSection('globe'); });
       $('hub-btn').addEventListener('click', function () {
         U.goSection('story', { screen: 'hub' });
       });
@@ -1122,6 +1211,7 @@
     back: backToMap,
     focus: focusOn,
     tab: setTab,
+    kind: setKind,
     presence: selectPresence,
     /** Точка региона в координатах страницы — для скриптов и автотестов. */
     point: function (id) {
@@ -1137,7 +1227,8 @@
     stats: function () {
       return { fps: Math.round(fps), dpr: dpr, regions: shapes.length,
                year: year, zoom: Math.round(view.z * 100) / 100,
-               screen: screen, tab: tab, region: regionId, presence: presId,
+               screen: screen, tab: tab, kind: kind,
+               region: regionId, presence: presId,
                labs: labs.length, running: !!rafId };
     }
   };

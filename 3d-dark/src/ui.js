@@ -137,18 +137,32 @@
     if (p && p.catch) p.catch(function () { /* автозапуск включится по касанию */ });
   }
 
-  /** Ролики крутятся только на своём кадре: лишние кадры стенду ни к чему. */
+  /**
+   * Ролики крутятся только на своём кадре: лишние кадры стенду ни к чему.
+   * Входной кадр всегда начинается сначала — дуги на шарах должны
+   * нарастать при каждом возврате и при срабатывании аттрактора.
+   */
   function playVideos(state) {
     toggle(els.videoMain, state === 'map' || state === 'country');
-    toggle(els.videoLeft, state === 'intro');
-    toggle(els.videoRight, state === 'intro');
+    toggle(els.videoLeft, state === 'intro', true);
+    toggle(els.videoRight, state === 'intro', true);
   }
 
-  function toggle(video, on) {
+  /** Уход в другой раздел: ролики ставим на паузу, они не видны. */
+  function pauseVideos() {
+    toggle(els.videoMain, false);
+    toggle(els.videoLeft, false);
+    toggle(els.videoRight, false);
+  }
+
+  function toggle(video, on, rewind) {
     if (!video || !video.src) return;
     try {
-      if (on) { var p = video.play(); if (p && p.catch) p.catch(function () {}); }
-      else video.pause();
+      if (on) {
+        if (rewind) video.currentTime = 0;
+        var p = video.play();
+        if (p && p.catch) p.catch(function () {});
+      } else video.pause();
     } catch (e) { /* ролика может не быть */ }
   }
 
@@ -343,6 +357,7 @@
     renderNews: renderNews,
     renderCountry: renderCountry,
     setState: setState,
+    pauseVideos: pauseVideos,
     hideLoading: hideLoading
   };
 })(window);

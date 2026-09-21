@@ -1366,8 +1366,8 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 #sec-globe.is-map.is-nonews #panel-news { display: none; }
 
 /* Подпись «ЦОК АПК · Государственный мониторинг зерна» осталась от
-   синего прототипа: в кадрах раздела её нет. */
-html.theme-green #sec-globe #brand { display: none; }
+   старого прототипа: в кадрах раздела её нет. */
+#sec-globe #brand { display: none; }
 
 /* На входном кадре живая сцена не видна: там два отдельных слота.
    Канвас остаётся в раскладке, иначе three.js потеряет свой размер. */
@@ -1394,7 +1394,7 @@ html.theme-green #sec-globe #brand { display: none; }
   gap: 16px;
   justify-content: center;
   padding: 0 24px;
-  background: rgba(15, 40, 28, .2);
+  background: var(--ghost-bg, rgba(15, 40, 28, .2));
   -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 0;
@@ -1407,9 +1407,10 @@ html.theme-green #sec-globe #brand { display: none; }
 }
 /* «Главное меню» стоит справа сверху на всех трёх кадрах: на входе
    и на карте — у правого края (1556), на кадре страны — левее карточки
-   страны (1010). Размер везде один: 300x108. Селекторы с темой: иначе
-   их перебивает общая раскладка кнопки html.theme-green #home-btn. */
-html.theme-green #sec-globe #home-btn {
+   страны (1010). Размер везде один: 300x108. Раскладка общая для обеих
+   тем: два идентификатора в селекторе перебивают старое правило
+   html.theme-green #home-btn. */
+#sec-globe #home-btn {
   left: 1556px;
   right: auto;
   top: 64px;
@@ -1418,11 +1419,11 @@ html.theme-green #sec-globe #home-btn {
   height: 108px;
   padding: 0;
   border-radius: 32px;
-  background: rgba(15, 40, 28, .2);
+  background: var(--ghost-bg, rgba(15, 40, 28, .2));
   font-size: 24px;
   line-height: 32px;
 }
-html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
+#sec-globe.is-country #home-btn { left: 1010px; }
 
 /* ---------------------------- заголовок ----------------------------
    «РОССИЯ-ЖИТНИЦА / МИРА» — один на все три кадра, 64 px, шаг строк
@@ -1459,6 +1460,7 @@ html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
 }
 #sec-globe .has-video > .slot-video { display: block; }
 #sec-globe .has-video > canvas,
+#sec-globe .has-video > .orb-tag,
 #sec-globe .has-video > .orb-poster { display: none; }
 
 /* =========================== кадр «Вход» =========================== */
@@ -1474,10 +1476,28 @@ html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
   height: 654px;
   border-radius: 50%;
   overflow: hidden;
-  box-shadow: 0 0 80px rgba(79, 230, 210, .10);
+  box-shadow: 0 0 80px var(--orb-glow, rgba(79, 230, 210, .10));
 }
 #sec-globe #orb-left { left: 289px; }
 #sec-globe #orb-right { left: 1042px; }
+
+/* Ролик обрезан ровно по шару, но на границе круглой маски остаётся
+   тонкая тёмная кромка — чуть увеличиваем кадр, чтобы её не было. */
+#sec-globe .orb > .slot-video { transform: scale(1.02); }
+
+/* Мягкое кольцо по краю слота в цвет темы: в зелёной — бирюзовое
+   (шар в ролике синий, экран зелёный), в синей — голубой ореол,
+   как в кадрах фигмы. Цвета — в переменных --orb-ring / --orb-glow. */
+#sec-globe .orb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 50%;
+  pointer-events: none;
+  box-shadow: inset 0 0 26px var(--orb-ring-soft, rgba(79, 230, 210, .18)),
+              inset 0 0 0 1px var(--orb-ring, rgba(79, 230, 210, .22));
+}
 
 #sec-globe .orb-poster {
   position: absolute;
@@ -1739,12 +1759,12 @@ html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
 #sec-globe .news-list::-webkit-scrollbar { width: 8px; }
 #sec-globe #country-list::-webkit-scrollbar-track,
 #sec-globe .news-list::-webkit-scrollbar-track {
-  background: rgba(100, 140, 27, .15);
+  background: var(--sb-track, rgba(100, 140, 27, .15));
   border-radius: 30px;
 }
 #sec-globe #country-list::-webkit-scrollbar-thumb,
 #sec-globe .news-list::-webkit-scrollbar-thumb {
-  background: #43744B;
+  background: var(--sb-thumb, #43744B);
   border-radius: 30px;
 }
 
@@ -2144,3 +2164,113 @@ html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
 /* кнопка сброса вида на кадре страны не нужна: оттуда возвращаются
    к списку стран, а вид сбрасывается сам */
 #sec-globe.is-country #reset-view { display: none; }
+
+/* ============ синий раздел «Маршруты экспорта» в app.html ============
+   На стенде презентация и мониторинг остаются зелёными, а раздел
+   глобуса открывается в синей теме — как в кадрах фигмы.
+
+   Устроено так: класс зелёной темы по-прежнему висит на <html> и держит
+   оформление соседних разделов, а обёртка #sec-globe получает свой
+   класс theme-navy (его ставит src/app.js по полю appGlobeTheme
+   в config.json; ?theme=green в адресе возвращает зелёный раздел).
+   Переменные объявлены на обёртке, поэтому дальше <html> они не уходят.
+
+   Раскладка кадров общая для обеих тем — ниже только цвета. Часть
+   переменных (фон, панели, акцент, текст) поверх этих значений ставит
+   src/app.js из config.json, themes.navy.colors. */
+
+#sec-globe.theme-navy {
+  /* фон и панели */
+  --page-bg: #05070C;
+  --card-bg: #070B14;
+  --panel: rgba(13, 19, 33, .72);
+  --line: rgba(255, 255, 255, .09);
+  --inset-hi: rgba(255, 255, 255, .06);
+
+  /* текст */
+  --text: #E9EEF7;
+  --muted: #8E98AC;
+  --strong: #DDE4F0;
+  --hint: #5D6679;
+  --num: #FFFFFF;
+  --num2: #EFF3FA;
+  --icon: #C3CBDA;
+
+  /* акцент и заголовок (в кадрах он золотисто-бежевый) */
+  --accent: #F2B84B;
+  --accent-soft: rgba(242, 184, 75, .12);
+  --accent-press: rgba(242, 184, 75, .16);
+  --title: #DEC08E;          /* золотисто-бежевый заголовок из кадров фигмы */
+
+  /* поле поиска */
+  --field-bg: rgba(255, 255, 255, .045);
+  --field-bg-focus: rgba(255, 255, 255, .07);
+  --field-line: rgba(255, 255, 255, .08);
+  --field-line-focus: rgba(242, 184, 75, .35);
+  --field-ph: #6E7789;
+
+  /* линии, плитки, полоски */
+  --hairline: rgba(255, 255, 255, .06);
+  --divider: rgba(255, 255, 255, .08);
+  --scroll-thumb: rgba(255, 255, 255, .12);
+  --row-press: rgba(255, 255, 255, .045);
+  --tile-bg: rgba(255, 255, 255, .035);
+  --tile-line: rgba(255, 255, 255, .07);
+  --bar-track: rgba(255, 255, 255, .07);
+  --bar-fill: linear-gradient(90deg, rgba(242, 184, 75, .55), #F2B84B);
+  --bar-glow: 0 0 12px rgba(242, 184, 75, .55);
+
+  /* кнопки и раскрытая строка списка */
+  --btn-bg: linear-gradient(180deg, #F7C766, #EDAE3C);
+  --btn-bg-press: linear-gradient(180deg, #EDAE3C, #DC9E2E);
+  --btn-fg: #14100A;
+  --btn-shadow: 0 8px 24px rgba(242, 184, 75, .28), inset 0 1px 0 rgba(255, 255, 255, .4);
+  --pick-bg: linear-gradient(180deg, rgba(242, 184, 75, .10), rgba(242, 184, 75, .03));
+  --pick-line: rgba(242, 184, 75, .28);
+  --pick-name: #FFF3DD;
+  --pick-value: #D9B978;
+
+  /* лента годов */
+  --year-dot: #39415A;
+  --tl-line: rgba(255, 255, 255, .10);
+
+  /* детали раздела: кольцо круглого слота, «призрачные» кнопки,
+     полосы прокрутки списков */
+  --orb-ring: rgba(138, 190, 255, .30);
+  --orb-ring-soft: rgba(96, 156, 255, .22);
+  --orb-glow: rgba(70, 130, 235, .22);
+  --ghost-bg: rgba(18, 26, 42, .55);
+  --sb-track: rgba(255, 255, 255, .06);
+  --sb-thumb: rgba(150, 180, 230, .38);
+
+  /* Фон раздела — снимок космоса от заказчика: тёмно-синяя туманность
+     с мелкими звёздами (assets/textures/bg_space.webp, 1920x1080, сжат
+     из assets/concept/src/globe-space-bg.webp). Лежит нижним слоем,
+     выше — виньетка, она гасит углы под панелями. Один и тот же фон
+     на всех трёх кадрах раздела. */
+  background-color: #05070C;
+  background-image:
+    radial-gradient(120% 90% at 50% 45%,
+      rgba(0, 0, 0, 0) 45%, rgba(2, 4, 9, .35) 80%, rgba(2, 4, 9, .70) 100%),
+    url(../assets/textures/bg_space.webp);
+  background-repeat: no-repeat, no-repeat;
+  background-size: auto, cover;
+  background-position: center, center;
+}
+
+/* Зерно и мягкие пятна с канваса тут не нужны: звёзды уже есть на снимке. */
+#sec-globe.theme-navy #stars { display: none; }
+
+/* На тёмном фоне мягкая тень зелёной темы под буквами не нужна. */
+#sec-globe.theme-navy .country-row .nm,
+#sec-globe.theme-navy .search input,
+#sec-globe.theme-navy #summary-head,
+#sec-globe.theme-navy .section-title,
+#sec-globe.theme-navy .metric-value,
+#sec-globe.theme-navy .metric-unit,
+#sec-globe.theme-navy .metric-caption,
+#sec-globe.theme-navy .year-pill .yr,
+#sec-globe.theme-navy .rank-row span,
+#sec-globe.theme-navy .product-item {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .45);
+}

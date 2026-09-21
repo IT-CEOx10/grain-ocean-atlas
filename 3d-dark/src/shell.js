@@ -88,16 +88,12 @@
     var out = {};
     if (Q.idle != null) out.idle = Q.idle;
     var want = Q.section || DEFAULT;
-    if (want !== name) {
-      // глобус в едином приложении всегда зелёный: синий прототип —
-      // это отдельная страница index.html?theme=navy
-      if (name === 'globe') out.theme = 'green';
-      return out;
-    }
+    // тему раздела глобуса здесь не навязываем: её берёт src/app.js
+    // из config.json (поле appGlobeTheme), а ?theme= в адресе перебивает
+    if (want !== name) return out;
     for (var k in Q) {
       if (Object.prototype.hasOwnProperty.call(Q, k) && k !== 'section') out[k] = Q[k];
     }
-    if (name === 'globe' && !out.theme) out.theme = 'green';
     return out;
   }
 

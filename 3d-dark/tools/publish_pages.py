@@ -18,7 +18,7 @@
 любую страницу можно переключить параметром адреса ?theme=navy / ?theme=green.
 Экран блока 3 сделан только в зелёной теме.
 """
-import pathlib, subprocess, sys
+import pathlib, shutil, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]      # 3d-dark/
 OUT = ROOT.parent / "dist" / "3d-dark"
@@ -113,6 +113,18 @@ monitoring = mon_src.read_bytes()
 (MON_OUT / "index.html").write_bytes(monitoring)
 app = app_src.read_bytes()
 (APP_OUT / "index.html").write_bytes(app)
+
+# Ролики глобусов в страницу не вшиваются (они тяжёлые) — build_dist.py
+# кладёт их рядом с собранным файлом. Переносим их к тем страницам,
+# где есть раздел глобуса, теми же путями assets/...
+side = ROOT / "dist" / "assets"
+if side.is_dir():
+    for dest in (APP_OUT, GREEN_OUT, OUT / "proto"):
+        for src in side.rglob("*"):
+            if src.is_file():
+                out_file = dest / "assets" / src.relative_to(side)
+                out_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(src, out_file)
 
 print("ok:", APP_OUT / "index.html", len(app) // 1024, "KB;",
       OUT / "index.html", len(wrapped) // 1024, "KB;",

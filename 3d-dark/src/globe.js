@@ -22,9 +22,11 @@
    * растёт вдвое медленнее (см. NIGHT_THEMES в make_earth_textures.py).
    */
   var TEX_LIGHTS = {
+    // Огни у синей и зелёной тем общие: синяя — это перекрашенный зелёный
+    // шар, огни в нём те же, тёплые и с широким ореолом. Прежние холодные
+    // earth_night_8192 / 4096 остались в assets на случай возврата.
     navy: [
-      { size: 8192, path: 'assets/textures/earth_night_8192.jpg' },
-      { size: 4096, path: 'assets/textures/earth_night_4096.jpg' }
+      { size: 4096, path: 'assets/textures/earth_night_4096_green.jpg' }
     ],
     green: [
       { size: 4096, path: 'assets/textures/earth_night_4096_green.jpg' }
@@ -37,9 +39,14 @@
    * tools/build_dist.py не найдёт их в коде и не вошьёт в один файл.
    */
   var TEX_LAND = {
+    // Синяя тема — тот же шар, что в зелёной, только перекрашенный:
+    // обработка снимка та же, палитра другая (суша естественная, океан
+    // синий). Файлы с суффиксом _blue, их делает tools/make_earth_textures.py
+    // (тема navy_blue). Прежняя холодная подложка earth_land_4096.jpg
+    // осталась в assets на случай возврата.
     navy: [
-      { size: 4096, path: 'assets/textures/earth_land_4096.jpg' },
-      { size: 2048, path: 'assets/textures/earth_land_2048.jpg' }
+      { size: 4096, path: 'assets/textures/earth_land_4096_blue.jpg' },
+      { size: 2048, path: 'assets/textures/earth_land_2048_blue.jpg' }
     ],
     green: [
       { size: 4096, path: 'assets/textures/earth_land_4096_green.jpg' },

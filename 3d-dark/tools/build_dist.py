@@ -41,6 +41,7 @@ import json
 import mimetypes
 import os
 import re
+import shutil
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -63,6 +64,11 @@ MAX_VIDEO_MB = 60
 # У единого приложения (app.html) внутри лежат все три раздела сразу,
 # поэтому там порог поднимается ключом --max-mb.
 MAX_DIST_MB = 8
+
+# Ролик из assets/ тяжелее этого в страницу не вшивается: он ляжет рядом
+# с собранным index.html обычным файлом (см. шаг 4a). Картинки и текстуры
+# вшиваются всегда, какого бы размера ни были.
+INLINE_MAX_ASSET_MB = 1.0
 
 mimetypes.add_type("font/woff2", ".woff2")
 mimetypes.add_type("font/woff", ".woff")
@@ -207,17 +213,31 @@ def main(theme=None, out_path=None, entry=None, max_mb=None):
 
     # Пути из config.json (постеры и ролики глобусов) в коде не встречаются,
     # поэтому ищем их отдельно — иначе на сайте шары входного экрана пустые.
-    for a in ASSET_RE.findall(read(os.path.join(ROOT, "config.json"))):
-        if os.path.exists(os.path.join(ROOT, a)):
-            assets.setdefault(a, None)
+    # Только для страниц с глобусом: остальным эти файлы ни к чему.
+    if "globeVideo" in all_code:
+        for a in ASSET_RE.findall(read(os.path.join(ROOT, "config.json"))):
+            if os.path.exists(os.path.join(ROOT, a)):
+                assets.setdefault(a, None)
 
     # 4a. файлы из assets/, на которые ссылаются скрипты (текстуры глобуса)
+    #     Мелкие вшиваются как data:URI. Тяжёлые (ролики глобусов — по 3 МБ,
+    #     а в base64 это ещё на треть больше) вшивать нельзя: страница
+    #     разбухнет. Они кладутся рядом с собранным файлом, теми же путями
+    #     assets/..., и браузер подтягивает их обычной ссылкой. На стенде
+    #     папка 3d-dark открывается как есть, там файлы и так лежат рядом.
     assets_bytes = 0
+    sidecars = []
     for rel in list(assets):
         src = os.path.join(ROOT, rel)
         if not os.path.exists(src):
             die("нет файла %s, на который ссылается код" % rel)
-        assets_bytes += os.path.getsize(src)
+        size = os.path.getsize(src)
+        video = rel.lower().endswith((".mp4", ".webm"))
+        if video and size > INLINE_MAX_ASSET_MB * 1024 * 1024:
+            del assets[rel]
+            sidecars.append((rel, src, size))
+            continue
+        assets_bytes += size
         assets[rel] = data_uri(src)
     if assets:
         print("Файлы из assets/ вшиты: %d шт., %.0f КБ"
@@ -241,6 +261,15 @@ def main(theme=None, out_path=None, entry=None, max_mb=None):
         os.makedirs(out_dir)
     with open(out, "w", encoding="utf-8") as f:
         f.write(html)
+
+    # тяжёлые файлы (ролики глобусов) — рядом со страницей, теми же путями
+    for rel, src, size in sidecars:
+        dst = os.path.join(out_dir, rel)
+        dst_dir = os.path.dirname(dst)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        shutil.copyfile(src, dst)
+        print("Рядом со страницей: %s (%.1f МБ)" % (rel, size / 1048576.0))
 
     size_mb = os.path.getsize(out) / 1048576.0
     print("Собрано: %s (%.1f МБ)" % (os.path.relpath(out, ROOT), size_mb))
