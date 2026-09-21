@@ -491,11 +491,14 @@ body.mon-screen { background: #141d23; }
 
 /* легенда и подсказка */
 
+/* условные обозначения: в макете они стоят у нижнего края сцены,
+   на одной линии с подсказкой справа (ленту годов, над которой они
+   висели раньше, из кадра убрали) */
 #sec-monitoring .mn-legend {
   position: absolute;
   z-index: 5;
-  left: 563px;
-  top: 752px;
+  left: 890px;
+  top: 896px;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -530,11 +533,14 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .map-hint {
   position: absolute;
   z-index: 5;
-  left: 1180px;
-  top: 837px;
-  font-size: 24px;
+  /* подсказка справа от легенды, на одной с ней линии и левее
+     кнопок масштаба */
+  left: 1336px;
+  top: 976px;
+  font-size: 20px;
   font-weight: 400;
   line-height: 1.2;
+  white-space: nowrap;
   color: var(--mn-text);
 }
 
@@ -754,27 +760,64 @@ body.mon-screen { background: #141d23; }
   color: var(--mn-muted);
 }
 
-/* панель классов зерна */
-#sec-monitoring .mn-cls {
+/* ---- правая колонка карточки региона ----
+   Классы зерна и основные показатели стоят друг под другом и видны
+   одновременно (решение заказчика 21.09: классы не должны пропадать).
+   Колонка занимает всю высоту кадра от заголовка до нижнего поля,
+   как левая; панель показателей — фиксированной высоты, панель классов
+   берёт ровно столько, сколько нужно её списку, и при пяти классах
+   список внутри прокручивается. */
+#sec-monitoring .mn-right {
+  position: absolute;
+  z-index: 5;
   left: 1264px;
-  top: 254px;
+  top: 190px;
   width: 576px;
-  /* в кадре панель на 548 px и четыре класса; у заказчика классов
-     бывает пять, поэтому панель выше, а список при нужде прокручивается */
-  height: 620px;
+  /* до 1026 px: нижнее поле как у левой колонки, с запасом на случай,
+     когда между панелями встаёт плашка сильной пшеницы */
+  height: 836px;
   display: flex;
   flex-direction: column;
-  gap: 26px;
+  gap: 8px;
+}
+
+/* справа только классы зерна (боевая раскладка, monitoring.specsPanel:
+   false): панель стоит на макетном месте, высота по содержимому, но не
+   меньше минимума — чтобы при двух классах она не выглядела огрызком */
+#sec-monitoring .mn-right.is-solo { top: 254px; height: 762px; }
+#sec-monitoring .mn-right.is-solo .mn-cls { min-height: 380px; }
+/* места снова много — строки классов просторные, как в макете */
+#sec-monitoring .mn-right.is-solo .c-row { height: 64px; }
+
+/* панель классов зерна */
+#sec-monitoring .mn-cls,
+#sec-monitoring .mn-spec {
+  position: relative;
+  left: auto;
+  top: auto;
+  width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overflow: hidden;
 }
+/* классы: высота по содержимому, лишнее место не занимаем */
+#sec-monitoring .mn-cls { flex: 0 1 auto; min-height: 0; padding: 22px 32px; gap: 10px; }
+/* показатели: высота по содержимому, но сжиматься им нечем */
+#sec-monitoring .mn-spec { flex: none; padding: 16px 32px; gap: 8px; }
 /* В кадре у заголовка и у подписи над списком фиксированная высота 40 px
    (подпись в два ряда из неё выходит) — от этого зависит, где начинается
    список классов. Ничто внутри панели не ужимается. */
-#sec-monitoring .mn-cls > * { flex: none; }
-#sec-monitoring .mn-cls .mn-cap { height: 40px; }
+#sec-monitoring .mn-cls > *,
+#sec-monitoring .mn-spec > * { flex: none; }
+#sec-monitoring .mn-cls .mn-cap { height: 38px; }
+/* заголовок панели показателей ниже: колонка плотная */
+#sec-monitoring .mn-spec .mn-cap { height: 34px; }
 #sec-monitoring .mn-cls-sub {
-  height: 40px;
+  /* в подписи две строки («Доля от обследованного объёма» и объём),
+     поэтому высота по содержимому, а не фиксированная */
+  height: auto;
   font-size: 20px;
   font-weight: 300;
   line-height: 28px;
@@ -782,11 +825,13 @@ body.mon-screen { background: #141d23; }
   white-space: pre-line;
 }
 #sec-monitoring .mn-cls-list {
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  /* запас, чтобы последняя строка не задевала край при прокрутке */
+  padding-bottom: 4px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -796,7 +841,8 @@ body.mon-screen { background: #141d23; }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  height: 64px;
+  /* в строке две линии текста: «Класс N» и объём под ним */
+  height: 60px;
 }
 #sec-monitoring .c-name {
   display: flex;
@@ -829,20 +875,31 @@ body.mon-screen { background: #141d23; }
   line-height: 28px;
   color: var(--mn-muted);
 }
+#sec-monitoring .mn-spec .mn-cls-sub {
+  height: auto;
+  font-size: 16px;
+  line-height: 22px;
+}
+#sec-monitoring .mn-spec .mn-cls-foot { font-size: 17px; line-height: 22px; }
 
-/* плашка «сильная пшеница»: тёмное стекло под панелью классов зерна
-   (она кончается на 874 px). Видна только у регионов с признаком —
+/* плашка «сильная пшеница»: тёмное стекло между классами зерна
+   и основными показателями, в общем потоке правой колонки. Видна только
+   у регионов с признаком и только при monitoring.strongNote: true —
    класс is-on ставит src/monitoring.js */
 #sec-monitoring .mn-strong {
-  left: 1264px;
-  top: 890px;
-  width: 576px;
+  position: relative;
+  left: auto;
+  top: auto;
+  flex: none;
+  width: 100%;
   box-sizing: border-box;
-  padding: 20px 32px;
+  /* колонка плотная: когда плашку включают, она забирает место
+     у списка классов, поэтому сама она компактная */
+  padding: 8px 24px;
   display: none;
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 300;
-  line-height: 28px;
+  line-height: 22px;
   color: var(--mn-text);
 }
 #sec-monitoring .mn-strong.is-on { display: block; }
@@ -869,27 +926,50 @@ body.mon-screen { background: #141d23; }
   white-space: nowrap;
 }
 #sec-monitoring .mn-key .mn-note { margin-top: 4px; }
+/* смена показателя по метке у зерна: короткое мягкое появление,
+   чтобы было видно, что плашка отреагировала */
+@keyframes mn-key-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+#sec-monitoring .mn-key #key-body.is-new { animation: mn-key-in .22s ease; }
+/* длинные значения («737,0 г/л») и названия («число падения»)
+   не переносим и не режем */
+#sec-monitoring .mn-key .mn-num { white-space: nowrap; }
+#sec-monitoring .mn-key .mn-note { white-space: nowrap; }
 /* выбранная плашка: светлее соседних, с голубоватой подсветкой и рамкой */
 /* показателей по региону нет — плашка гаснет и не нажимается */
 #sec-monitoring .mn-key.is-off { opacity: .55; cursor: default; }
+
+/* строка списка про регион без цифр: приглушена, карточки за ней нет */
+#sec-monitoring .t-row.is-dim { opacity: .55; }
+#sec-monitoring .t-row.is-dim .vl { color: var(--mn-muted); }
 #sec-monitoring .mn-key.is-pick {
   background: rgba(190, 228, 240, .18);
   border-color: rgba(168, 214, 232, .5);
   box-shadow: 0 0 48px rgba(130, 200, 228, .28);
 }
 
-/* ---- правая панель в режиме «Основные показатели» ----
-   Габариты те же, что у «Классов зерна» (класс mn-cls), различается
-   только содержимое: строки показателей и пояснение под списком. */
-#sec-monitoring .mn-cls.is-off { display: none; }
+/* ---- панель «Основные показатели» ----
+   Пять строк: кружок с номером метки, название и значение. Строки
+   выбираются и здесь, и метками вокруг зерна. */
+#sec-monitoring .mn-cls.is-off,
+#sec-monitoring .mn-spec.is-off { display: none; }
+#sec-monitoring .mn-spec-list {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
 #sec-monitoring .k-row {
   flex: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  height: 56px;
-  padding: 0 12px;
+  height: 38px;
+  /* правое поле больше левого: значение не должно липнуть к краю */
+  padding: 0 16px 0 10px;
   box-sizing: border-box;
   border: 0;
   border-radius: 16px;
@@ -901,23 +981,39 @@ body.mon-screen { background: #141d23; }
   transition: background .18s ease;
 }
 #sec-monitoring .k-row.is-on { background: rgba(190, 228, 240, .16); }
-#sec-monitoring .k-name { display: flex; flex-direction: column; gap: 2px; }
-#sec-monitoring .k-name b {
-  font-size: 24px;
-  font-weight: 400;
-  line-height: 28.8px;
-}
-#sec-monitoring .k-name span {
+#sec-monitoring .k-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+/* номер метки кружком слева — как у меток вокруг зерна */
+#sec-monitoring .k-num {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .1);
   font-size: 16px;
   font-weight: 300;
-  line-height: 22px;
+  line-height: 1;
   color: var(--mn-muted);
+}
+#sec-monitoring .k-row.is-on .k-num {
+  background: rgba(190, 228, 240, .3);
+  color: var(--mn-text);
+}
+#sec-monitoring .k-name b {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 26px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #sec-monitoring .k-val {
   flex: none;
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 300;
-  line-height: 38.4px;
+  line-height: 30px;
   color: var(--mn-gold);
   font-variant-numeric: tabular-nums;
 }

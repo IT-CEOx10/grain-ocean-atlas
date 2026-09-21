@@ -79,7 +79,12 @@
     return n;
   }
 
-  function tabKey() { return st.tab || cur.defaultTab; }
+  /* Заглушённый экран (tabsWip) всегда показывает кадр по умолчанию:
+     так состояния недоступны и адресом ?tab=…, и через ?demo=1. */
+  function tabKey() {
+    if (cur && cur.tabsWip) return cur.defaultTab;
+    return st.tab || cur.defaultTab;
+  }
   function selKey() { return st.sel != null ? st.sel : cur.defaultSel; }
 
   function find(list, key) {
@@ -200,9 +205,14 @@
      Нерабочий блок — без визуала и без данных — по правке заказчика
      от 21.09 показывается серым, с подписью «в разработке», и касания
      не ловит. Один класс .is-wip на все экраны (styles/story-theme.css):
-     когда блок доделают, достаточно убрать поле wip в справочнике. */
-  function wip(node) {
+     когда блок доделают, достаточно убрать поле wip в справочнике.
+
+     quiet — заглушить без подписи: так помечают верхнюю часть блока,
+     когда подпись уже стоит на соседней плашке под ней (переключатель
+     страны и «Требования направления» на экране 21 читаются вместе). */
+  function wip(node, quiet) {
     node.classList.add('is-wip');
+    if (quiet) node.classList.add('is-quiet');
     node.setAttribute('aria-disabled', 'true');
     if (node.tagName === 'BUTTON') node.disabled = true;
     return node;
@@ -609,6 +619,14 @@
     });
   }
 
+  /** Кнопка действия на экране фитосанитарного мониторинга. */
+  function weedBtn(label, action, on) {
+    var b = button({ label: label, action: action },
+      'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
+    if (cur.tabsWip) wip(b);
+    return b;
+  }
+
   /** Мелкие подписи прямо на сцене; count — счётчик найденных сорняков. */
   function capsEl(scr, root) {
     scr.caps.forEach(function (c) {
@@ -889,16 +907,19 @@
        видно, какое состояние сейчас открыто. */
     /* Экран открывается заросшим полем (кадр photo), поэтому
        «Посмотреть самостоятельно» переводит на изометрию, где сорняки
-       ищут касанием, и обратно — правка заказчика 21.09. */
+       ищут касанием, и обратно.
+
+       Пока у экрана стоит tabsWip, обе кнопки серые, с подписью
+       «в разработке», и касания не ловят. */
     weedBtnSelf: function () {
       var on = tabKey() === 'iso';
-      return button({ label: on ? 'Ищем сорняки' : 'Посмотреть самостоятельно',
-        action: 'weedSelf' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
+      return weedBtn(on ? 'Ищем сорняки' : 'Посмотреть самостоятельно',
+        'weedSelf', on);
     },
     weedBtnDrone: function () {
       var on = tabKey() === 'drone';
-      return button({ label: on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
-        action: 'weedDrone' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
+      return weedBtn(on ? 'Дрон запущен' : 'Запустить обзор с БПЛА',
+        'weedDrone', on);
     },
 
     /* --- экран 12: подготовка складов --- */
@@ -964,8 +985,10 @@
     /* --- экран 21: требования выбранной страны --- */
     countryCard: function () {
       var c = find(C.countries, selKey());
-      /* в кадре 21 пометки под текстом нет */
-      return panelEl({ title: 'Требования\nнаправления', text: c.text });
+      /* в кадре 21 пометки под текстом нет. Заглушка блока выбора
+         страны включается полем countryWip у экрана */
+      return panelEl({ title: 'Требования\nнаправления', text: c.text,
+        wip: cur.countryWip });
     }
   };
 
@@ -979,7 +1002,13 @@
       return b;
     }
     if (item.picks) return picksEl(item.picks);
-    if (item.select) return selectEl(item.select);
+    if (item.select) {
+      var sel = selectEl(item.select);
+      /* подпись «в разработке» стоит на плашке под переключателем,
+         поэтому сам он гасится без второй подписи */
+      if (item.wip) wip(sel, true);
+      return sel;
+    }
     if (item.steps) return stepsEl(item.steps);
     if (item.shot) return shotEl(item.shot);
     if (item.grid && !item.title) return gridEl(item.grid);
@@ -1215,12 +1244,14 @@
 
     /** Экран 9: переключение «заросшее поле → поле сверху». */
     weedSelf: function () {
+      if (cur.tabsWip) return;
       st.tab = tabKey() === 'iso' ? 'photo' : 'iso';
       rerender();
     },
 
     /** Экран 9: обзор с БПЛА — свой кадр, все сорняки подсвечены. */
     weedDrone: function () {
+      if (cur.tabsWip) return;
       if (tabKey() === 'drone') { st.tab = 'photo'; rerender(); return; }
       st.tab = 'drone';
       st.found = { 0: true, 1: true, 2: true };

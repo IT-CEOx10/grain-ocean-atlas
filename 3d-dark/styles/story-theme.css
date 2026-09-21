@@ -1230,17 +1230,22 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 
 /* выпадающий выбор страны: плашка и золотая круглая стрелка */
+/* Переключатель страны (кадр 21). В макете общей подложки под пилюлей
+   и кнопкой нет — они лежат прямо на сцене, высота блока 54. Лишняя
+   обёртка со стеклом и отступом 6 делала блок на 12 px выше и подводила
+   его вплотную к плашке «Требования направления» (замечание заказчика
+   «выбор страны перекрывается плашкой»).
+
+   z-index нужен раскрытому списку: без него меню уходило под плашку,
+   которая стоит в колонке следующей. Сейчас блок заглушён и список
+   не раскрывается, но правило пригодится, когда заглушку снимут. */
 #sec-story .sc-select {
   position: relative;
+  z-index: 3;
   align-self: flex-start;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border-radius: 36px;
-  background: var(--sc-glass);
-  -webkit-backdrop-filter: var(--sc-blur);
-  backdrop-filter: var(--sc-blur);
+  gap: 16px;
 }
 #sec-story .sc-select-head {
   width: 124px;
@@ -1490,13 +1495,24 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    под неё добавляет нижний отступ */
 #sec-story .sc-panel.is-wip { padding-bottom: 76px; }
 #sec-story .sc-panel.is-wip::after { top: auto; bottom: 24px; }
+/* тихая заглушка: блок серый и не нажимается, но подписи на нём нет —
+   она стоит на соседней плашке (переключатель страны на экране 21) */
+#sec-story .is-wip.is-quiet::after { content: none; }
+
 /* шаг подготовки склада невысокий: подпись встаёт посередине справа,
    иначе она вылезает за верхний край плашки */
 #sec-story .sc-menu-i.is-wip::after { top: 50%; transform: translateY(-50%); }
-/* у кнопки надпись стоит по центру и налезала бы на подпись:
-   освобождаем место справа */
-#sec-story .sc-btn.is-wip { padding-right: 160px; }
-#sec-story .sc-btn.is-wip::after { top: 50%; transform: translateY(-50%); }
+/* У кнопки надпись стоит по центру и налезала бы на подпись, а места
+   справа хватает не всегда («Запустить обзор с БПЛА»). Поэтому подпись
+   встаёт отдельной строкой под надписью: кнопка становится колонкой. */
+#sec-story .sc-btn.is-wip {
+  flex-direction: column;
+  gap: 6px;
+}
+#sec-story .sc-btn.is-wip::after {
+  position: static;
+  padding: 2px 14px;
+}
 
 /* --------------------- шторка сравнения (кадр 07) --------------------- */
 

@@ -54,7 +54,9 @@
      присутствия карта занимает почти весь кадр. Числа сняты с кадров
      docs/mockup/concept-18-09. */
   var FIT = {
-    map: [530, 200, 1878, 864],
+    /* снизу освободилось место от ленты годов, а легенда уехала
+       к нижнему краю — карта стала крупнее и стоит ниже, как в макете */
+    map: [552, 208, 1878, 884],
     presence: [44, 184, 1884, 996]
   };
 
@@ -98,19 +100,19 @@
   var LAB_DOT = '#F6E3BB';
 
   /* Основные (средневзвешенные) показатели зерна: поле в данных, подпись,
-     единица, короткая метка для метки-кружка и пояснение. Значения берутся
+     единица, номер метки вокруг зерна (n) и пояснение. Значения берутся
      из data/monitoring.json, пояснения — справочные, в таблицах заказчика
      их нет. */
   var SPECS = [
-    { key: 'protein', name: 'Белок', unit: '%', mark: 'метка 1',
+    { key: 'protein', name: 'Белок', unit: '%', n: 1,
       hint: 'Доля белка в зерне. Чем её больше, тем выше пищевая ценность зерна и его класс.' },
-    { key: 'gluten', name: 'Клейковина', unit: '%', mark: 'метка 2',
+    { key: 'gluten', name: 'Клейковина', unit: '%', n: 2,
       hint: 'Сколько в зерне клейковины. От неё зависит, насколько тесто тянется и держит форму.' },
-    { key: 'nature', name: 'Натура', unit: 'г/л', mark: 'метка 3',
+    { key: 'nature', name: 'Натура', unit: 'г/л', n: 3,
       hint: 'Масса зерна в одном литре. Показывает, насколько зерно налитое и плотное.' },
-    { key: 'falling', name: 'Число падения', unit: 'с', mark: 'метка 4',
+    { key: 'falling', name: 'Число падения', unit: 'с', n: 4,
       hint: 'Показатель активности ферментов. Низкое значение означает проросшее зерно.' },
-    { key: 'vitreous', name: 'Стекловидность', unit: '%', mark: 'метка 5',
+    { key: 'vitreous', name: 'Стекловидность', unit: '%', n: 5,
       hint: 'Доля стекловидных зёрен. Важна для крупы и макаронных изделий.' }
   ];
 
@@ -149,7 +151,6 @@
   var year = null;
   var kind = 'soft';
   var regionId = null;                 // открытый регион (экран 24)
-  var regView = 'cls';                 // правая панель: cls | spec
   var specKey = 'protein';             // выбранный основной показатель
   var presId = null;                   // выбранный регион присутствия
   var presOf = {};                     // код субъекта -> код записи о присутствии
@@ -388,7 +389,10 @@
     for (var i = 0; i < shapes.length; i++) {
       var s = shapes[i];
       var dim = !onPres && hits && !hits[s.id];
-      var hot = s.id === hoverId || (!onPres && s.id === regionId) ||
+      // серый регион (госмониторинг не проводится) на наведение
+      // не отзывается: по нему и карточка не открывается
+      var hot = (s.id === hoverId && (onPres || hasMon(s.id))) ||
+        (!onPres && s.id === regionId) ||
         (onPres && presOf[s.id] === presId);
       // заливка чуть прозрачная: сквозь неё видна фактура фона, как в макете
       ctx.globalAlpha = dim ? 0.26 : FILL_ALPHA;
@@ -690,7 +694,12 @@
     var bars = [];
     arr.forEach(function (s, i) {
       // строка кадра: слева плашка с номером, справа название, объём и полоска
-      var row = el('button', 't-row' + (s.id === hoverId ? ' is-hot' : ''));
+      // регион без цифр остаётся в результатах поиска, но карточки
+      // у него нет: строка приглушена, а нажатие ведёт к региону
+      // на карте и показывает подпись «госмониторинг не проводится»
+      var mon = hasMon(s.id);
+      var row = el('button', 't-row' + (s.id === hoverId ? ' is-hot' : '') +
+        (mon ? '' : ' is-dim'));
       row.type = 'button';
       row.appendChild(el('span', 't-rk', String(i + 1)));
       var main = el('div', 't-main');
@@ -706,7 +715,12 @@
       main.appendChild(bar);
       row.appendChild(main);
       bars.push([fill, v / top]);
-      row.addEventListener('click', function () { resetIdle(); openRegion(s.id); });
+      row.addEventListener('click', function () {
+        resetIdle();
+        if (mon) { openRegion(s.id); return; }
+        focusOn(s.id, 2.2);
+        pinTip(s.id);
+      });
       row.addEventListener('pointerenter', function () { setHover(s.id); });
       row.addEventListener('pointerleave', function () { setHover(null); });
       box.appendChild(row);
@@ -736,8 +750,29 @@
     thumb.style.top = y + 'px';
   }
 
+  /** Подпись у пальца, которая гаснет сама: по тапу на регион,
+      где госмониторинг не проводится, карточка не открывается,
+      и человеку надо объяснить, почему ничего не случилось. */
+  var tipTimer = null;
+
+  function pinTip(id) {
+    setHover(id);
+    if (tipTimer) clearTimeout(tipTimer);
+    tipTimer = setTimeout(function () {
+      tipTimer = null;
+      if (hoverId === id) setHover(null);
+    }, 2600);
+  }
+
   function setHover(id) {
     if (hoverId === id) return;
+    if (tipTimer) { clearTimeout(tipTimer); tipTimer = null; }
+    // курсор «рука» только там, где есть что открыть
+    var c = $('map');
+    if (c) {
+      c.style.cursor = (!id || screen === 'presence' || hasMon(id))
+        ? 'pointer' : 'default';
+    }
     hoverId = id;
     need = true;
     var tip = $('map-tip');
@@ -793,7 +828,7 @@
       if (off) lab.style.opacity = '.45';
       box.appendChild(lab);
 
-      var on = !off && regView === 'spec' && specKey === m.key;
+      var on = !off && specKey === m.key;
       var btn = el('button', 'mn-mark' + (off ? ' is-off' : '') + (on ? ' is-on' : ''),
         String(m.n));
       btn.type = 'button';
@@ -812,6 +847,7 @@
   function drawRegion() {
     var s = shapes.filter(function (x) { return x.id === regionId; })[0];
     if (!s) return;
+    fixSpecKey(rec(regionId, kind));
     $('reg-title').textContent = s.name;
     drawHead();
 
@@ -858,7 +894,6 @@
     strongNote(kind === 'soft' && isStrong(regionId));
     drawKey(b);
     drawSpec(b);
-    applyRegView();
   }
 
   /** Показать или спрятать плашку «Регион с сильной пшеницей».
@@ -878,6 +913,14 @@
     return !CFG.monitoring || CFG.monitoring.strongNote !== false;
   }
 
+  /** Панель «Основные показатели» в правой колонке. По решению
+      заказчика справа остаются только классы зерна, а выбранный
+      показатель выводится в левой плашке; ключ monitoring.specsPanel
+      в config.json возвращает раскладку из двух панелей. */
+  function specsOn() {
+    return !!(CFG.monitoring && CFG.monitoring.specsPanel);
+  }
+
   /* --------------------- основные показатели зерна ---------------------
      Плашка «Основные показатели» в левой колонке — переключатель: справа
      вместо «Классов зерна» показывается разбор пяти средневзвешенных
@@ -892,6 +935,27 @@
     return SPECS[0];
   }
 
+  /** Если выбранного показателя у региона нет, берём первый, который
+      есть: иначе в плашке всегда стоял бы прочерк. */
+  function fixSpecKey(b) {
+    if (!b || b[specKey] != null) return;
+    for (var i = 0; i < SPECS.length; i++) {
+      if (b[SPECS[i].key] != null) { specKey = SPECS[i].key; return; }
+    }
+  }
+
+  /** Следующий показатель по кругу — нажатие на саму плашку. */
+  function nextSpec() {
+    var b = rec(regionId, kind);
+    if (!b) return;
+    var i = 0;
+    for (var j = 0; j < SPECS.length; j++) if (SPECS[j].key === specKey) i = j;
+    for (var k = 1; k <= SPECS.length; k++) {
+      var s = SPECS[(i + k) % SPECS.length];
+      if (b[s.key] != null) { showSpec(s.key); return; }
+    }
+  }
+
   /** Есть ли у региона хоть один основной показатель. */
   function hasSpec(b) {
     if (!b) return false;
@@ -899,67 +963,69 @@
     return false;
   }
 
-  /** Левая плашка: заголовок, крупное число ведущего показателя. */
+  /** Левая плашка: заголовок и крупное число ВЫБРАННОГО показателя.
+      Метки 1–5 вокруг зерна выводят свои значения сюда; смена значения
+      подсвечивается коротким появлением (класс is-new, анимация в CSS). */
   function drawKey(b) {
     var box = $('key-body');
     if (!box) return;
-    var s = specByKey(KEY_SPEC);
-    var v = b ? b[KEY_SPEC] : null;
+    var s = specByKey(specKey);
+    var v = b ? b[specKey] : null;
     bigNum(box, v != null ? dec1(v) : '—', v != null ? s.unit : '',
       s.name.toLowerCase());
-    // показателей по региону нет — переключать нечего
+    box.classList.remove('is-new');
+    // перезапуск анимации: браузеру нужно заметить снятие класса
+    void box.offsetWidth;
+    box.classList.add('is-new');
+    // показателей по региону нет — нажимать плашку не на что
     var key = $('card-key');
     key.disabled = !hasSpec(b);
     key.classList.toggle('is-off', key.disabled);
-    if (key.disabled) regView = 'cls';
+    // подсветка плашки постоянная, как в макете: панелями она
+    // больше не переключает, а только выбирает белок
+    key.classList.toggle('is-pick', !key.disabled);
   }
 
-  /** Правая панель в режиме «Основные показатели». */
+  /** Панель «Основные показатели» под классами зерна: пять строк
+      с кружком-номером метки, названием и значением. Панель видна
+      сразу, вместе с классами; если показателей по региону нет —
+      прячем её целиком, метки вокруг зерна и так приглушены. */
   function drawSpec(b) {
     var box = $('spec-body');
     if (!box) return;
-    $('spec-sub').textContent = 'Средневзвешенно по обследованному объёму\n' +
+    var any = hasSpec(b) && specsOn();
+    $('card-spec').classList.toggle('is-off', !any);
+    // колонка из одной панели: классы стоят на макетном месте
+    var col = document.querySelector('#sec-monitoring .mn-right') ||
+      document.querySelector('.mn-right');
+    if (col) col.classList.toggle('is-solo', !specsOn());
+    if (!any) { box.textContent = ''; return; }
+
+    $('spec-sub').textContent = 'Средневзвешенно по обследованному объёму, ' +
       fmt1(b.surveyed) + ' тыс. т';
     box.textContent = '';
-    var any = false;
     SPECS.forEach(function (s) {
       var v = b[s.key];
       if (v == null) return;            // показателя по региону нет — строки нет
-      any = true;
       var row = el('button', 'k-row' + (s.key === specKey ? ' is-on' : ''));
       row.type = 'button';
       var name = el('div', 'k-name');
+      name.appendChild(el('span', 'k-num', String(s.n)));
       name.appendChild(el('b', null, s.name));
-      name.appendChild(el('span', null, s.mark));
       row.appendChild(name);
       row.appendChild(el('div', 'k-val', dec1(v) + ' ' + s.unit));
       row.addEventListener('click', function () { resetIdle(); showSpec(s.key); });
       box.appendChild(row);
     });
-    if (!any) box.appendChild(el('div', 't-empty', 'Показателей по региону нет'));
-    var cur = any ? b[specKey] : null;
-    $('spec-foot').textContent = cur != null ? specByKey(specKey).hint : '';
+    $('spec-foot').textContent = specByKey(specKey).hint;
   }
 
-  /** Открыть разбор показателя: по метке у зерна или по строке справа. */
+  /** Выбрать показатель: по метке у зерна, по строке панели или
+      по плашке «Основные показатели» слева. Классы зерна при этом
+      остаются на месте — панели больше не подменяют друг друга. */
   function showSpec(key) {
     specKey = key;
-    regView = 'spec';
     drawRegion();
-  }
-
-  /** Переключатель «Классы зерна» / «Основные показатели». */
-  function toggleRegView() {
-    regView = regView === 'spec' ? 'cls' : 'spec';
-    drawRegion();
-  }
-
-  /** Расставить видимость панелей по текущему режиму. */
-  function applyRegView() {
-    var spec = regView === 'spec';
-    $('card-cls').classList.toggle('is-off', spec);
-    $('card-spec').classList.toggle('is-off', !spec);
-    $('card-key').classList.toggle('is-pick', spec);
   }
 
   function drawEmptyRegion() {
@@ -978,13 +1044,12 @@
     $('cls-body').textContent = '';
     $('cls-foot').style.display = 'none';
     strongNote(false);
-    // цифр по региону нет — показывать нечего и в «Основных показателях»
+    // цифр по региону нет — панель показателей просто не показываем
     drawKey(null);
-    $('spec-sub').textContent = note;
+    $('card-spec').classList.add('is-off');
+    $('card-cls').classList.remove('is-off');
     $('spec-body').textContent = '';
     $('spec-foot').textContent = '';
-    regView = 'cls';
-    applyRegView();
   }
 
   /* --------------------- экран «Регионы присутствия» --------------------- */
@@ -1078,13 +1143,14 @@
   }
 
   function openRegion(id) {
-    // карточка открывается и у субъекта без данных: в data/monitoring.json
-    // его может не быть вовсе (например, там не проводится госмониторинг)
+    // карточка открывается только у субъекта с цифрами за выбранный год
     if (!shapes.some(function (s) { return s.id === id; })) return;
+    // регион без цифр за этот год карточку не открывает: ни тапом,
+    // ни из списка, ни адресом ?region=
+    if (!hasMon(id)) return;
     regionId = id;
     if (!rec(id, kind)) kind = 'soft';
-    // карточка всегда открывается на классах зерна
-    regView = 'cls';
+    // карточка всегда открывается на белке — метка 1, как в макете
     specKey = KEY_SPEC;
     drawRegion();
     show('region');
@@ -1195,7 +1261,11 @@
       if (drag && drag.moved <= TAP_SLOP) {
         var id = pick(p[0], p[1]);
         if (id && screen === 'presence') selectPresence(id);
-        else if (id && screen === 'map') openRegion(id);
+        // карточка открывается только там, где есть цифры; иначе
+        // показываем подпись «госмониторинг не проводится»
+        else if (id && screen === 'map') {
+          if (hasMon(id)) openRegion(id); else pinTip(id);
+        }
       }
       drag = null;
     });
@@ -1305,8 +1375,8 @@
         resetIdle();
         closePresCard();
       });
-      // плашка «Основные показатели» — переключатель правой панели
-      $('card-key').addEventListener('click', function () { resetIdle(); toggleRegView(); });
+      // плашка «Основные показатели» слева листает показатели по кругу
+      $('card-key').addEventListener('click', function () { resetIdle(); nextSpec(); });
       // с экрана регионов присутствия — тоже в главное меню: это
       // самостоятельный раздел, а не станция «Пути зерна»
       ['home-btn', 'home-btn-reg', 'hub-btn'].forEach(function (id) {
@@ -1354,7 +1424,11 @@
   /** Enter или кнопка «Искать»: открыть первое совпадение. */
   function openFirst() {
     var arr = listed();
-    if (arr.length) openRegion(arr[0].id);
+    if (!arr.length) return;
+    // первое совпадение без цифр карточку не открывает — просто
+    // показываем регион на карте
+    if (hasMon(arr[0].id)) openRegion(arr[0].id);
+    else { focusOn(arr[0].id, 2.2); pinTip(arr[0].id); }
   }
 
   /* Для показа и отладки: MonScreen.open('RU-ROS'), MonScreen.stats() */

@@ -301,24 +301,32 @@
         </button>
       </div>
 
-      <section id="card-cls" class="mn-panel mn-cls">
-        <div class="mn-cap">Классы зерна</div>
-        <div id="cls-sub" class="mn-cls-sub">Доля от обследованного объёма</div>
-        <div id="cls-body" class="mn-cls-list"></div>
-        <div id="cls-foot" class="mn-cls-foot">Значения для показа структуры</div>
-      </section>
+      <!-- Правая колонка карточки: классы зерна и основные показатели
+           стоят друг под другом и видны одновременно. Классы забирают
+           столько высоты, сколько нужно их списку (2–5 строк), панель
+           показателей ниже — фиксированной высоты. -->
+      <div class="mn-right">
+        <section id="card-cls" class="mn-panel mn-cls">
+          <div class="mn-cap">Классы зерна</div>
+          <div id="cls-sub" class="mn-cls-sub">Доля от обследованного объёма</div>
+          <div id="cls-body" class="mn-cls-list"></div>
+          <div id="cls-foot" class="mn-cls-foot">Значения для показа структуры</div>
+        </section>
 
-      <!-- второй вид правой панели: разбор основных показателей зерна -->
-      <section id="card-spec" class="mn-panel mn-cls is-off">
-        <div class="mn-cap">Основные показатели</div>
-        <div id="spec-sub" class="mn-cls-sub"></div>
-        <div id="spec-body" class="mn-cls-list"></div>
-        <div id="spec-foot" class="mn-cls-foot"></div>
-      </section>
+        <!-- признак «сильной пшеницы» из таблицы заказчика: показывается
+             только у регионов, где он есть, и только при
+             monitoring.strongNote: true (см. src/monitoring.js) -->
+        <div id="cls-strong" class="mn-panel mn-strong">Регион с сильной пшеницей: белок &gt; 13,5&nbsp;% и клейковина &gt; 28&nbsp;%</div>
 
-      <!-- признак «сильной пшеницы» из таблицы заказчика: показывается
-           только у регионов, где он есть (см. src/monitoring.js) -->
-      <div id="cls-strong" class="mn-panel mn-strong">Регион с сильной пшеницей: белок &gt; 13,5&nbsp;% и клейковина &gt; 28&nbsp;%</div>
+        <!-- разбор основных показателей зерна: строки выбираются
+             и метками вокруг зерна, и нажатием прямо здесь -->
+        <section id="card-spec" class="mn-panel mn-spec">
+          <div class="mn-cap">Основные показатели</div>
+          <div id="spec-sub" class="mn-cls-sub"></div>
+          <div id="spec-body" class="mn-spec-list"></div>
+          <div id="spec-foot" class="mn-cls-foot"></div>
+        </section>
+      </div>
 
       <button id="back-map" class="mn-btn mn-back" type="button">← К карте России</button>
     </section>
