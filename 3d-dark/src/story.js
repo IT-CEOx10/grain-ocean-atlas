@@ -260,7 +260,8 @@
       n.appendChild(lb);
     }
     if (p.grid) n.appendChild(gridEl(p.grid));
-    if (p.slider) n.appendChild(sliderEl(p.slider));
+    if (p.slider) n.appendChild(sliderEl(
+      typeof p.slider === 'string' ? SLIDERS[p.slider]() : p.slider));
     if (p.gauge) n.appendChild(gaugeEl(GAUGES[p.gauge]()));
     if (p.rows) {
       var rt = el('div', 'sc-rows');
@@ -331,10 +332,11 @@
     return n;
   }
 
-  /* ВНИМАНИЕ: по правке заказчика 21.09 ползунки убраны со всех
-     плашек презентации. Сама деталь (sliderEl выше) оставлена
-     в движке: если ползунок попросят вернуть, экрану достаточно
-     снова задать поле slider. */
+  /* ВНИМАНИЕ: по правке 21.09 ползунки убрали со всех плашек, а потом
+     заказчик попросил вернуть один — концентрацию элемента на экране
+     почвы (05). Он и стоит: поле slider там задано снова. Ползунки
+     продовольственного маршрута («Измените качество муки» и такие же
+     на соседних вкладках) заказчик убрал осознанно — не возвращать. */
 
   /**
    * Переключатель из двух-трёх сегментов внутри панели: «До / После».
@@ -543,6 +545,10 @@
     ends.appendChild(el('span', null, g.left));
     ends.appendChild(el('span', null, g.right));
     box.appendChild(ends);
+    /* шкалу и ручку двигает ползунок концентрации на экране 05,
+       поэтому запоминаем их — см. soilRefresh */
+    st.gauge = box;
+    st.gaugeKnob = knob;
     return box;
   }
 
@@ -554,6 +560,7 @@
     /* Знак стоит в самой строке, а не отдельной колонкой: в кадре 05
        вторая строка начинается от края панели, а не под текстом. */
     n.appendChild(el('span', null, s.dot ? s.text : (s.bad ? '! ' : '✓ ') + s.text));
+    st.status = n;
     return n;
   }
 
@@ -1031,15 +1038,52 @@
 
   /* ---------------- почва: элемент, концентрация, статус ----------------
      Концентрация хранится долей 0…1 от шкалы. Норматив стоит на отметке
-     C.soilMark, поэтому «превышение» — это просто доля выше неё.
-     Ползунка концентрации на экране больше нет (правка 21.09): у каждого
-     элемента показывается его привычное значение — поле start
-     в справочнике. Нормативы демонстрационные, см. справочник. */
+     C.soilMark, поэтому «превышение» — это просто доля выше неё,
+     а подпись в мг/кг считается из норматива элемента. Сами нормативы
+     демонстрационные, см. справочник.
+
+     Ползунок концентрации 21.09 сняли со всех экранов, но заказчик
+     попросил вернуть его здесь: на экране почвы он был рабочим.
+     На продовольственном маршруте ползунков по-прежнему нет. */
 
   function soilLevel() {
     if (st.level == null) st.level = find(C.soilElements, selKey()).start;
     return st.level;
   }
+
+  /** Значение в мг/кг для текущей доли шкалы. */
+  function soilMg(e, part) {
+    var v = part * e.limit / C.soilMark;
+    return (e.limit < 10 ? v.toFixed(1).replace('.', ',') : String(Math.round(v))) + ' мг/кг';
+  }
+
+  /** Перерисовать только то, что зависит от ползунка: ручку и плашку.
+      Перерисовывать весь экран нельзя — ползунок потерял бы захват. */
+  function soilRefresh() {
+    var over = st.level > C.soilMark;
+    if (st.gaugeKnob) st.gaugeKnob.style.left = Math.round(st.level * 100) + '%';
+    if (st.gauge) st.gauge.classList.toggle('is-bad', over);
+    if (st.status) {
+      st.status.className = 'sc-status' + (over ? ' is-bad' : '');
+      st.status.innerHTML = '';
+      st.status.appendChild(el('span', null, (over ? '! ' : '✓ ') +
+        (over ? C.soilStatus.bad : C.soilStatus.ok)));
+    }
+  }
+
+  /* Ползунки экранов: имя из справочника → описание для sliderEl. */
+  var SLIDERS = {
+    soil: function () {
+      var e = find(C.soilElements, selKey());
+      var part = soilLevel();
+      return {
+        label: 'Содержание ' + e.gen,
+        unit: soilMg(e, part),
+        value: part,
+        on: function (v) { st.level = v; soilRefresh(); return soilMg(e, v); }
+      };
+    }
+  };
 
   /* Шкалы показателей. */
   var GAUGES = {
