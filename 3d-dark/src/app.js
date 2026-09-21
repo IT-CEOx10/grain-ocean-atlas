@@ -119,6 +119,9 @@
   /* ---- кадр A: вход в раздел ---- */
 
   function goIntro() {
+    // входной кадр с двумя шарами выключен в config.json (introScreen: false):
+    // раздел сразу открывается картой, сброс по бездействию тоже ведёт на неё
+    if (CFG.introScreen === false) { UI.clearSearch(); goMap(); return; }
     state = 'intro';
     selected = null;
     UI.setState('intro');
@@ -224,7 +227,7 @@
   /** Сброс состояния: раздел возвращается на входной кадр A. */
   function toAttractor() {
     var start = CFG.startYear || DATA.years[DATA.years.length - 1];
-    state = 'intro';
+    state = CFG.introScreen === false ? 'map' : 'intro';
     setYear(start, true);
     goIntro();
     resetIdle();
@@ -294,7 +297,7 @@
       var start = CFG.startYear || DATA.years[DATA.years.length - 1];
       setYear(start, true);
       renderIntro();
-      UI.setState('intro');
+      if (CFG.introScreen === false) goMap(); else UI.setState('intro');
       if (!live) UI.pauseVideos();     // раздел готовился в фоне — не крутим
       UI.hideLoading();
       U.revealPage();
@@ -418,7 +421,7 @@
         if (urlState) { urlState = false; }
         else if (state !== 'intro') goIntro();
         // уже были на входном кадре: ролики шаров заводим сначала
-        else UI.setState('intro');
+        else if (CFG.introScreen !== false) UI.setState('intro');
         if (state === 'map') flashHint();
       },
       hide: function () {
