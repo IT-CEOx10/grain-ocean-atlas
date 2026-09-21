@@ -1,0 +1,111 @@
+const imgChatGptImage1720261411281 = "http://localhost:3845/assets/5729f77d6164f060ad2c656e8b9141a834a0fd53.png";
+const imgChatGptImage1720261243491 = "http://localhost:3845/assets/4f0748a33e95ff4b4206cde36d549c2af3802acd.png";
+
+export default function Component() {
+  return (
+    <div className="bg-[#141d23] relative size-full" data-node-id="502:1816" data-name="2. Карта зерна - Открытая информация">
+      <div className="absolute h-[1048px] left-[16px] overflow-clip rounded-[32px] top-[16px] w-[1888px]" data-node-id="502:1817">
+        <div className="absolute h-[1048px] left-0 top-0 w-[1888px]" data-node-id="502:1818">
+          <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[1077px] left-[calc(50%-345.5px)] top-[calc(50%-0.5px)] w-[1357px]" data-node-id="502:1819" data-name="ChatGPT Image 17 сент. 2026 г., 14_11_28 1">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[99.95%] left-[0.01%] max-w-none top-[0.01%] w-[99.96%]" src={imgChatGptImage1720261411281} />
+            </div>
+          </div>
+          <div className="absolute h-[1088px] left-[957px] top-[-15px] w-[974px]" data-node-id="502:1820" data-name="ChatGPT Image 17 сент. 2026 г., 12_43_49 1">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[99.96%] left-[-6.09%] max-w-none top-[0.03%] w-[106.05%]" src={imgChatGptImage1720261243491} />
+            </div>
+          </div>
+          <div className="absolute h-[234px] left-[1291px] top-[40px] w-[530px]" data-node-id="502:1821" />
+        </div>
+        <div className="absolute content-stretch flex flex-col gap-[4px] items-start left-[48px] top-[656px] w-[304px]" data-node-id="502:1866">
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start justify-center overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="502:1867">
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-white whitespace-nowrap" data-node-id="502:1868">
+              Экспорт зерна, 2016
+            </p>
+            <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0" data-node-id="502:1869" data-name="Number-1">
+              <div className="[word-break:break-word] content-stretch flex font-['Akkurat_LL_Cyrillic:Regular'] gap-[10px] items-baseline leading-[normal] not-italic overflow-clip relative shrink-0 text-white whitespace-nowrap" data-node-id="502:1870" data-name="Frame">
+                <p className="relative shrink-0 text-[48px]" data-node-id="502:1871">
+                  33 085
+                </p>
+                <p className="relative shrink-0 text-[20px]" data-node-id="502:1872">
+                  тыс. т
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start justify-center overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="502:1873">
+            <div className="[word-break:break-word] font-['Inter:Light'] font-light leading-[0] not-italic relative shrink-0 text-[24px] text-white whitespace-nowrap" data-node-id="502:1874">
+              <p className="leading-[32px] mb-0 whitespace-pre">{`Количество `}</p>
+              <p className="leading-[32px] mb-0 whitespace-pre">{`экспортированных `}</p>
+              <p className="leading-[32px] whitespace-pre">культур</p>
+            </div>
+            <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0" data-node-id="502:1875" data-name="Number-1">
+              <div className="[word-break:break-word] content-stretch flex font-['Akkurat_LL_Cyrillic:Regular'] gap-[10px] items-baseline leading-[normal] not-italic overflow-clip relative shrink-0 text-white whitespace-nowrap" data-node-id="502:1876" data-name="Frame">
+                <p className="relative shrink-0 text-[48px]" data-node-id="502:1877">
+                  75
+                </p>
+                <p className="relative shrink-0 text-[20px]" data-node-id="502:1878">
+                  культур
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute content-stretch flex flex-col gap-[4px] items-start justify-center left-[1566px] top-[656px] w-[274px]" data-node-id="502:1879">
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start justify-center overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="502:1880">
+            <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-white whitespace-nowrap" data-node-id="502:1881">
+              Экспорт зерна, 2025
+            </p>
+            <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0" data-node-id="502:1882" data-name="Number-1">
+              <div className="[word-break:break-word] content-stretch flex font-['Akkurat_LL_Cyrillic:Regular'] gap-[10px] items-baseline leading-[normal] not-italic overflow-clip relative shrink-0 text-white whitespace-nowrap" data-node-id="502:1883" data-name="Frame">
+                <p className="relative shrink-0 text-[48px]" data-node-id="502:1884">
+                  61 065
+                </p>
+                <p className="relative shrink-0 text-[20px]" data-node-id="502:1885">
+                  тыс. т
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="backdrop-blur-[35px] bg-[rgba(246,246,246,0.1)] content-stretch flex flex-col gap-[26px] items-start justify-center overflow-clip p-[16px] relative rounded-[24px] shrink-0 w-full" data-node-id="502:1886">
+            <div className="[word-break:break-word] font-['Inter:Light'] font-light leading-[0] not-italic relative shrink-0 text-[24px] text-white whitespace-nowrap" data-node-id="502:1887">
+              <p className="leading-[32px] mb-0 whitespace-pre">{`Количество `}</p>
+              <p className="leading-[32px] mb-0 whitespace-pre">{`экспортированных `}</p>
+              <p className="leading-[32px] whitespace-pre">культур</p>
+            </div>
+            <div className="content-stretch flex flex-col items-start overflow-clip relative shrink-0" data-node-id="502:1888" data-name="Number-1">
+              <div className="[word-break:break-word] content-stretch flex font-['Akkurat_LL_Cyrillic:Regular'] gap-[10px] items-baseline leading-[normal] not-italic overflow-clip relative shrink-0 text-white whitespace-nowrap" data-node-id="502:1889" data-name="Frame">
+                <p className="relative shrink-0 text-[48px]" data-node-id="502:1890">
+                  143
+                </p>
+                <p className="relative shrink-0 text-[20px]" data-node-id="502:1891">
+                  культуры
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute content-stretch flex gap-[16px] h-[108px] items-center justify-center left-[1540px] p-[24px] rounded-[var(--grain-radius-32,32px)] top-[48px] w-[300px]" data-node-id="502:1892" data-name="Grain/Button">
+          <div aria-hidden className="absolute backdrop-blur-[20px] bg-[rgba(15,40,28,0.2)] inset-0 pointer-events-none rounded-[var(--grain-radius-32,32px)]" />
+          <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:1892;164:647">
+            Главное меню
+          </p>
+          <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_rgba(255,255,255,0.25),inset_0px_0px_35px_0px_rgba(255,255,255,0.15)]" />
+        </div>
+      </div>
+      <div className="-translate-x-1/2 absolute border border-[var(--grain-color-border,rgba(255,255,255,0.2))] border-solid content-stretch flex gap-[var(--grain-space-16,16px)] h-[108px] items-center justify-center left-[calc(50%+0.5px)] p-[var(--grain-space-24,24px)] rounded-[var(--grain-radius-999,999px)] top-[908px] w-[511px]" data-node-id="502:1893" data-name="Grain/Button">
+        <div aria-hidden className="absolute bg-[#855812] inset-0 pointer-events-none rounded-[var(--grain-radius-999,999px)]" />
+        <p className="[word-break:break-word] font-['Inter:Light'] font-light leading-[32px] not-italic relative shrink-0 text-[24px] text-[color:var(--grain-color-text,white)] whitespace-nowrap" data-node-id="I502:1893;164:644">
+          Посмотреть маршруты экспорта
+        </p>
+        <div className="absolute inset-0 pointer-events-none rounded-[inherit] shadow-[inset_0px_0px_4px_0px_#ffdda7,inset_0px_0px_35px_0px_#f5d197]" />
+      </div>
+      <p className="[word-break:break-word] absolute font-['Akkurat_LL_Cyr:Regular'] leading-[0.9] left-[calc(50%-895px)] not-italic text-[#ddc195] text-[64px] top-[calc(50%-477px)] uppercase whitespace-nowrap" data-node-id="502:2419">
+        РОССИЯ-ЖИТНИЦА
+        <br aria-hidden />
+        МИРА
+      </p>
+    </div>
+  );
+}
