@@ -24,6 +24,7 @@
   var CFG = null;
   var THEME = 'navy';
   var DATA = null;
+  var NEWS = {};                       // новости по годам, data/news.json
   var byName = {};
   var year = null;
   var yearIdx = 0;
@@ -107,7 +108,8 @@
 
     UI.renderYears(yearChips(), y);
     UI.setList(listCache);
-    UI.renderSummary(y, DATA.summary[String(y)].total);
+    UI.renderSummary(y, DATA.summary[String(y)].total, (CFG.yearNote || {})[String(y)]);
+    UI.renderNews(NEWS[String(y)]);
     Globe.setRoutes(listCache, animate !== false);
     Globe.setSelected(null);
     selected = null;
@@ -235,13 +237,15 @@
     return Promise.all([
       U.loadJSON('inline-config', 'config.json'),
       U.loadJSON('inline-export', 'data/export.json'),
-      U.loadJSON('inline-topo', 'data/geo/countries-110m.json')
+      U.loadJSON('inline-topo', 'data/geo/countries-110m.json'),
+      U.loadJSON('inline-news', 'data/news.json')
     ]).then(function (res) {
       // конфиг общий на все разделы (U.loadJSON его запоминает), а тема
       // правит поля прямо в нём — поэтому работаем со своей копией
       CFG = JSON.parse(JSON.stringify(res[0]));
       DATA = res[1];
       var topo = res[2];
+      NEWS = res[3] || {};
 
       DATA.countries.forEach(function (c) { byName[c.name] = c; });
 
@@ -258,7 +262,6 @@
         onInteract: resetIdle
       });
       UI.setupVideos(CFG.globeVideo, CFG.globeVideoPoster);
-      UI.renderNews(CFG.news);
 
       Globe.init({
         canvas: $('globe'),

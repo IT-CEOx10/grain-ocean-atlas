@@ -31,6 +31,7 @@
       top5: $('top5-list'),
       years: $('years'),
       summaryTitle: $('summary-title'),
+      summaryNote: $('summary-note'),
       sumTotal: $('sum-total'),
       news: $('news-list'),
       countryName: $('country-name'),
@@ -251,20 +252,29 @@
 
   /* ------------------------------ сводка ------------------------------ */
 
-  function renderSummary(year, total) {
+  /** note — пометка рядом с годом («на 30.06.2026»), может не быть. */
+  function renderSummary(year, total, note) {
     els.summaryTitle.textContent = 'Экспорт зерна, ' + year;
     els.sumTotal.textContent = U.fmtVolume(total);
+    if (els.summaryNote) els.summaryNote.textContent = note ? ('(' + note + ')') : '';
   }
 
   /* ----------------------------- новости -----------------------------
      Аккордеон: раскрыт один пункт, у него круглая кнопка «×», у
-     остальных «↓». Тексты демонстрационные, лежат в config.json. */
+     остальных «↓». Тексты лежат в data/news.json, по годам; за годы,
+     которых в документе заказчика нет, лента просто скрывается. */
 
   var newsOpen = 0;
 
+  /** Новая лента (сменился год): раскрыт снова первый пункт. */
   function renderNews(items) {
+    newsOpen = 0;
+    drawNews(items || []);
+  }
+
+  function drawNews(items) {
     if (!els.news) return;
-    items = items || [];
+    ROOT.classList.toggle('is-nonews', !items.length);
     els.news.innerHTML = '';
     items.forEach(function (n, i) {
       var box = U.el('div', 'news-item' + (i === newsOpen ? '' : ' is-off'));
@@ -275,15 +285,13 @@
       head.appendChild(U.el('i', 'news-x', i === newsOpen ? '✕' : '↓'));
       head.addEventListener('click', function () {
         newsOpen = (newsOpen === i) ? -1 : i;
-        renderNews(items);
+        drawNews(items);
         handlers.onInteract();
       });
       box.appendChild(head);
       box.appendChild(U.el('div', 'news-p', n.text));
       els.news.appendChild(box);
     });
-    els.news.appendChild(U.el('div', 'news-note',
-      'Новости демонстрационные — тексты предоставит заказчик.'));
   }
 
   /* -------------------------- карточка страны -------------------------- */

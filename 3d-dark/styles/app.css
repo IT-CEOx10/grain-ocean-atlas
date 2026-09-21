@@ -1358,7 +1358,12 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 #sec-globe.is-country #panel-country,
 #sec-globe.is-country #panel-products,
 #sec-globe.is-country #timeline { display: block; }
-#sec-globe.is-country #back-map { display: flex; }
+#sec-globe.is-country #back-map,
+#sec-globe.is-country #home-btn { display: flex; }
+
+/* За год без новостей (2014 и 2015 — их нет в документе заказчика)
+   ленту не показываем: пустая панель в кадре ни к чему. */
+#sec-globe.is-map.is-nonews #panel-news { display: none; }
 
 /* Подпись «ЦОК АПК · Государственный мониторинг зерна» осталась от
    синего прототипа: в кадрах раздела её нет. */
@@ -1400,50 +1405,41 @@ html.theme-green #sec-globe #brand { display: none; }
   line-height: 32px;
   color: var(--text);
 }
-/* «Главное меню»: в кадрах раздела его нет, поэтому на входном кадре
-   оно стоит справа вверху (как на кадрах карты России), а на карте —
-   в просвете между списком стран и панелью годов. Селекторы с темой:
-   иначе их перебивает общая раскладка кнопки html.theme-green #home-btn. */
+/* «Главное меню» стоит справа сверху на всех трёх кадрах: на входе
+   и на карте — у правого края (1556), на кадре страны — левее карточки
+   страны (1010). Размер везде один: 300x108. Селекторы с темой: иначе
+   их перебивает общая раскладка кнопки html.theme-green #home-btn. */
 html.theme-green #sec-globe #home-btn {
-  left: auto;
-  right: auto;
-  top: auto;
-  bottom: auto;
-  padding: 0;
-  background: rgba(15, 40, 28, .2);
-}
-html.theme-green #sec-globe.is-intro #home-btn {
   left: 1556px;
+  right: auto;
   top: 64px;
+  bottom: auto;
   width: 300px;
   height: 108px;
+  padding: 0;
   border-radius: 32px;
+  background: rgba(15, 40, 28, .2);
   font-size: 24px;
   line-height: 32px;
 }
-html.theme-green #sec-globe.is-map #home-btn {
-  left: 462px;
-  top: 892px;
-  width: 216px;
-  height: 64px;
-  border-radius: 16px;
-  font-size: 20px;
-  line-height: 28px;
-}
+html.theme-green #sec-globe.is-country #home-btn { left: 1010px; }
 
 /* ---------------------------- заголовок ----------------------------
-   «Маршруты / экспорта» — один на все три кадра, 64 px, шаг строк 63. */
+   «РОССИЯ-ЖИТНИЦА / МИРА» — один на все три кадра, 64 px, шаг строк
+   57.6 (0.9 от кегля, как в макете). По горизонтали в макете заголовок
+   на входном кадре стоит у отметки 65, на карте и стране — у 32;
+   чтобы он не прыгал при смене кадра, держим одно место на всех трёх. */
 
 #sec-globe #screen-title {
   position: absolute;
-  left: 81px;
-  top: 75px;
+  left: 64px;
+  top: 63px;
   z-index: 5;
   margin: 0;
   font-family: inherit;
   font-size: 64px;
   font-weight: 400;
-  line-height: 63px;
+  line-height: 57.6px;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--title);
@@ -1759,10 +1755,12 @@ html.theme-green #sec-globe.is-map #home-btn {
 
 /* ---- правая колонка: объём за год и лента новостей ---- */
 
+/* В обновлённом макете правая колонка опущена под кнопку «Главное меню»:
+   плашка с объёмом начинается на 188, лента новостей — на 426. */
 #sec-globe.is-map #panel-summary {
-  left: 1316px;
+  left: 1326px;
   right: auto;
-  top: 64px;
+  top: 188px;
   width: 530px;
   height: 234px;
   padding: 32px;
@@ -1790,6 +1788,18 @@ html.theme-green #sec-globe.is-map #home-btn {
   letter-spacing: 0;
   color: var(--text);
 }
+/* Год и пометка при нём стоят одной строкой */
+#sec-globe #summary-head { white-space: nowrap; }
+/* «(на 30.06.2026)» рядом с годом: год посчитан не целиком */
+#sec-globe .sum-note {
+  margin-left: 10px;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 38.4px;
+  color: var(--muted);
+}
+#sec-globe .sum-note:empty { display: none; }
 #sec-globe #panel-summary .metric,
 #sec-globe #panel-country .metric {
   margin-top: 22px;
@@ -1820,11 +1830,11 @@ html.theme-green #sec-globe.is-map #home-btn {
 
 #sec-globe #panel-news {
   position: absolute;
-  left: 1315px;
+  left: 1326px;
   right: auto;
-  top: 302px;
+  top: 426px;
   width: 529px;
-  height: 572px;
+  height: 450px;
   padding: 32px;
   border-radius: 24px;
   z-index: 4;
@@ -1915,12 +1925,6 @@ html.theme-green #sec-globe.is-map #home-btn {
   color: var(--text);
 }
 #sec-globe .news-item.is-off .news-p { display: none; }
-#sec-globe .news-note {
-  margin-top: 4px;
-  font-size: 12.5px;
-  line-height: 18px;
-  color: var(--hint);
-}
 
 /* ---- панель годов: 2015–2026, год без данных неактивен ----
    Общая для кадров «Карта» и «Страна»: 1170x124 на месте из кадра. */

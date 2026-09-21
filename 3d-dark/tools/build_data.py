@@ -28,11 +28,22 @@ except ImportError:
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.path.join(ROOT, "data")
+# Листы ищем по началу названия: в разных выгрузках заказчика к нему
+# дописывают пояснения («по странам 2026 полгода»).
 SHEET_COUNTRIES = "по странам"
 SHEET_YEARS = "по годам"
 TOTAL_ROW = "общий итог"          # строка-итог, её пропускаем
-YEARS_LIMIT = (2014, 2025)        # таймлайн приложения
+YEARS_LIMIT = (2014, 2026)        # таймлайн приложения
 ROUND = 3
+
+
+def find_sheet(wb, prefix):
+    """Лист, название которого начинается с prefix (регистр не важен)."""
+    low = prefix.lower()
+    for name in wb.sheetnames:
+        if nrm(name).lower().startswith(low):
+            return wb[name]
+    return None
 
 
 def nrm(value):
@@ -178,9 +189,9 @@ def main():
     ref = {nrm(k): v for k, v in ref.items()}
 
     wb = openpyxl.load_workbook(xlsx, data_only=True)
-    if SHEET_COUNTRIES not in wb.sheetnames:
+    ws = find_sheet(wb, SHEET_COUNTRIES)
+    if ws is None:
         die("В файле нет листа «%s». Есть: %s" % (SHEET_COUNTRIES, ", ".join(wb.sheetnames)))
-    ws = wb[SHEET_COUNTRIES]
 
     header_row, year_cols = read_header_years(ws)
     year_cols = [(c, y) for c, y in year_cols if YEARS_LIMIT[0] <= y <= YEARS_LIMIT[1]]
@@ -264,7 +275,8 @@ def main():
     print("Записано: %s (%.0f КБ)" % (os.path.relpath(out_path, ROOT), size))
 
     # --- сверка --------------------------------------------------------------
-    control = parse_years_sheet(wb[SHEET_YEARS]) if SHEET_YEARS in wb.sheetnames else {}
+    ws_years = find_sheet(wb, SHEET_YEARS)
+    control = parse_years_sheet(ws_years) if ws_years is not None else {}
     print("")
     print("Сверка сумм, тыс. тонн")
     print("%-6s %14s %14s %14s %10s" % ("год", "по странам", "группы", "лист по годам", "расхожд."))
