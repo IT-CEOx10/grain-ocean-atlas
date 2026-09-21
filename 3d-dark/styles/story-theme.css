@@ -472,16 +472,21 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   line-height: 32px;
 }
 /* Высокая плитка с подписью слева (показатели качества зерна, кадр 11):
-   сетка 775x228 — плитка 112 в высоту, отступ 24, текст Regular 24/28.8,
-   зазоры 4 по вертикали и 2 по горизонтали. Длинное название
-   («Тяжелые металлы») встаёт в две строки. */
+   сетка 824x228 — плитка 112 в высоту, отступ 16, текст Regular 20/24,
+   зазоры 4 по вертикали и 2 по горизонтали. С правкой 21.09 плиток
+   стало восемь в четыре столбца, поэтому они уже прежнего: отступ
+   и кегль уменьшены, чтобы «Стекловидность» и «Тяжелые металлы»
+   вставали в одну-две строки и не вылезали за плитку. */
 #sec-story .sc-grid.is-tall { gap: 4px 2px; }
 #sec-story .sc-grid.is-tall .sc-pick {
   min-height: 112px;
-  padding: 0 24px;
-  font-size: 24px;
-  line-height: 28.8px;
+  padding: 0 16px;
+  font-size: 20px;
+  line-height: 24px;
   text-align: left;
+  /* «Стекловидность» — длинное слово: без переноса оно обрезалось бы
+     краем плитки */
+  overflow-wrap: anywhere;
 }
 
 #sec-story .sc-pick.is-on {
@@ -1301,9 +1306,11 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: var(--sc-text);
 }
 
-/* ---------------- меню шагов подготовки зернохранилища ----------------
-   Четыре раздела: пройденные с зелёной галочкой, текущий — голубым
-   стеклом, как выбранная метка на сцене. */
+/* ---------------- список шагов подготовки склада ----------------
+   Четыре шага: название и пояснение. Состояния «пройден» и «текущий»
+   остались от снятого с маршрута интерактива — сейчас все шаги стоят
+   заглушками (.is-wip), но разметка состояний пригодится, если шаги
+   оживят. */
 
 #sec-story .sc-menu {
   display: flex;
@@ -1360,41 +1367,6 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 #sec-story .sc-menu-i.is-on {
   background: var(--sc-pick);
   box-shadow: var(--sc-pick-glow);
-}
-
-/* ------------------- подсказки и касания на сцене -------------------
-   «Горячее» место на ангаре: рамка появляется только на выбранном,
-   в покое место прозрачное — подсветку нарисовали дизайнеры прямо
-   на кадре. Плашка-подсказка повторяет ту, что на кадре, и ложится
-   ровно поверх неё. */
-
-#sec-story .sc-spot {
-  position: absolute;
-  z-index: 4;
-  border-radius: 12px;
-  background: none;
-  box-shadow: inset 0 0 0 2px rgba(226, 190, 118, 0);
-  transition: box-shadow .2s ease;
-}
-#sec-story .sc-spot.is-round { border-radius: 50%; }
-#sec-story .sc-spot.is-on {
-  box-shadow: inset 0 0 0 2px rgba(240, 214, 160, .9),
-    0 0 28px rgba(226, 190, 118, .45);
-}
-
-#sec-story .sc-chip {
-  position: absolute;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 26px;
-  border-radius: 999px;
-  background: #E9D2A9;
-  color: #2A3A2E;
-  font-size: 20px;
-  line-height: 26px;
-  white-space: nowrap;
 }
 
 /* метка без номера: продукты на столе и кормовой маршрут */
@@ -1518,6 +1490,13 @@ body.story-screen { background: var(--sc-bg, #141D23); }
    под неё добавляет нижний отступ */
 #sec-story .sc-panel.is-wip { padding-bottom: 76px; }
 #sec-story .sc-panel.is-wip::after { top: auto; bottom: 24px; }
+/* шаг подготовки склада невысокий: подпись встаёт посередине справа,
+   иначе она вылезает за верхний край плашки */
+#sec-story .sc-menu-i.is-wip::after { top: 50%; transform: translateY(-50%); }
+/* у кнопки надпись стоит по центру и налезала бы на подпись:
+   освобождаем место справа */
+#sec-story .sc-btn.is-wip { padding-right: 160px; }
+#sec-story .sc-btn.is-wip::after { top: 50%; transform: translateY(-50%); }
 
 /* --------------------- шторка сравнения (кадр 07) --------------------- */
 

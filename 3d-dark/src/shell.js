@@ -23,7 +23,9 @@
        возвращается на заставку презентации, а разделы сбрасывают
        состояние — но не пересоздаются;
      - держит адрес в порядке для отладки и показа:
-       ?section=story|globe|monitoring, плюс параметры самого раздела.
+       ?section=story|globe|monitoring|presence, плюс параметры самого
+       раздела. presence — это «Регионы присутствия»: отдельный вход
+       в раздел мониторинга (ALIAS), у него своя обёртка не нужна.
 
    Раздел подключается вызовом Shell.register — см. README, раздел
    «Единое приложение».
@@ -34,6 +36,9 @@
   var FADE = 340;                       // столько же стоит в CSS у #page-fade
   var ORDER = ['story', 'globe', 'monitoring'];
   var DEFAULT = 'story';
+  /* Имена адреса, за которыми стоит не своя обёртка, а раздел с
+     параметрами: «Регионы присутствия» живут внутри мониторинга. */
+  var ALIAS = { presence: { section: 'monitoring', params: { view: 'presence' } } };
 
   var secs = {};                        // имя -> запись раздела
   var curName = null;
@@ -88,6 +93,12 @@
     var out = {};
     if (Q.idle != null) out.idle = Q.idle;
     var want = Q.section || DEFAULT;
+    var al = ALIAS[want];
+    if (al) {
+      if (al.section !== name) return out;
+      for (var a in al.params) out[a] = al.params[a];
+      want = al.section;                 // дальше отдаём и остальные ?параметры
+    }
     // тему раздела глобуса здесь не навязываем: её берёт src/app.js
     // из config.json (поле appGlobeTheme), а ?theme= в адресе перебивает
     if (want !== name) return out;
@@ -99,12 +110,16 @@
 
   /** Адрес: ?section=<раздел> плюс то, что попросил сам раздел. */
   var urlExtra = {};
+  var urlAs = null;                     // имя раздела в адресе (алиас)
 
-  function setUrl(name, params) {
+  /** alias — под каким именем раздел показывается в адресе: мониторинг
+      на экране регионов присутствия пишется как ?section=presence. */
+  function setUrl(name, params, alias) {
     if (name && name !== curName) return;          // фоновый раздел адрес не трогает
     if (params) urlExtra = params;
+    if (arguments.length > 2) urlAs = alias || null;
     if (!global.history || !global.history.replaceState) return;
-    var q = ['section=' + encodeURIComponent(curName || DEFAULT)];
+    var q = ['section=' + encodeURIComponent(urlAs || curName || DEFAULT)];
     for (var k in urlExtra) {
       if (Object.prototype.hasOwnProperty.call(urlExtra, k) && urlExtra[k] != null) {
         q.push(encodeURIComponent(k) + '=' + encodeURIComponent(urlExtra[k]));
@@ -128,6 +143,14 @@
   }
 
   function go(name, params) {
+    var al = ALIAS[name];
+    if (al) {
+      params = params || {};
+      for (var a in al.params) {
+        if (params[a] == null) params[a] = al.params[a];
+      }
+      name = al.section;
+    }
     var s = secs[name];
     if (!s) return;
     params = params || {};
@@ -152,6 +175,7 @@
       }
       curName = name;
       urlExtra = {};
+      urlAs = null;
       reveal(s, params);
       setUrl(name);
       // проявление следующим тиком: браузеру нужно заметить смену класса
@@ -233,7 +257,8 @@
       .then(function () {
         if (Q.idle === '0') idleOff = true;
 
-        var start = secs[Q.section] ? Q.section : DEFAULT;
+        var startQ = ALIAS[Q.section] ? ALIAS[Q.section].section : Q.section;
+        var start = secs[startQ] ? startQ : DEFAULT;
         curName = start;
         secs[start].root.classList.add('is-on');
 

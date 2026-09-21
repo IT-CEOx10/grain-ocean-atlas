@@ -208,7 +208,7 @@
   <div id="card">
     <canvas id="stars"></canvas>
 
-    <!-- Карта России: один холст во весь экран на два экрана сразу —
+    <!-- Карта России: один холст на два самостоятельных экрана —
          госмониторинг и регионы присутствия. Панели лежат поверх. -->
     <div id="map-box">
       <canvas id="map"></canvas>
@@ -231,9 +231,6 @@
       <h1 id="map-title" class="mn-title">Госмониторинг зерна
 пшеницы 2026</h1>
 
-      <!-- табы «Госмониторинг зерна | Регионы присутствия»: рисует JS -->
-      <nav id="tabs-map" class="mn-tabs map-tabs"></nav>
-
       <!-- «Главное меню» справа сверху, как на глобусе: 300x108 -->
       <button id="home-btn" class="mn-btn mn-home" type="button">Главное меню</button>
       <!-- поиск по регионам: одно поле, переход в глобус — через главное меню -->
@@ -243,11 +240,11 @@
       </div>
 
       <div class="mn-col">
-        <!-- листалка справа сверху переключает вид пшеницы на всём экране -->
+        <!-- две цифры сразу, без выбора вида пшеницы: общий валовой
+             сбор и общий обследованный объём -->
         <section class="mn-panel mn-total">
           <div class="mn-cap">Всего по России</div>
           <div id="total-body"></div>
-          <div id="total-dots" class="mn-dots"></div>
         </section>
 
         <section class="mn-panel mn-gost">
@@ -331,9 +328,7 @@
 
       <h1 class="pres-title">Регионы присутствия ЦОК АПК</h1>
 
-      <nav id="tabs-presence" class="mn-tabs pres-tabs"></nav>
-
-      <button id="hub-btn" class="mn-btn mn-hub" type="button">В Центр</button>
+      <button id="hub-btn" class="mn-btn mn-hub" type="button">Главное меню</button>
 
       <div class="mn-pres-cap">Выбранный регион</div>
 

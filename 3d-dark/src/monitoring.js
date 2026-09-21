@@ -12,9 +12,10 @@
                     «Всего по России», «Топ-10 регионов», легенда;
      scr-region     карточка выбранного региона (экран 24): валовой
                     сбор, обследовано, классы зерна;
-     scr-presence   «Регионы присутствия ЦОК АПК» — второй таб: та же
-                    карта, подсвечены регионы с филиалами и точки
-                    лабораторий, справа карточка филиала.
+     scr-presence   «Регионы присутствия ЦОК АПК» — самостоятельный
+                    раздел стенда (?section=presence): та же карта,
+                    подсвечены регионы с филиалами и точки лабораторий,
+                    справа карточка филиала.
 
    Карта одна на два экрана: холст во весь кадр 1920x1080, панели лежат
    поверх и размывают её под собой. Страна вписывается не в весь холст,
@@ -124,11 +125,6 @@
     { key: 'durum', label: 'Твёрдая пшеница' }
   ];
 
-  var TABS = [
-    { key: 'grain', label: 'Госмониторинг зерна' },
-    { key: 'presence', label: 'Регионы присутствия' }
-  ];
-
   var SCENE_IMG = 'assets/photos/concept/mon-region-scene.webp';
 
   /* Проекция контуров: Альберса, как в tools/make_regions.py. Точки
@@ -156,7 +152,6 @@
   var hits = null;                     // результат поиска: код региона -> true
   var hoverId = null;
   var screen = 'map';                  // map | region | presence
-  var tab = 'grain';                   // какой таб выбран
 
   var view = { z: 1, cx: 0, cy: 0, k0: 1, ox: 960, oy: 540 };
   var anim = null;                     // плавный переход зума
@@ -235,7 +230,7 @@
 
   function fillFor(id, hot) {
     var c;
-    if (screen === 'presence' || tab === 'presence') {
+    if (screen === 'presence') {
       var here = presOf[id];
       c = here ? (here === presId ? PRES_PICK : PRES_ON) : PRES_OFF;
       return rgb(hot && here ? lighten(c, 0.22) : c);
@@ -518,43 +513,16 @@
     return null;
   }
 
-  /* ------------------------------ табы ------------------------------ */
+  /* ------------------------------ экраны раздела ------------------------------ */
 
-  function drawTabs() {
-    ['tabs-map', 'tabs-presence'].forEach(function (boxId) {
-      var box = $(boxId);
-      if (!box) return;
-      box.textContent = '';
-      TABS.forEach(function (t) {
-        var b = el('button', 'mn-tab' + (t.key === tab ? ' is-on' : ''), t.label);
-        b.type = 'button';
-        b.addEventListener('click', function () {
-          resetIdle();
-          setTab(t.key);
-        });
-        box.appendChild(b);
-      });
-    });
-  }
-
-  function setTab(key) {
-    if (tab === key) {
-      // из карточки региона таб «Госмониторинг зерна» возвращает на карту
-      if (key === 'grain' && screen !== 'map') backToMap();
-      return;
-    }
-    tab = key;
-    drawTabs();
-    if (key === 'presence') {
-      setHover(null);
-      show('presence');
-      resetView();
-      if (!presId) selectPresence(pres && pres.start);
-      drawPresence();
-    } else {
-      show('map');
-      resetView();
-    }
+  /** Открыть «Регионы присутствия»: это самостоятельный раздел стенда,
+      переключателей на госмониторинг на экране нет. */
+  function openPresence(id) {
+    setHover(null);
+    show('presence');
+    resetView();
+    selectPresence(id || presId || (pres && pres.start));
+    if (!presId) drawPresence();
     need = true;
   }
 
@@ -610,12 +578,6 @@
     if (note) box.appendChild(el('div', 'mn-note', note));
   }
 
-  /** Итог по стране за год и выбранный вид пшеницы. */
-  function totalRec() {
-    var r = mon.russia[String(year)];
-    return (r && (r[kind] || r.soft)) || null;
-  }
-
   /** Сумма поля по обоим видам пшеницы: в плашке «Всего по России»
       цифры общие, мягкая и твёрдая вместе. Если нет ни одной — null. */
   function bothSum(field) {
@@ -631,20 +593,34 @@
   /**
    * «Всего по России» — две цифры одна под другой, как в макете:
    * валовой сбор и обследованный объём, обе по мягкой и твёрдой вместе.
-   * Процент ГОСТ остаётся отдельной плашкой и считается по выбранному
-   * виду пшеницы: складывать проценты нельзя.
+   * Выбора вида пшеницы на этой плашке нет: обе цифры общие.
+   * Процент ГОСТ в соседней плашке тоже общий — взвешен по
+   * обследованному объёму (bothCompliance).
    */
   function drawTotal() {
-    var r = totalRec() || {};
     var box = $('total-body');
     box.textContent = '';
     bigNum(el2(box), fmt1(bothSum('gross')), 'тыс. т',
       'общий валовой сбор мягкой и твёрдой пшеницы');
     bigNum(el2(box), fmt1(bothSum('surveyed')), 'тыс. т',
       'обследовано зерна урожая ' + year);
-    bigNum($('gost-body'), dec1(r.compliance), '%',
+    bigNum($('gost-body'), dec1(bothCompliance()), '%',
       'соответствует требованиям ГОСТ');
-    drawDots();
+  }
+
+  /** Доля ГОСТ по обоим видам пшеницы: проценты складывать нельзя,
+      поэтому взвешиваем их по обследованному объёму. Если цифр по виду
+      нет, он просто не участвует в среднем. */
+  function bothCompliance() {
+    var r = mon.russia[String(year)] || {};
+    var sum = 0, w = 0;
+    KINDS.forEach(function (k) {
+      var b = r[k.key];
+      if (!b || b.compliance == null || !b.surveyed) return;
+      sum += b.compliance * b.surveyed;
+      w += b.surveyed;
+    });
+    return w ? sum / w : null;
   }
 
   /** Вложенный блок под одну цифру плашки «Всего по России». */
@@ -652,20 +628,6 @@
     var d = el('div', 'mn-slot');
     box.appendChild(d);
     return d;
-  }
-
-  /** Две точки справа сверху: слайд «Мягкая» и слайд «Твёрдая». */
-  function drawDots() {
-    var box = $('total-dots');
-    box.textContent = '';
-    KINDS.forEach(function (k) {
-      var b = el('button', k.key === kind ? 'is-on' : '');
-      b.type = 'button';
-      b.title = k.label;
-      b.setAttribute('aria-label', k.label);
-      b.addEventListener('click', function () { resetIdle(); setKind(k.key); });
-      box.appendChild(b);
-    });
   }
 
   /** Вид пшеницы общий на весь раздел: карта, список, карточка региона. */
@@ -679,24 +641,6 @@
     if (regionId) drawRegion();
     setUrl();
     need = true;
-  }
-
-  /** Свайп по плашке «Всего по России» листает виды пшеницы. */
-  function bindKindSwipe() {
-    var box = document.querySelector('#sec-monitoring .mn-total') ||
-      document.querySelector('.mn-total');
-    if (!box) return;
-    var x0 = null;
-    box.addEventListener('pointerdown', function (e) { x0 = e.clientX; });
-    box.addEventListener('pointerup', function (e) {
-      if (x0 == null) return;
-      var dx = e.clientX - x0;
-      x0 = null;
-      if (Math.abs(dx) < 40) return;
-      resetIdle();
-      setKind(dx < 0 ? 'durum' : 'soft');
-    });
-    box.addEventListener('pointercancel', function () { x0 = null; });
   }
 
   function norm(s) {
@@ -869,8 +813,10 @@
     if (!b) { drawMarks(null); drawEmptyRegion(); return; }
     drawMarks(b);
 
+    // третью часть подписи добавляем только вместе с разделителем,
+    // чтобы при выключенном strongNote не висело « · » в конце строки
     $('reg-sub').textContent = kindLabel() + '  ·  урожай ' + year +
-      (b.strong ? '  ·  регион с сильной пшеницей' : '');
+      (b.strong && strongOn() ? '  ·  регион с сильной пшеницей' : '');
 
     bigNum($('gross-body'), fmt1(b.gross), 'тыс. т', 'Урожай ' + year);
     bigNum($('surv-body'), fmt1(b.surveyed), 'тыс. т',
@@ -908,10 +854,21 @@
     applyRegView();
   }
 
-  /** Показать или спрятать плашку «Регион с сильной пшеницей». */
+  /** Показать или спрятать плашку «Регион с сильной пшеницей».
+      Ключ monitoring.strongNote в config.json — общий выключатель
+      упоминаний сильной пшеницы в карточке региона: при false нет
+      ни плашки, ни подписи в шапке (пороги белка и клейковины
+      уточняют аналитики заказчика). Звёздочек на карте и легенды
+      это не касается. */
   function strongNote(on) {
     var box = $('cls-strong');
-    if (box) box.classList.toggle('is-on', !!on);
+    if (!box) return;
+    box.classList.toggle('is-on', strongOn() && !!on);
+  }
+
+  /** Общий выключатель упоминаний сильной пшеницы в карточке региона. */
+  function strongOn() {
+    return !CFG.monitoring || CFG.monitoring.strongNote !== false;
   }
 
   /* --------------------- основные показатели зерна ---------------------
@@ -1060,7 +1017,9 @@
     if ((!p.areas || !p.areas.length) && p.todo) {
       box.appendChild(el('div', 'mn-pres-todo', p.todo));
     }
-    if (pres.note) $('pres-foot').textContent = pres.note;
+    // подпись под плашкой: только поле foot. Поля note и about в файле —
+    // комментарии для разработчика, на экран они не идут
+    if (pres.foot) $('pres-foot').textContent = pres.foot;
   }
 
   /** Выноска с названием у выбранного региона: подпись и линия к контуру. */
@@ -1115,8 +1074,6 @@
 
   function backToMap() {
     regionId = null;
-    tab = 'grain';
-    drawTabs();
     show('map');
     setHover(null);
     resetView();
@@ -1132,7 +1089,14 @@
       p.region = regionId;
       if (kind !== 'soft') p.kind = kind;
     }
-    if (global.Shell) { global.Shell.url('monitoring', p); return; }
+    // в едином приложении у регионов присутствия своё имя раздела
+    // в адресе — ?section=presence, отдельный view там уже не нужен
+    if (global.Shell) {
+      var pres0 = screen === 'presence';
+      if (pres0) delete p.view;
+      global.Shell.url('monitoring', p, pres0 ? 'presence' : null);
+      return;
+    }
     if (!global.history || !history.replaceState) return;
     var q = [];
     for (var k in p) q.push(k + '=' + encodeURIComponent(p[k]));
@@ -1298,11 +1262,9 @@
       if (q.kind === 'durum') kind = 'durum';
       recalcMax();
 
-      drawTabs();
       drawYears();
       drawHead();
       drawTotal();
-      bindKindSwipe();
       if (q.q) { setQuery(q.q); $('search').value = q.q; }
       drawTop();
       bindMap();
@@ -1322,10 +1284,9 @@
       $('back-map').addEventListener('click', function () { resetIdle(); backToMap(); });
       // плашка «Основные показатели» — переключатель правой панели
       $('card-key').addEventListener('click', function () { resetIdle(); toggleRegView(); });
-      $('hub-btn').addEventListener('click', function () {
-        U.goSection('story', { screen: 'hub' });
-      });
-      ['home-btn', 'home-btn-reg'].forEach(function (id) {
+      // с экрана регионов присутствия — тоже в главное меню: это
+      // самостоятельный раздел, а не станция «Пути зерна»
+      ['home-btn', 'home-btn-reg', 'hub-btn'].forEach(function (id) {
         $(id).addEventListener('click', function () {
           U.goSection('story', { screen: 'start' });
         });
@@ -1338,8 +1299,6 @@
 
       // что открыть при старте: карта, карточка региона или регионы присутствия
       if (q.view === 'presence') {
-        tab = 'presence';
-        drawTabs();
         show('presence');
         selectPresence(q.region || pres.start);
         if (!presId) drawPresence();
@@ -1380,7 +1339,7 @@
     open: openRegion,
     back: backToMap,
     focus: focusOn,
-    tab: setTab,
+    openPresence: openPresence,
     kind: setKind,
     presence: selectPresence,
     /** Точка региона в координатах страницы — для скриптов и автотестов. */
@@ -1397,7 +1356,7 @@
     stats: function () {
       return { fps: Math.round(fps), dpr: dpr, regions: shapes.length,
                year: year, zoom: Math.round(view.z * 100) / 100,
-               screen: screen, tab: tab, kind: kind,
+               screen: screen, kind: kind,
                region: regionId, presence: presId,
                labs: labs.length, running: !!rafId };
     }
@@ -1410,9 +1369,15 @@
   if (global.Shell) {
     global.Shell.register('monitoring', {
       boot: boot,
-      show: function () {
+      show: function (params) {
         live = true;
         fitStage();
+        // раздел один, а входов в него два: плитка «Мониторинг зерна РФ»
+        // и плитка «Регионы присутствия» (?section=presence)
+        if (mon) {
+          if (params && params.view === 'presence') openPresence(params.region);
+          else if (screen === 'presence') backToMap();
+        }
         need = true;
         startLoop();
       },

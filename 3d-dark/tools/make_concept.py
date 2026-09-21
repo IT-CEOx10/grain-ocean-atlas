@@ -42,6 +42,7 @@ CARD_W, CARD_Q = 1800, 82        # снимки внутри карточек (�
 CARDS = {
     "store-pest", "store-clean", "store-mask-off", "store-mask-on",
     "store-tablet", "store-grate", "store-gas", "store-pest-dead",
+    "store-prep-wall",
     "pick-food", "pick-feed", "pick-tech",
     "tile-monitoring", "tile-globe", "tile-regions",
 }
@@ -52,7 +53,15 @@ CARDS = {
 # в карточке 514x205 увеличена до 436 % и сдвинута на -127 % / -286 %).
 CARD_CROPS = {
     "store-clean": (0.2918, 0.4599, 0.5211, 0.6209),
+    # «Работа на стенке» (кадр 12-store-prep): в карточке 368x172 картинка
+    # увеличена до 580 % и сдвинута на -252 % / -305 % — пересчитано в доли
+    "store-prep-wall": (0.4337, 0.4368, 0.6058, 0.5799),
 }
+
+# Слои, которые в Figma лежат отзеркаленными (поворот на 180° вместе
+# с отражением по вертикали даёт зеркало по горизонтали). Чтобы на экране
+# кадр выглядел как в макете, переворачиваем их при сборке.
+FLIP_H = {"final-collage"}
 
 # Куски, которые вырезаем из полных кадров макетов.
 # Каждая строка: кадр, прямоугольник (left, top, right, bottom) в пикселях
@@ -142,6 +151,9 @@ def convert(name):
         canvas = small.resize(canvas.size, Image.BICUBIC)
         im = canvas.crop((pad + 50, pad + 51, pad + 50 + 1888, pad + 51 + 1048))
         return save_webp(im, stem, SCENE_W, 82, False)
+    if stem in FLIP_H:
+        from PIL import ImageOps
+        im = ImageOps.mirror(im)
     if stem in CARD_CROPS:
         l, t, r, b = CARD_CROPS[stem]
         im = im.crop((round(l * im.width), round(t * im.height),

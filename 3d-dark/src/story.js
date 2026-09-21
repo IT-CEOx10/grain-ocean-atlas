@@ -87,13 +87,6 @@
     return list[0];
   }
 
-  /** Экран 13: текущий шаг подготовки зернохранилища (1…9). */
-  function storeStep() {
-    var n = parseInt(selKey(), 10);
-    if (!(n >= 1 && n <= C.storeSteps.length)) n = 1;
-    return C.storeSteps[n - 1];
-  }
-
   /** Экран 16: выбранная вкладка продовольственного маршрута. */
   function foodTab() { return find(C.food, tabKey()); }
 
@@ -103,7 +96,6 @@
   /* Кадр сцены: общий, по вкладке или по шагу. Имя вместо объекта —
      ссылка на справочник (см. поля sceneByTab и sceneBySel). */
   var SCENES = {
-    store: function () { return { pic: C.storeScenes[storeStep().scene] }; },
     food: function () {
       var f = foodTab();
       return { pic: C.pic(f.name, f.img, 'фото', '', f.at) };
@@ -136,7 +128,7 @@
        tiles:    [{ name, sub, img, … }]  плитки переходов (экран меню)
        boxes:    [{ at, items }]          блоки по координатам кадра
        tabsFrom: 'food'                   табы из справочника
-       overlay:  'store' | 'feed'         метки и подсказки на сцене
+       overlay:  'feed'                   метки и подсказки на сцене
        picks3:   'routes'                 три карточки во весь экран
        hero:     'Раздел в разработке'    крупная надпись по центру
        nav:      { back, next }           навигация снизу
@@ -337,6 +329,9 @@
   /**
    * Переключатель из двух-трёх сегментов внутри панели: «До / После».
    * Выбранный сегмент светлее, золото по киту тут не используется.
+   * Сейчас ни один экран его не показывает (он стоял на последнем шаге
+   * подготовки зернохранилища, снятом с маршрута 21.09) — деталь
+   * оставлена в движке на случай, если переключатель попросят вернуть.
    */
   function toggleEl(t) {
     var box = el('div', 'sc-toggle');
@@ -757,96 +752,29 @@
     });
   }
 
-  /* ------------------- детали экрана хранения (13) -------------------
-     Меню разделов слева, подсказки и «горячие» места прямо на ангаре.
-     Всё собирается по текущему шагу из C.storeSteps. */
+  /* ---------------- деталь экрана подготовки складов ----------------
+     Прежние девять шагов подготовки зернохранилища сняты с маршрута
+     правкой заказчика 21.09: вместе с ними из движка ушли меню
+     разделов, метки и «горячие» места на ангаре. Остался один
+     список шагов подготовки. */
 
-  /** Меню из четырёх разделов: пройденные с галочкой, текущий подсвечен. */
-  function menuEl() {
-    var step = storeStep();
-    var cur2 = step.sec;
-    var passed = true;                   // разделы до текущего пройдены
-    var box = el('nav', 'sc-menu');
-    C.storeMenu.forEach(function (m) {
-      if (m.key === cur2) passed = false;
-      var on = m.key === cur2 && !step.done;
-      var done = step.done || passed;    // на последнем шаге пройдены все
-      var b = el('button', 'sc-menu-i' + (on ? ' is-on' : '') +
-        (done ? ' is-done' : ''));
-      b.type = 'button';
+  /**
+   * Четыре шага подготовки склада списком: название и пояснение.
+   * По правке заказчика шаги заглушены (серые, «в разработке»),
+   * поэтому касания они не ловят и выбранного шага здесь нет.
+   */
+  function storePrepEl() {
+    var box = el('div', 'sc-menu');
+    (C.storePrep || []).forEach(function (m) {
+      var n = el('div', 'sc-menu-i');
       var t = el('div', 'sc-menu-t');
-      t.appendChild(el('div', 'sc-menu-k', m.name));
-      t.appendChild(el('div', 'sc-menu-v', m.sub));
-      b.appendChild(t);
-      if (done) b.appendChild(el('span', 'sc-menu-ok', '✓'));
-      b.addEventListener('click', function () {
-        resetIdle();
-        st.sel = String(m.from);
-        st.spot = null;
-        rerender();
-      });
-      box.appendChild(b);
+      t.appendChild(el('div', 'sc-menu-k', m[0]));
+      t.appendChild(el('div', 'sc-menu-v', m[1]));
+      n.appendChild(t);
+      wip(n);
+      box.appendChild(n);
     });
     return box;
-  }
-
-  /** Подсказка-плашка и «горячие» места на ангаре. */
-  function storeOverlay(root) {
-    var step = storeStep();
-    if (step.marker) {
-      var m = el('div', 'sc-marker is-on');
-      m.style.left = step.marker.x + 'px';
-      m.style.top = step.marker.y + 'px';
-      m.appendChild(el('span', 'sc-marker-n', String(step.marker.n)));
-      m.appendChild(el('span', 'sc-marker-t', step.marker.label));
-      root.appendChild(m);
-    }
-    /* Подсветки пола, решётки и поток воздуха дизайнеры отдали
-       отдельными svg — кладём их по координатам кадра. */
-    (step.marks || []).forEach(function (m) {
-      var n = el('div', 'sc-mark');
-      n.style.left = m.at[0] + 'px';
-      n.style.top = m.at[1] + 'px';
-      n.style.width = m.at[2] + 'px';
-      n.style.height = m.at[3] + 'px';
-      var im = new Image();
-      im.src = U.asset(m.img);
-      im.alt = '';
-      n.appendChild(im);
-      root.appendChild(n);
-    });
-    (step.figs || []).forEach(function (f) {
-      var n = el('div', 'sc-fig' + (f.cls ? ' ' + f.cls : ''));
-      n.style.left = f.at[0] + 'px';
-      n.style.top = f.at[1] + 'px';
-      n.style.width = f.at[2] + 'px';
-      n.style.height = f.at[3] + 'px';
-      var im2 = new Image();
-      im2.src = U.asset(f.img);
-      im2.alt = '';
-      n.appendChild(im2);
-      root.appendChild(n);
-    });
-    (step.spots || []).forEach(function (s) {
-      var b = el('button', 'sc-spot' + (s.round ? ' is-round' : '') +
-        (st.spot === s.key ? ' is-on' : ''));
-      b.type = 'button';
-      b.style.left = s.at[0] + 'px';
-      b.style.top = s.at[1] + 'px';
-      b.style.width = s.at[2] + 'px';
-      b.style.height = s.at[3] + 'px';
-      b.addEventListener('click', function () { resetIdle(); ACTIONS.storeSpot(s.key); });
-      root.appendChild(b);
-    });
-    if (step.chip) {
-      var c = step.chip;
-      var n = el('div', 'sc-chip', st.done ? c.done : c.text);
-      n.style.left = c.at[0] + 'px';
-      n.style.top = c.at[1] + 'px';
-      n.style.minWidth = c.at[2] + 'px';
-      n.style.height = c.at[3] + 'px';
-      root.appendChild(n);
-    }
   }
 
   /** Метки-чипы кормового маршрута: выбор меняет карточку справа. */
@@ -865,7 +793,7 @@
     });
   }
 
-  var OVERLAYS = { store: storeOverlay, feed: feedOverlay };
+  var OVERLAYS = { feed: feedOverlay };
 
   /**
    * Три карточки маршрута во всю высоту экрана (кадр 15). У каждой
@@ -973,43 +901,9 @@
         action: 'weedDrone' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
 
-    /* --- экран 13: подготовка зернохранилища, девять шагов --- */
+    /* --- экран 12: подготовка складов --- */
 
-    storeHead: function () {
-      var s = storeStep();
-      return panelEl({ title: s.title, sub: s.sub });
-    },
-    storeMenu: function () { return menuEl(); },
-    storeBtn: function () {
-      var s = storeStep();
-      var label = (st.before && s.btnBack) ? s.btnBack : s.btn;
-      return button({ label: label, action: 'storeNext' }, 'sc-btn is-gold');
-    },
-    storeCard: function () {
-      var s = storeStep();
-      return panelEl({ cap: s.cap,
-        title: st.before && s.cardBefore ? s.cardBefore : s.card,
-        text: s.text });
-    },
-    storeShot: function () {
-      var s = storeStep();
-      return shotEl(st.before && s.shotBefore ? s.shotBefore : s.shot);
-    },
-    /** Под снимком: пояснение, плашка-статус или переключатель «До / После». */
-    storeFoot: function () {
-      var s = storeStep();
-      if (s.toggle) {
-        return toggleEl({ items: s.toggle, at: st.before ? 0 : 1,
-          on: function (i) { st.before = i === 0; rerender(); } });
-      }
-      if (s.status) {
-        var ok = st.done && s.status.done;
-        return statusEl({ dot: true, warn: s.status.warn && !ok,
-          text: ok ? s.status.done : s.status.text });
-      }
-      if (!s.note) return el('div');
-      return panelEl({ text: s.note, cls: 'is-note' });
-    },
+    storePrep: function () { return storePrepEl(); },
 
     /* --- экран 16: продовольственный маршрут --- */
 
@@ -1077,7 +971,13 @@
 
   function slotEl(item) {
     if (item.dyn) return SLOTS[item.dyn] ? SLOTS[item.dyn]() : el('div');
-    if (item.label) return button(item, 'sc-btn' + (item.gold ? ' is-gold' : ''));
+    if (item.label) {
+      var b = button(item, 'sc-btn' + (item.gold ? ' is-gold' : ''));
+      /* заглушённая кнопка: серая, с подписью «в разработке»
+         и без касаний (экран подготовки складов) */
+      if (item.wip) wip(b);
+      return b;
+    }
     if (item.picks) return picksEl(item.picks);
     if (item.select) return selectEl(item.select);
     if (item.steps) return stepsEl(item.steps);
@@ -1324,32 +1224,6 @@
       if (tabKey() === 'drone') { st.tab = 'photo'; rerender(); return; }
       st.tab = 'drone';
       st.found = { 0: true, 1: true, 2: true };
-      rerender();
-    },
-
-    /* --- экран 13: девять шагов подготовки зернохранилища --- */
-
-    /** Золотая кнопка: следующий шаг, а на последнем — «До / После». */
-    storeNext: function () {
-      var s = storeStep();
-      if (s.toggle) { st.before = !st.before; rerender(); return; }
-      var n = Math.min(s.n + 1, C.storeSteps.length);
-      st.sel = String(n);
-      st.spot = null;
-      st.done = false;
-      rerender();
-    },
-
-    /**
-     * Касание «горячего» места на ангаре. Прототипа дизайнеры не дали,
-     * поведение придумано нами и намеренно простое: препарат сначала
-     * выбирают, потом переносят касанием пола; решётку закрывают одним
-     * касанием. Результат виден в подсказке и в плашке справа.
-     */
-    storeSpot: function (key) {
-      if (key === 'item') { st.spot = st.spot === 'item' ? null : 'item'; }
-      else if (key === 'floor') { if (st.spot === 'item') st.done = true; }
-      else { st.done = true; }
       rerender();
     },
 

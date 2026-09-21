@@ -170,8 +170,16 @@
 
   var SITE_PATH = /\/(?:story|green|monitoring|path)\/(?:index\.html)?$/;
 
-  /** Адрес раздела: sectionUrl('globe', {theme: 'green'}). */
+  /** Адрес раздела: sectionUrl('globe', {theme: 'green'}).
+      «Регионы присутствия» своей страницы не имеют: это экран
+      мониторинга, поэтому имя presence разворачивается в
+      monitoring.html?view=presence. */
   function sectionUrl(name, params) {
+    if (name === 'presence') {
+      name = 'monitoring';
+      params = params || {};
+      if (params.view == null) params.view = 'presence';
+    }
     var s = SECTIONS[name];
     if (!s) return '';
     var url = SITE_PATH.test(global.location.pathname || '')

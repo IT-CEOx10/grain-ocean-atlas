@@ -35,6 +35,8 @@ PNG = {
     # почва
     "soil-1-scene": "2cd4e254c9124ef865081e741ccf9d312afe2422",
     "soil-2-scene": "911a3f50f0a4f8111480848b1d46fb8be98153d9",
+    # мелиорация и рекультивация (кадр 05b-melioration, макеты 21.09)
+    "soil-3-scene": "f4aa6c7f0bc537174e08de81684d2564157c3d83",
     # семена
     "seed-1-scene": "44c43498e49ca757a9289c0c4e9278264a6aadfc",
     "seed-1-grain-bad": "6dac4367ee46c644c6afdebea0691cf85321de28",
@@ -48,6 +50,10 @@ PNG = {
     # качество
     "quality-1-scene": "3a38367960cb0d9d7d8631213bd090b53e528260",
     "quality-2-scene": "7ebfc5a692b6383d7d5d3b82883a6d53fcf5ae9e",
+    # хранение: подготовка складов (кадр 12-store-prep, макеты 21.09) —
+    # силос в разрезе во весь кадр и отдельный крупный план стенки
+    "store-prep-scene": "c9eb2c6f31381623d91df48219fbe10aa679d7cf",
+    "store-prep-wall": "7b90d93a1e777b83b7539744b93c76fae4c58082",
     # хранение: одна сцена на все шаги и своя на шаг очистки
     "store-scene": "506380426a70af5dfd27837f96dfe0642710bd1f",
     "store-scene-clean": "4b253fdcdbf8e8026f967f60f512cccd9e80fba7",
@@ -77,6 +83,9 @@ PNG = {
     "export-1-scene": "a7b7b580f032d20dfda0fe61461470569ae8e474",
     "export-2-scene": "f5edd4d16a9b356c7c2538c2e8136562c74fb248",
     "final-1": "0d0827feb297dbc9ff522f2a4b285c0d2a3b5931",
+    # финал по макету 21.09: коллаж из диагональных полос (кадр 21-people).
+    # В Figma слой отзеркален, поэтому make_concept.py его переворачивает.
+    "final-collage": "4955ac62e865ee1b9191d725db1cc12bb9dec3d1",
 }
 
 # Векторные детали: линии между станциями, подсветки, иконки.

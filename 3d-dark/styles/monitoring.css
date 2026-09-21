@@ -42,7 +42,6 @@
   --mn-btn-line: inset 0 0 4px rgba(255, 255, 255, .25),
     inset 0 0 35px rgba(255, 255, 255, .15);
 
-  --mn-tabs-bg: #172c2a;
   --mn-bar-track: #1c3d26;
   --mn-bar-fill: #ebc669;
   --mn-scroll-track: rgba(100, 140, 27, .15);
@@ -179,37 +178,6 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-round:active { background: rgba(107, 148, 76, .38); }
 #sec-monitoring .mn-round svg { display: block; width: 48px; height: 48px; fill: #fff; }
 
-/* ------------------------------- табы ------------------------------- */
-
-#sec-monitoring .mn-tabs {
-  position: absolute;
-  z-index: 6;
-  display: flex;
-  gap: 4px;
-  height: 64px;
-  padding: 4px;
-  border-radius: 16px;
-  background: var(--mn-tabs-bg);
-  -webkit-backdrop-filter: var(--mn-blur);
-  backdrop-filter: var(--mn-blur);
-}
-#sec-monitoring .mn-tab {
-  flex: 1 0 0;
-  min-width: 0;
-  height: 56px;
-  border: 0;
-  border-radius: 16px;
-  background: none;
-  color: var(--mn-text);
-  font-family: inherit;
-  font-size: 20px;
-  font-weight: 300;
-  line-height: 28px;
-  cursor: pointer;
-  transition: background .18s ease;
-}
-#sec-monitoring .mn-tab.is-on { background: var(--mn-panel); }
-
 /* ==================== экран 23: карта госмониторинга ==================== */
 
 #sec-monitoring .mn-title {
@@ -226,8 +194,6 @@ body.mon-screen { background: #141d23; }
   color: var(--mn-gold);
   white-space: pre-line;
 }
-
-#sec-monitoring .map-tabs { left: 48px; top: 175px; width: 680px; }
 
 /* поиск: одно поле «Поиск по регионам» слева от «Главного меню» */
 #sec-monitoring .mn-search {
@@ -395,26 +361,6 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-total .mn-cap,
 #sec-monitoring .mn-total .mn-num { margin-top: -4px; }
 #sec-monitoring .mn-gost .mn-num { margin-top: -8px; }
-
-/* листалка: две точки справа сверху, переключают вид пшеницы */
-#sec-monitoring .mn-dots {
-  position: absolute;
-  left: 391px;
-  top: 32px;
-  display: flex;
-  gap: 12px;
-}
-#sec-monitoring .mn-dots button {
-  width: 14px;
-  height: 14px;
-  border: 0;
-  padding: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, .3);
-  cursor: pointer;
-  transition: background .18s ease;
-}
-#sec-monitoring .mn-dots button.is-on { background: #fff; }
 
 #sec-monitoring .mn-top {
   flex: none;
@@ -1027,7 +973,6 @@ body.mon-screen { background: #141d23; }
   text-transform: uppercase;
   color: var(--mn-gold);
 }
-#sec-monitoring .pres-tabs { left: 48px; top: 120px; width: 680px; }
 #sec-monitoring .mn-hub { left: 1540px; top: 48px; width: 300px; height: 108px; }
 
 #sec-monitoring .mn-pres-cap {
@@ -1062,12 +1007,15 @@ body.mon-screen { background: #141d23; }
   line-height: 38.4px;
   color: var(--mn-text);
 }
+/* у филиалов бывает до девяти направлений: интерлиньяж чуть плотнее
+   кадра, иначе самый длинный список не помещается в плашку */
 #sec-monitoring .mn-pres-body {
   font-size: 20px;
   font-weight: 300;
-  line-height: 28px;
+  line-height: 26px;
   color: var(--mn-muted);
   white-space: pre-line;
+  overflow-wrap: break-word;
 }
 #sec-monitoring .mn-pres-todo {
   font-size: 20px;
