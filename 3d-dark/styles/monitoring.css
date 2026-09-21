@@ -1000,6 +1000,46 @@ body.mon-screen { background: #141d23; }
   gap: 16px;
   overflow: hidden;
 }
+/* крестик в правом верхнем углу карточки: зона касания 56x56 —
+   стенд сенсорный. Прячет карточку вместе с подписью «Выбранный
+   регион» (класс pres-card-off на обёртке раздела) */
+#sec-monitoring .mn-pres-close {
+  position: absolute;
+  z-index: 7;
+  left: 1776px;
+  top: 254px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(20, 32, 28, .72);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  box-shadow: var(--mn-btn-line);
+  cursor: pointer;
+  transition: opacity .22s ease, background .18s ease;
+}
+#sec-monitoring .mn-pres-close svg { width: 28px; height: 28px; fill: var(--mn-text); }
+#sec-monitoring .mn-pres-close:active { background: rgba(40, 60, 50, .85); }
+
+/* карточка убрана крестиком: не видна и не ловит касания — карта
+   под ней (Приморский и Хабаровский края) снова кликается */
+#sec-monitoring.pres-card-off .mn-pres,
+#sec-monitoring.pres-card-off .mn-pres-cap,
+#sec-monitoring.pres-card-off .mn-pres-foot,
+#sec-monitoring.pres-card-off .mn-pres-close {
+  opacity: 0;
+  pointer-events: none;
+}
+#sec-monitoring .mn-pres,
+#sec-monitoring .mn-pres-cap,
+#sec-monitoring .mn-pres-foot {
+  transition: opacity .22s ease;
+}
+
 #sec-monitoring .mn-pres-name {
   margin: 0;
   font-size: 32px;

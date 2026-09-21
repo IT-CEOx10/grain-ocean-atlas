@@ -5263,6 +5263,46 @@ body.mon-screen { background: #141d23; }
   gap: 16px;
   overflow: hidden;
 }
+/* крестик в правом верхнем углу карточки: зона касания 56x56 —
+   стенд сенсорный. Прячет карточку вместе с подписью «Выбранный
+   регион» (класс pres-card-off на обёртке раздела) */
+#sec-monitoring .mn-pres-close {
+  position: absolute;
+  z-index: 7;
+  left: 1776px;
+  top: 254px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(20, 32, 28, .72);
+  -webkit-backdrop-filter: var(--mn-blur);
+  backdrop-filter: var(--mn-blur);
+  box-shadow: var(--mn-btn-line);
+  cursor: pointer;
+  transition: opacity .22s ease, background .18s ease;
+}
+#sec-monitoring .mn-pres-close svg { width: 28px; height: 28px; fill: var(--mn-text); }
+#sec-monitoring .mn-pres-close:active { background: rgba(40, 60, 50, .85); }
+
+/* карточка убрана крестиком: не видна и не ловит касания — карта
+   под ней (Приморский и Хабаровский края) снова кликается */
+#sec-monitoring.pres-card-off .mn-pres,
+#sec-monitoring.pres-card-off .mn-pres-cap,
+#sec-monitoring.pres-card-off .mn-pres-foot,
+#sec-monitoring.pres-card-off .mn-pres-close {
+  opacity: 0;
+  pointer-events: none;
+}
+#sec-monitoring .mn-pres,
+#sec-monitoring .mn-pres-cap,
+#sec-monitoring .mn-pres-foot {
+  transition: opacity .22s ease;
+}
+
 #sec-monitoring .mn-pres-name {
   margin: 0;
   font-size: 32px;
@@ -5461,6 +5501,12 @@ body.mon-screen { background: #141d23; }
       <button id="hub-btn" class="mn-btn mn-hub" type="button">Главное меню</button>
 
       <div class="mn-pres-cap">Выбранный регион</div>
+
+      <!-- крестик: карточка закрывает восток карты, её можно убрать -->
+      <button id="pres-close" class="mn-pres-close" type="button"
+        title="Скрыть карточку" aria-label="Скрыть карточку">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13.4 37L11 34.6 21.6 24 11 13.4 13.4 11 24 21.6 34.6 11 37 13.4 26.4 24 37 34.6 34.6 37 24 26.4 13.4 37Z"></path></svg>
+      </button>
 
       <section id="card-pres" class="mn-panel mn-pres"></section>
 
@@ -5817,9 +5863,9 @@ body.mon-screen { background: #141d23; }
      data/presence.json              филиалы и лаборатории ЦОК АПК
 
    ЦИФРЫ НАСТОЯЩИЕ: data/monitoring.json собирается из таблиц заказчика
-   (tools/make_monitoring.py, исходники в data/monitoring-src). Где
-   в таблице пусто — на экране пишется «нет данных», ничего не
-   достраиваем.
+   (tools/make_monitoring.py, исходники в data/monitoring-src). Региона
+   нет в таблице за этот год — он серый и подписан «госмониторинг
+   не проводится», ничего не достраиваем.
    =================================================================== */
 (function (global) {
   'use strict';
@@ -5857,13 +5903,19 @@ body.mon-screen { background: #141d23; }
   var C_NONE = [42, 53, 51];           // #2a3533
   var FILL_ALPHA = 0.92;               // сквозь заливку чуть видно фактуру фона
 
-  /* Новые регионы РФ: цифр по ним пока нет, но на карте они закрашены
-     как остальные регионы с данными — зелёным. Вместо объёма везде
-     пишется «данные уточняются». Цифры не выдумываем. */
-  var PENDING = { 'UA-14': 1, 'UA-09': 1, 'UA-23': 1, 'UA-65': 1 };
+  /* Регион считается охваченным госмониторингом, если за выбранный год
+     в таблицах заказчика есть цифры хотя бы по одному виду пшеницы.
+     Где их нет — регион серый и везде подписан одинаково: «госмониторинг
+     не проводится». Цифры не выдумываем и «данные уточняются» больше
+     не пишем (решение заказчика от 21.09). */
+  function hasMon(id) {
+    return !!(rec(id, 'soft') || rec(id, 'durum'));
+  }
+
   function noDataLabel(id) {
-    return PENDING[id] ? 'данные уточняются'
-      : (byId[id] ? 'нет данных' : 'нет госмониторинга');
+    // единственный оставшийся случай «нет данных» — выбран вид пшеницы,
+    // которого в регионе не возделывают, а по второму цифры есть
+    return hasMon(id) ? 'нет данных' : 'госмониторинг не проводится';
   }
 
   /* «Сильная пшеница» — признак из таблицы заказчика «Регионы
@@ -6024,7 +6076,7 @@ body.mon-screen { background: #141d23; }
       c = here ? (here === presId ? PRES_PICK : PRES_ON) : PRES_OFF;
       return rgb(hot && here ? lighten(c, 0.22) : c);
     }
-    c = (volume(id) <= 0 && !PENDING[id]) ? C_NONE : C_DATA;
+    c = hasMon(id) ? C_DATA : C_NONE;
     return rgb(hot ? lighten(c, 0.26) : c);
   }
 
@@ -6308,6 +6360,7 @@ body.mon-screen { background: #141d23; }
       переключателей на госмониторинг на экране нет. */
   function openPresence(id) {
     setHover(null);
+    showPresCard(true);
     show('presence');
     resetView();
     selectPresence(id || presId || (pres && pres.start));
@@ -6745,18 +6798,13 @@ body.mon-screen { background: #141d23; }
   }
 
   function drawEmptyRegion() {
-    // Разные случаи: субъекта вовсе нет в data/monitoring.json —
-    // госмониторинг там не проводится; есть, но без записи за год —
-    // пшеницу в этом году не возделывали.
-    var noMon = !byId[regionId];
-    var pending = !!PENDING[regionId];
-    var note = pending ? 'Данные уточняются'
-      : noMon ? 'Госмониторинг не проводится'
-      : kind === 'durum' ? 'Твёрдую пшеницу в регионе не возделывают'
-      : 'Данных за ' + year + ' год нет';
-    $('reg-sub').textContent = pending
-      ? 'Данные по региону уточняются'
-      : noMon
+    // Два случая: за выбранный год цифр по региону нет вовсе —
+    // госмониторинг там не проводится; или есть только по мягкой,
+    // а открыта твёрдая — её в регионе не возделывают.
+    var noMon = !hasMon(regionId);
+    var note = noMon ? 'Госмониторинг не проводится'
+      : 'Твёрдую пшеницу в регионе не возделывают';
+    $('reg-sub').textContent = noMon
       ? 'Госмониторинг в этом регионе не проводится'
       : kindLabel() + '  ·  ' + note;
     bigNum($('gross-body'), '—', '', note);
@@ -6776,10 +6824,27 @@ body.mon-screen { background: #141d23; }
 
   /* --------------------- экран «Регионы присутствия» --------------------- */
 
+  /** Карточка филиала закрывает восток карты, поэтому её можно убрать
+      крестиком: под ней открываются Приморский и Хабаровский края.
+      Вместе с карточкой снимаем и выбор региона — иначе на карте
+      осталась бы выноска, показывающая на спрятанное окно. */
+  function showPresCard(on) {
+    ROOT.classList.toggle('pres-card-off', !on);
+  }
+
+  function closePresCard() {
+    showPresCard(false);
+    presId = null;
+    $('map-call').classList.remove('is-on');
+    setUrl();
+    need = true;
+  }
+
   function selectPresence(id) {
     id = id && presOf[id];
     if (!id) return;
     presId = id;
+    showPresCard(true);
     drawPresence();
     placeCall();
     need = true;
@@ -7071,6 +7136,10 @@ body.mon-screen { background: #141d23; }
         openFirst();
       });
       $('back-map').addEventListener('click', function () { resetIdle(); backToMap(); });
+      $('pres-close').addEventListener('click', function () {
+        resetIdle();
+        closePresCard();
+      });
       // плашка «Основные показатели» — переключатель правой панели
       $('card-key').addEventListener('click', function () { resetIdle(); toggleRegView(); });
       // с экрана регионов присутствия — тоже в главное меню: это
