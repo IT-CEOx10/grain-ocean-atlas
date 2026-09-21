@@ -154,7 +154,7 @@
    * кадр просто обрезается по месту.
    */
   var NO_VIGNETTE = { intro: 1, start: 1, hub: 1, 'soil-1': 1, 'soil-2': 1,
-    'store-1': 1, 'store-2': 1 };
+    'store-1': 1 };
 
   function sceneLayer(scr) {
     var p = sceneFor(scr).pic || null;
@@ -204,6 +204,18 @@
     return h;
   }
 
+  /* ------------------- заглушка «в разработке» -------------------
+     Нерабочий блок — без визуала и без данных — по правке заказчика
+     от 21.09 показывается серым, с подписью «в разработке», и касания
+     не ловит. Один класс .is-wip на все экраны (styles/story-theme.css):
+     когда блок доделают, достаточно убрать поле wip в справочнике. */
+  function wip(node) {
+    node.classList.add('is-wip');
+    node.setAttribute('aria-disabled', 'true');
+    if (node.tagName === 'BUTTON') node.disabled = true;
+    return node;
+  }
+
   /** Стеклянная панель: надпись, заголовок, текст, строки, пометка. */
   function panelEl(p) {
     var n = el('section', 'sc-panel' + (p.cls ? ' ' + p.cls : ''));
@@ -245,10 +257,8 @@
       });
       n.appendChild(lb);
     }
-    if (p.bars) n.appendChild(barsEl(C[p.bars]));
     if (p.grid) n.appendChild(gridEl(p.grid));
-    if (p.slider) n.appendChild(sliderEl(
-      typeof p.slider === 'string' ? SLIDERS[p.slider]() : p.slider));
+    if (p.slider) n.appendChild(sliderEl(p.slider));
     if (p.gauge) n.appendChild(gaugeEl(GAUGES[p.gauge]()));
     if (p.rows) {
       var rt = el('div', 'sc-rows');
@@ -264,28 +274,12 @@
     if (p.note) n.appendChild(el('div', 'sc-note', p.note));
     if (p.button) n.appendChild(button(p.button,
       'sc-btn sc-panel-btn' + (p.button.gold ? ' is-gold' : '')));
+    if (p.wip) wip(n);
     return n;
   }
 
-  /** Полоски долей: несоответствия за сезон (экран приёмки). */
-  function barsEl(list) {
-    var box = el('div', 'sc-bars');
-    var max = 0;
-    list.forEach(function (m) { max = Math.max(max, m.value); });
-    list.forEach(function (m) {
-      var row = el('div', 'sc-bar');
-      row.appendChild(el('span', 'sc-bar-k', m.name));
-      var track = el('span', 'sc-bar-track');
-      var fill = el('i');
-      fill.style.width = Math.round(m.value / max * 100) + '%';
-      track.appendChild(fill);
-      row.appendChild(track);
-      row.appendChild(el('span', 'sc-bar-v',
-        String(m.value).replace('.', ',') + ' %'));
-      box.appendChild(row);
-    });
-    return box;
-  }
+  /* Полоски долей (несоответствия за сезон) убраны вместе с экраном
+     приёмки зерна — правка заказчика 21.09. */
 
   /** Шаги 01–03 отдельными плашками (экран контроля экспорта). */
   function stepsEl(list) {
@@ -331,8 +325,14 @@
     v.appendChild(el('span', 'sc-stat-u', s.unit));
     n.appendChild(v);
     if (s.note) n.appendChild(el('div', 'sc-stat-note', s.note));
+    if (s.wip) wip(n);
     return n;
   }
+
+  /* ВНИМАНИЕ: по правке заказчика 21.09 ползунки убраны со всех
+     плашек презентации. Сама деталь (sliderEl выше) оставлена
+     в движке: если ползунок попросят вернуть, экрану достаточно
+     снова задать поле slider. */
 
   /**
    * Переключатель из двух-трёх сегментов внутри панели: «До / После».
@@ -538,9 +538,6 @@
     ends.appendChild(el('span', null, g.left));
     ends.appendChild(el('span', null, g.right));
     box.appendChild(ends);
-
-    st.gauge = box;
-    st.gaugeKnob = knob;
     return box;
   }
 
@@ -552,7 +549,6 @@
     /* Знак стоит в самой строке, а не отдельной колонкой: в кадре 05
        вторая строка начинается от края панели, а не под текстом. */
     n.appendChild(el('span', null, s.dot ? s.text : (s.bad ? '! ' : '✓ ') + s.text));
-    st.status = n;
     return n;
   }
 
@@ -571,7 +567,9 @@
       b.appendChild(ph);
       b.appendChild(el('div', 'sc-card2-name', it.label || it.name));
       if (on) b.appendChild(el('span', 'sc-card2-ok', '✓'));
-      b.addEventListener('click', function () {
+      // заглушённую карточку не выбирают: она серая и не ловит касания
+      if (it.wip) wip(b);
+      else b.addEventListener('click', function () {
         resetIdle();
         st.sel = it.key;
         if (PICKED[cur.id]) PICKED[cur.id]();
@@ -886,8 +884,11 @@
       im.alt = r.title;
       ph.appendChild(im);
       card.appendChild(ph);
-      card.appendChild(button({ label: 'Выбрать маршрут', to: r.to },
-        'sc-btn is-gold'));
+      var go2 = button({ label: 'Выбрать маршрут', to: r.to }, 'sc-btn is-gold');
+      if (r.wip) go2.disabled = true;
+      card.appendChild(go2);
+      // карточка «в разработке»: серая, кнопка маршрута не нажимается
+      if (r.wip) wip(card);
       box.appendChild(card);
     });
     return box;
@@ -921,8 +922,12 @@
       return panelEl({ title: 'Доза удобрения', text: f.name,
         big: st.dose ? f.dose : 'формула' });
     },
+    /* «Место для формулы» — заглушка: расчёта за ней нет, поэтому
+       плашка серая и не реагирует на касания (правка 21.09). Кнопка
+       «Рассчитать дозу удобрений» по-прежнему показывает саму дозу
+       в соседней плашке. */
     doseNote: function () {
-      return panelEl({ text: st.dose ? f2(find(C.fertilizers, selKey())) : C.doseNote });
+      return panelEl({ text: C.doseNote, wip: true });
     },
 
     /* --- экран 7: панель слева с пояснением выбранного направления.
@@ -954,9 +959,12 @@
     /* На изометрии обе кнопки золотые — так в кадре. Нажатая кнопка
        остаётся пилюлей, но золото приглушается (#79623e, как в кадре):
        видно, какое состояние сейчас открыто. */
+    /* Экран открывается заросшим полем (кадр photo), поэтому
+       «Посмотреть самостоятельно» переводит на изометрию, где сорняки
+       ищут касанием, и обратно — правка заказчика 21.09. */
     weedBtnSelf: function () {
-      var on = tabKey() === 'photo';
-      return button({ label: on ? 'Смотрим' : 'Посмотреть самостоятельно',
+      var on = tabKey() === 'iso';
+      return button({ label: on ? 'Ищем сорняки' : 'Посмотреть самостоятельно',
         action: 'weedSelf' }, 'sc-btn' + (on ? ' is-gold-on' : ' is-gold'));
     },
     weedBtnDrone: function () {
@@ -1013,14 +1021,8 @@
       var f = foodTab();
       return panelEl({ title: 'Что оценивают', text: f.check });
     },
-    foodSlider: function () {
-      var f = foodTab();
-      if (st.level == null) st.level = 0.90;   // ручка справа, как в макете
-      return panelEl({ cls: 'is-slim', slider: {
-        label: f.slider, marks: f.marks, value: st.level, wide: true,
-        on: function (v) { st.level = v; }
-      } });
-    },
+    /* ползунок «Измените качество муки» и его собратья на других
+       вкладках убраны по правке 21.09 */
     foodNext: function () {
       var f = foodTab();
       return button(f.next.to ? { label: f.next.label, to: f.next.to }
@@ -1033,9 +1035,11 @@
       var s = feedState();
       return panelEl({ title: s.title, text: s.text });
     },
+    /* «Что проверяют» на корме и «Выбран продукт · молоко» на животном —
+       заглушки: данных за ними нет (правка 21.09). */
     feedCheck: function () {
       var s = feedState();
-      return panelEl({ title: s.check, text: s.checkText });
+      return panelEl({ title: s.check, text: s.checkText, wip: true });
     },
     feedStats: function () {
       var row = el('div', 'sc-stats');
@@ -1098,52 +1102,15 @@
 
   /* ---------------- почва: элемент, концентрация, статус ----------------
      Концентрация хранится долей 0…1 от шкалы. Норматив стоит на отметке
-     C.soilMark (0,7), поэтому «превышение» — это просто доля выше неё,
-     а подпись в мг/кг считается из норматива элемента. Сами нормативы
-     демонстрационные, см. справочник. */
+     C.soilMark, поэтому «превышение» — это просто доля выше неё.
+     Ползунка концентрации на экране больше нет (правка 21.09): у каждого
+     элемента показывается его привычное значение — поле start
+     в справочнике. Нормативы демонстрационные, см. справочник. */
 
   function soilLevel() {
     if (st.level == null) st.level = find(C.soilElements, selKey()).start;
     return st.level;
   }
-
-  /** Значение в мг/кг для текущей доли шкалы. */
-  function soilMg(e, part) {
-    var v = part * e.limit / C.soilMark;
-    return (e.limit < 10 ? v.toFixed(1).replace('.', ',') : String(Math.round(v))) + ' мг/кг';
-  }
-
-  /** Перерисовать только то, что зависит от ползунка: ручку и плашку. */
-  function soilRefresh() {
-    var over = st.level > C.soilMark;
-    if (st.gaugeKnob) st.gaugeKnob.style.left = Math.round(st.level * 100) + '%';
-    if (st.gauge) st.gauge.classList.toggle('is-bad', over);
-    if (st.status) {
-      st.status.className = 'sc-status' + (over ? ' is-bad' : '');
-      st.status.innerHTML = '';
-      st.status.appendChild(el('span', null, (over ? '! ' : '✓ ') +
-        (over ? C.soilStatus.bad : C.soilStatus.ok)));
-    }
-  }
-
-  /** Демонстрационный расчёт дозы: текст под крупным значением. */
-  function f2(f) {
-    return 'Демонстрационный расчёт: ' + f.dose + ' — ' + f.hint;
-  }
-
-  /* Ползунки экранов: имя из справочника → описание для sliderEl. */
-  var SLIDERS = {
-    soil: function () {
-      var e = find(C.soilElements, selKey());
-      var part = soilLevel();
-      return {
-        label: 'Содержание ' + e.gen,
-        unit: soilMg(e, part),
-        value: part,
-        on: function (v) { st.level = v; soilRefresh(); return soilMg(e, v); }
-      };
-    }
-  };
 
   /* Шкалы показателей. */
   var GAUGES = {
@@ -1346,15 +1313,15 @@
     /** Экран 6: показать демонстрационный расчёт дозы удобрений. */
     calcDose: function () { st.dose = true; rerender(); },
 
-    /** Экран 9: переключение «поле сверху → фотография поля». */
+    /** Экран 9: переключение «заросшее поле → поле сверху». */
     weedSelf: function () {
-      st.tab = tabKey() === 'photo' ? 'iso' : 'photo';
+      st.tab = tabKey() === 'iso' ? 'photo' : 'iso';
       rerender();
     },
 
     /** Экран 9: обзор с БПЛА — свой кадр, все сорняки подсвечены. */
     weedDrone: function () {
-      if (tabKey() === 'drone') { st.tab = 'iso'; rerender(); return; }
+      if (tabKey() === 'drone') { st.tab = 'photo'; rerender(); return; }
       st.tab = 'drone';
       st.found = { 0: true, 1: true, 2: true };
       rerender();

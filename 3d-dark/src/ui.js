@@ -33,10 +33,10 @@
       summaryTitle: $('summary-title'),
       summaryNote: $('summary-note'),
       sumTotal: $('sum-total'),
+      sumCountries: $('sum-countries'),
       news: $('news-list'),
       countryName: $('country-name'),
       countryTotal: $('country-total'),
-      countryYear: $('country-year'),
       countryRank: $('country-rank'),
       countryProducts: $('country-products'),
       countryMore: $('country-more'),
@@ -305,11 +305,21 @@
 
   /* ------------------------------ сводка ------------------------------ */
 
-  /** note — пометка рядом с годом («на 30.06.2026»), может не быть. */
-  function renderSummary(year, total, note) {
+  /**
+   * note — пометка рядом с годом («на 30.06.2026»), может не быть.
+   * countries — сколько стран-импортёров было в этом году: цифра из
+   * блока summary в data/export.json, стоит в строке подписи справа.
+   */
+  function renderSummary(year, total, note, countries) {
     els.summaryTitle.textContent = 'Экспорт зерна, ' + year;
     els.sumTotal.textContent = U.fmtVolume(total);
     if (els.summaryNote) els.summaryNote.textContent = note ? ('(' + note + ')') : '';
+    if (els.sumCountries) {
+      els.sumCountries.textContent = countries
+        ? (U.fmtInt(countries) + ' ' +
+           U.plural(countries, 'страна-импортёр', 'страны-импортёра', 'стран-импортёров'))
+        : '';
+    }
   }
 
   /* ----------------------------- новости -----------------------------
@@ -355,7 +365,6 @@
   function renderCountry(info) {
     els.countryName.textContent = info.name;
     els.countryTotal.textContent = U.fmtVolume(info.value);
-    els.countryYear.textContent = info.year;
     els.countryRank.textContent = info.rank + ' место';
 
     els.countryProducts.innerHTML = '';

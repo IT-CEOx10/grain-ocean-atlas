@@ -1094,35 +1094,8 @@ body.story-screen { background: var(--sc-bg, #141D23); }
 }
 #sec-story .sc-leads2 + .sc-panel-btn { margin-top: 0; }
 
-/* полоски долей: несоответствия за сезон */
-#sec-story .sc-bars {
-  margin-top: 26px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-#sec-story .sc-bar {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  font-size: 20px;
-  line-height: 26px;
-}
-#sec-story .sc-bar-k { flex: none; width: 190px; color: var(--sc-muted); }
-#sec-story .sc-bar-track {
-  flex: 1;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, .12);
-  overflow: hidden;
-}
-#sec-story .sc-bar-track i {
-  display: block;
-  height: 100%;
-  border-radius: 4px;
-  background: var(--sc-gold);
-}
-#sec-story .sc-bar-v { flex: none; width: 76px; text-align: right; }
+/* полоски долей (несоответствия за сезон) ушли вместе с экраном
+   приёмки зерна — правка заказчика 21.09 */
 
 /* шаги 01–03 отдельными плашками (контроль экспорта) */
 /* Шаги экспортного контроля (кадр 20): плашки 134 через 4, отступ 32,
@@ -1510,6 +1483,42 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: var(--sc-gold);
 }
 
+/* ------------------- заглушка «в разработке» -------------------
+   Правка заказчика 21.09: нерабочий интерактив, блок без визуала
+   и без данных показывается серым, с подписью в правом верхнем углу,
+   и касания не ловит. Класс вешает src/story.js (функция wip),
+   а где именно — задаёт поле wip в справочнике. Класс один на все
+   экраны: когда блоки доделают, заглушки снимаются точечно. */
+
+#sec-story .is-wip {
+  position: relative;
+  filter: grayscale(1);
+  opacity: .6;
+  pointer-events: none;
+}
+/* Подпись стоит в углу блока: на карточках — сверху, поверх снимка,
+   в панелях — снизу, чтобы не налезать на заголовок и текст. */
+#sec-story .is-wip::after {
+  content: 'в разработке';
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 2;
+  padding: 4px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, .18);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  color: var(--sc-text);
+}
+/* в панели подпись встаёт отдельной строкой под текстом: место
+   под неё добавляет нижний отступ */
+#sec-story .sc-panel.is-wip { padding-bottom: 76px; }
+#sec-story .sc-panel.is-wip::after { top: auto; bottom: 24px; }
+
 /* --------------------- шторка сравнения (кадр 07) --------------------- */
 
 #sec-story .sc-curtain { touch-action: none; cursor: ew-resize; }
@@ -1845,10 +1854,19 @@ body.story-screen { background: var(--sc-bg, #141D23); }
   color: var(--sc-muted);
 }
 
-/* верхний слой шторки нарисован в своём размере внутри блока */
+/* Верхний слой шторки может быть поставлен по координатам кадра
+   (поле at у top). Сейчас оба кадра зерна лежат во весь блок —
+   так половинки совпадают, см. правку 21.09 в story-content.js. */
 #sec-story .sc-curtain-l img.is-at {
   position: absolute;
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+/* Кормовой маршрут: заголовки плашек справа («Как получают комбикорм»,
+   «Что проверяют») чуть крупнее обычных 32 — правка заказчика 21.09. */
+#sec-story #view[data-screen="route-feed"] .sc-panel-t {
+  font-size: 36px;
+  line-height: 43.2px;
 }

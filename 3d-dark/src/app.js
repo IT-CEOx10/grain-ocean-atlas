@@ -102,18 +102,27 @@
   var listCache = [];
 
   function setYear(y, animate) {
+    // на кадре «Страна» выбор года не сбрасывает страну: она остаётся
+    // выбранной, а её цифры пересчитываются на новый год
+    var keep = state === 'country' ? selected : null;
+    var sum = DATA.summary[String(y)];
+
     year = y;
     yearIdx = DATA.years.indexOf(y);
     listCache = countriesForYear(y);
 
     UI.renderYears(yearChips(), y);
     UI.setList(listCache);
-    UI.renderSummary(y, DATA.summary[String(y)].total, (CFG.yearNote || {})[String(y)]);
+    UI.renderSummary(y, sum.total, (CFG.yearNote || {})[String(y)], sum.countries);
     UI.renderNews(NEWS[String(y)]);
     Globe.setRoutes(listCache, animate !== false);
     Globe.setSelected(null);
     selected = null;
-    if (state === 'country') goMap();   // страна могла пропасть из нового года
+
+    if (!keep) return;
+    // поставок в этом году не было — возвращаемся к общему глобусу
+    var has = listCache.some(function (it) { return it.name === keep; });
+    if (has) goToCountry(keep, false); else goMap();
   }
 
   /* ---- кадр A: вход в раздел ---- */
@@ -168,7 +177,11 @@
 
   /* ---- кадры C/D: страна ---- */
 
-  function goToCountry(name) {
+  /**
+   * refocus = false — страна уже выбрана и меняется только год:
+   * камеру заново не ведём, чтобы глобус не дёргался на каждом чипе.
+   */
+  function goToCountry(name, refocus) {
     if (!byName[name]) return;
     var i = listCache.findIndex(function (it) { return it.name === name; });
     if (i < 0) return;               // в этом году поставок не было
@@ -188,7 +201,7 @@
       distanceKm: U.greatCircleKm(CFG.origin.lat, CFG.origin.lon, c.lat, c.lon)
     });
     Globe.setSelected(name);
-    Globe.focus(name);
+    if (refocus !== false) Globe.focus(name);
   }
 
   /* --------------------------- подсказка --------------------------- */

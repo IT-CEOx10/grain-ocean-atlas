@@ -1917,6 +1917,22 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   line-height: 1.4;
   color: var(--text);
 }
+/* В сводке к подписи «поставлено на экспорт» добавлено число стран-
+   импортёров за год. Высота панели в кадре фиксированная (234 px),
+   лишняя строка в неё не влезает — поэтому цифра стоит в той же строке,
+   прижатая к правому краю. */
+#sec-globe #panel-summary .metric-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+#sec-globe .sum-countries {
+  white-space: nowrap;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+#sec-globe .sum-countries:empty { display: none; }
 
 #sec-globe #panel-news {
   position: absolute;

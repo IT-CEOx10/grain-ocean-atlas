@@ -57,12 +57,13 @@
     presence: [44, 184, 1884, 996]
   };
 
-  /* Заливка карты — ровно три цвета из легенды кадра: зелёный там, где
-     есть данные по сбору, золотой у регионов с сильной пшеницей, серый
-     там, где госмониторинг не проводится. Оттенков по объёму в макете
-     нет: объёмы читаются в списке «Топ-10» и в подписи под пальцем. */
+  /* Заливка карты — два цвета: зелёный там, где есть данные по сборам,
+     серый там, где госмониторинг не проводится. Оттенков по объёму
+     в макете нет: объёмы читаются в списке «Топ-10» и в подписи под
+     пальцем. Сильная пшеница заливкой не показывается — у таких
+     регионов в центре контура стоит жёлтая звёздочка (drawStrongStars). */
   var C_DATA = [36, 79, 40];           // #244f28
-  var C_STRONG = [230, 180, 22];       // #e6b416
+  var C_STRONG = [230, 180, 22];       // #e6b416 — цвет звёздочки и метки в легенде
   var C_NONE = [42, 53, 51];           // #2a3533
   var FILL_ALPHA = 0.92;               // сквозь заливку чуть видно фактуру фона
 
@@ -77,7 +78,8 @@
 
   /* «Сильная пшеница» — признак из таблицы заказчика «Регионы
      с сильной пшеницей» (белок выше 13,5 %, клейковина выше 28 %).
-     Такие субъекты на карте золотые. */
+     На карте такие субъекты помечены жёлтой звёздочкой в центре
+     контура, заливка у них обычная. */
 
   var BORDER = 'rgba(229,199,115,.55)';
   var BORDER_HOT = '#F6E8C8';
@@ -88,11 +90,34 @@
   var PRES_PICK = [230, 180, 47];
   var LAB_DOT = '#F6E3BB';
 
-  /* Меток-цифр вокруг цилиндра («Культура», «Объём», «Классы») в новом
-     кадре 24-region нет — список пуст, и вокруг зерна ничего не рисуется.
-     Вид пшеницы переключается на карте (точки на плашке «Всего по
-     России») и параметром адреса kind. */
-  var MARKS = [];
+  /* Основные (средневзвешенные) показатели зерна: поле в данных, подпись,
+     единица, короткая метка для метки-кружка и пояснение. Значения берутся
+     из data/monitoring.json, пояснения — справочные, в таблицах заказчика
+     их нет. */
+  var SPECS = [
+    { key: 'protein', name: 'Белок', unit: '%', mark: 'метка 1',
+      hint: 'Доля белка в зерне. Чем её больше, тем выше пищевая ценность зерна и его класс.' },
+    { key: 'gluten', name: 'Клейковина', unit: '%', mark: 'метка 2',
+      hint: 'Сколько в зерне клейковины. От неё зависит, насколько тесто тянется и держит форму.' },
+    { key: 'nature', name: 'Натура', unit: 'г/л', mark: 'метка 3',
+      hint: 'Масса зерна в одном литре. Показывает, насколько зерно налитое и плотное.' },
+    { key: 'falling', name: 'Число падения', unit: 'с', mark: 'метка 4',
+      hint: 'Показатель активности ферментов. Низкое значение означает проросшее зерно.' },
+    { key: 'vitreous', name: 'Стекловидность', unit: '%', mark: 'метка 5',
+      hint: 'Доля стекловидных зёрен. Важна для крупы и макаронных изделий.' }
+  ];
+
+  /* Метки-кружки вокруг зерна на экране региона: пять основных
+     показателей. Порядок и места — из макета 24-region: 1 и 2 слева,
+     3 и 4 справа, 5 внизу по центру. Координаты в поле карточки
+     1888x1048; подпись стоит над кружком, lx — её середина. */
+  var MARKS = [
+    { n: 1, key: 'protein', label: 'Белок', x: 520, y: 300, lx: 548, ly: 262, lw: 180 },
+    { n: 2, key: 'gluten', label: 'Клейковина', x: 520, y: 660, lx: 548, ly: 622, lw: 200 },
+    { n: 3, key: 'nature', label: 'Натура', x: 1150, y: 300, lx: 1178, ly: 262, lw: 180 },
+    { n: 4, key: 'falling', label: 'ЧП', x: 1150, y: 660, lx: 1178, ly: 622, lw: 180 },
+    { n: 5, key: 'vitreous', label: 'Стекловидность', x: 872, y: 922, lx: 900, ly: 884, lw: 240 }
+  ];
 
   var KINDS = [
     { key: 'soft', label: 'Мягкая пшеница' },
@@ -122,6 +147,8 @@
   var year = null;
   var kind = 'soft';
   var regionId = null;                 // открытый регион (экран 24)
+  var regView = 'cls';                 // правая панель: cls | spec
+  var specKey = 'protein';             // выбранный основной показатель
   var presId = null;                   // выбранный регион присутствия
   var presOf = {};                     // код субъекта -> код записи о присутствии
   var labs = [];                       // {id, name, x, y} — точки лабораторий
@@ -138,7 +165,6 @@
   var idleTimer = null, idleOff = false;
   var frames = 0, fps = 0, fpsT = 0;
   var live = true;                     // раздел на экране (в app.html — не всегда)
-  var litTimer = null;
 
   /* --------------------------- масштаб под окно --------------------------- */
 
@@ -214,8 +240,7 @@
       c = here ? (here === presId ? PRES_PICK : PRES_ON) : PRES_OFF;
       return rgb(hot && here ? lighten(c, 0.22) : c);
     }
-    if (volume(id) <= 0) c = PENDING[id] ? C_DATA : C_NONE;
-    else c = isStrong(id) ? C_STRONG : C_DATA;
+    c = (volume(id) <= 0 && !PENDING[id]) ? C_NONE : C_DATA;
     return rgb(hot ? lighten(c, 0.26) : c);
   }
 
@@ -386,7 +411,42 @@
     }
 
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    if (onPres) drawLabs();
+    if (onPres) drawLabs(); else drawStrongStars();
+  }
+
+  /* Жёлтые звёздочки в центре регионов с сильной пшеницей. Размер
+     постоянный, в пикселях экрана: при зуме звёздочки не раздуваются,
+     как и задумано в макете. */
+  var STAR_R = 11;
+
+  function drawStrongStars() {
+    ctx.fillStyle = rgb(C_STRONG);
+    ctx.strokeStyle = 'rgba(20,32,24,.55)';
+    for (var i = 0; i < shapes.length; i++) {
+      var s = shapes[i];
+      if (!isStrong(s.id)) continue;
+      var p = toCanvas(s.c[0], s.c[1]);
+      var x = p[0] * dpr, y = p[1] * dpr;
+      if (x < -40 || y < -40 || x > MAP_W * dpr + 40 || y > MAP_H * dpr + 40) continue;
+      ctx.globalAlpha = (hits && !hits[s.id]) ? 0.3 : 1;
+      ctx.lineWidth = 1.5 * dpr;
+      starPath(x, y, STAR_R * dpr, STAR_R * dpr * 0.44);
+      ctx.stroke();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /** Пятиконечная звезда: ro — радиус по лучам, ri — по впадинам. */
+  function starPath(x, y, ro, ri) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) {
+      var a = -Math.PI / 2 + i * Math.PI / 5;
+      var r = (i % 2) ? ri : ro;
+      var px = x + Math.cos(a) * r, py = y + Math.sin(a) * r;
+      if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+    }
+    ctx.closePath();
   }
 
   /** Светящиеся точки лабораторий поверх карты. */
@@ -503,7 +563,10 @@
   /** Лента годов под картой. Рисуем всю ленту из поля ribbon, но
       нажимаются только годы, по которым есть данные (поле years). */
   function drawYears() {
+    // в новом макете карты ленты годов нет, разметку убрали —
+    // функция остаётся на случай, если ленту вернут
     var box = $('years');
+    if (!box) return;
     box.textContent = '';
     var ribbon = mon.ribbon && mon.ribbon.length ? mon.ribbon : mon.years;
     ribbon.forEach(function (y) {
@@ -553,14 +616,42 @@
     return (r && (r[kind] || r.soft)) || null;
   }
 
+  /** Сумма поля по обоим видам пшеницы: в плашке «Всего по России»
+      цифры общие, мягкая и твёрдая вместе. Если нет ни одной — null. */
+  function bothSum(field) {
+    var r = mon.russia[String(year)] || {};
+    var sum = null;
+    KINDS.forEach(function (k) {
+      var v = r[k.key] && r[k.key][field];
+      if (v != null) sum = (sum || 0) + v;
+    });
+    return sum;
+  }
+
+  /**
+   * «Всего по России» — две цифры одна под другой, как в макете:
+   * валовой сбор и обследованный объём, обе по мягкой и твёрдой вместе.
+   * Процент ГОСТ остаётся отдельной плашкой и считается по выбранному
+   * виду пшеницы: складывать проценты нельзя.
+   */
   function drawTotal() {
     var r = totalRec() || {};
-    var what = kind === 'durum' ? 'твёрдой пшеницы' : 'мягкой пшеницы';
-    bigNum($('total-body'), fmt1(r.surveyed), 'тыс. т',
-      'обследовано ' + what + ' урожая ' + year);
+    var box = $('total-body');
+    box.textContent = '';
+    bigNum(el2(box), fmt1(bothSum('gross')), 'тыс. т',
+      'общий валовой сбор мягкой и твёрдой пшеницы');
+    bigNum(el2(box), fmt1(bothSum('surveyed')), 'тыс. т',
+      'обследовано зерна урожая ' + year);
     bigNum($('gost-body'), dec1(r.compliance), '%',
       'соответствует требованиям ГОСТ');
     drawDots();
+  }
+
+  /** Вложенный блок под одну цифру плашки «Всего по России». */
+  function el2(box) {
+    var d = el('div', 'mn-slot');
+    box.appendChild(d);
+    return d;
   }
 
   /** Две точки справа сверху: слайд «Мягкая» и слайд «Твёрдая». */
@@ -636,7 +727,7 @@
     var arr = listed();
     $('top-head').textContent = query
       ? 'Найдено регионов: ' + arr.length
-      : 'Топ-10 регионов · ' + kindLabel().toLowerCase();
+      : 'Топ-10 регионов';
     var box = $('top-body');
     box.textContent = '';
     if (!arr.length) {
@@ -732,23 +823,18 @@
 
   /* ------------------------------ экран региона ------------------------------ */
 
-  function kindsAvailable(id) {
-    var out = {};
-    KINDS.forEach(function (k) { out[k.key] = !!rec(id, k.key); });
-    return out;
-  }
-
   function kindLabel() {
     return kind === 'durum' ? 'Твёрдая пшеница' : 'Мягкая пшеница';
   }
 
-  /** Метки-цифры вокруг цилиндра: кружок и подпись над ним. */
-  function drawMarks() {
+  /** Метки-цифры вокруг зерна: кружок и подпись над ним. */
+  function drawMarks(b) {
     var box = $('marks');
+    if (!box) return;
     box.textContent = '';
-    var have = kindsAvailable(regionId);
     MARKS.forEach(function (m) {
-      var off = m.act === 'kind' && !(have.soft && have.durum);
+      var spec = specByKey(m.key);
+      var off = !b || b[m.key] == null;
       var lab = el('div', 'mn-mark-lab', m.label);
       lab.style.left = m.lx + 'px';
       lab.style.top = m.ly + 'px';
@@ -756,40 +842,20 @@
       if (off) lab.style.opacity = '.45';
       box.appendChild(lab);
 
-      var b = el('button', 'mn-mark' + (off ? ' is-off' : ''), String(m.n));
-      b.type = 'button';
-      b.style.left = m.x + 'px';
-      b.style.top = m.y + 'px';
-      b.title = m.act === 'kind'
-        ? (off ? 'В этом регионе возделывают только мягкую пшеницу' : 'Сменить вид пшеницы')
-        : m.label;
-      b.addEventListener('click', function () {
+      var on = !off && regView === 'spec' && specKey === m.key;
+      var btn = el('button', 'mn-mark' + (off ? ' is-off' : '') + (on ? ' is-on' : ''),
+        String(m.n));
+      btn.type = 'button';
+      btn.style.left = m.x + 'px';
+      btn.style.top = m.y + 'px';
+      btn.title = off ? spec.name + ': по региону данных нет'
+        : spec.name + ' — ' + dec1(b[m.key]) + ' ' + spec.unit;
+      btn.addEventListener('click', function () {
         resetIdle();
-        if (m.act === 'kind') {
-          kind = kind === 'soft' ? 'durum' : 'soft';
-          drawRegion();
-          setUrl();
-          return;
-        }
-        lit(m.act === 'vol' ? ['card-gross', 'card-surv'] : ['card-cls']);
-        Array.prototype.forEach.call(box.children, function (n) { n.classList.remove('is-on'); });
-        b.classList.add('is-on');
+        showSpec(m.key);
       });
-      box.appendChild(b);
+      box.appendChild(btn);
     });
-  }
-
-  /** Подсветить панель, о которой говорит метка. */
-  function lit(ids) {
-    if (litTimer) clearTimeout(litTimer);
-    ['card-gross', 'card-surv', 'card-cls'].forEach(function (id) {
-      $(id).classList.toggle('is-lit', ids.indexOf(id) >= 0);
-    });
-    litTimer = setTimeout(function () {
-      ['card-gross', 'card-surv', 'card-cls'].forEach(function (id) {
-        $(id).classList.remove('is-lit');
-      });
-    }, 2600);
   }
 
   function drawRegion() {
@@ -797,11 +863,11 @@
     if (!s) return;
     $('reg-title').textContent = s.name;
     drawHead();
-    drawMarks();
 
     var b = rec(regionId, kind);
     if (!b) { kind = 'soft'; b = rec(regionId, 'soft'); }
-    if (!b) { drawEmptyRegion(); return; }
+    if (!b) { drawMarks(null); drawEmptyRegion(); return; }
+    drawMarks(b);
 
     $('reg-sub').textContent = kindLabel() + '  ·  урожай ' + year +
       (b.strong ? '  ·  регион с сильной пшеницей' : '');
@@ -834,30 +900,102 @@
         (p < 10 ? dec1(p) : String(Math.round(p))) + ' %'));
       cls.appendChild(row);
     });
+    // плашка под панелью классов — только у регионов с сильной пшеницей
+    // и только на мягкой: сильная пшеница — класс именно мягкой
+    strongNote(kind === 'soft' && isStrong(regionId));
+    drawKey(b);
     drawSpec(b);
+    applyRegView();
   }
 
-  /** Спец. характеристики зерна: белок, клейковина, натура, ЧП,
-      стекловидность. Их дают не по всем субъектам — где нет, строки нет. */
-  function drawSpec(b) {
-    var box = $('cls-spec');
+  /** Показать или спрятать плашку «Регион с сильной пшеницей». */
+  function strongNote(on) {
+    var box = $('cls-strong');
+    if (box) box.classList.toggle('is-on', !!on);
+  }
+
+  /* --------------------- основные показатели зерна ---------------------
+     Плашка «Основные показатели» в левой колонке — переключатель: справа
+     вместо «Классов зерна» показывается разбор пяти средневзвешенных
+     показателей. Те же пять показателей вынесены метками 1–5 вокруг
+     зерна: нажатие на метку открывает тот же разбор на нужной строке. */
+
+  /** Ведущий показатель плашки: в макете это белок. */
+  var KEY_SPEC = 'protein';
+
+  function specByKey(k) {
+    for (var i = 0; i < SPECS.length; i++) if (SPECS[i].key === k) return SPECS[i];
+    return SPECS[0];
+  }
+
+  /** Есть ли у региона хоть один основной показатель. */
+  function hasSpec(b) {
+    if (!b) return false;
+    for (var i = 0; i < SPECS.length; i++) if (b[SPECS[i].key] != null) return true;
+    return false;
+  }
+
+  /** Левая плашка: заголовок, крупное число ведущего показателя. */
+  function drawKey(b) {
+    var box = $('key-body');
     if (!box) return;
+    var s = specByKey(KEY_SPEC);
+    var v = b ? b[KEY_SPEC] : null;
+    bigNum(box, v != null ? dec1(v) : '—', v != null ? s.unit : '',
+      s.name.toLowerCase());
+    // показателей по региону нет — переключать нечего
+    var key = $('card-key');
+    key.disabled = !hasSpec(b);
+    key.classList.toggle('is-off', key.disabled);
+    if (key.disabled) regView = 'cls';
+  }
+
+  /** Правая панель в режиме «Основные показатели». */
+  function drawSpec(b) {
+    var box = $('spec-body');
+    if (!box) return;
+    $('spec-sub').textContent = 'Средневзвешенно по обследованному объёму\n' +
+      fmt1(b.surveyed) + ' тыс. т';
     box.textContent = '';
-    var rows = [
-      ['Белок', b.protein, ' %'],
-      ['Клейковина', b.gluten, ' %'],
-      ['Натура', b.nature, ' г/л'],
-      ['Число падения', b.falling, ' с'],
-      ['Стекловидность', b.vitreous, ' %']
-    ].filter(function (r) { return r[1] != null; });
-    if (!rows.length) return;
-    box.appendChild(el('div', 's-head', 'Средневзвешенные показатели'));
-    rows.forEach(function (r) {
-      var line = el('div', 's-row');
-      line.appendChild(el('span', null, r[0]));
-      line.appendChild(el('b', null, dec1(r[1]) + r[2]));
-      box.appendChild(line);
+    var any = false;
+    SPECS.forEach(function (s) {
+      var v = b[s.key];
+      if (v == null) return;            // показателя по региону нет — строки нет
+      any = true;
+      var row = el('button', 'k-row' + (s.key === specKey ? ' is-on' : ''));
+      row.type = 'button';
+      var name = el('div', 'k-name');
+      name.appendChild(el('b', null, s.name));
+      name.appendChild(el('span', null, s.mark));
+      row.appendChild(name);
+      row.appendChild(el('div', 'k-val', dec1(v) + ' ' + s.unit));
+      row.addEventListener('click', function () { resetIdle(); showSpec(s.key); });
+      box.appendChild(row);
     });
+    if (!any) box.appendChild(el('div', 't-empty', 'Показателей по региону нет'));
+    var cur = any ? b[specKey] : null;
+    $('spec-foot').textContent = cur != null ? specByKey(specKey).hint : '';
+  }
+
+  /** Открыть разбор показателя: по метке у зерна или по строке справа. */
+  function showSpec(key) {
+    specKey = key;
+    regView = 'spec';
+    drawRegion();
+  }
+
+  /** Переключатель «Классы зерна» / «Основные показатели». */
+  function toggleRegView() {
+    regView = regView === 'spec' ? 'cls' : 'spec';
+    drawRegion();
+  }
+
+  /** Расставить видимость панелей по текущему режиму. */
+  function applyRegView() {
+    var spec = regView === 'spec';
+    $('card-cls').classList.toggle('is-off', spec);
+    $('card-spec').classList.toggle('is-off', !spec);
+    $('card-key').classList.toggle('is-pick', spec);
   }
 
   function drawEmptyRegion() {
@@ -880,7 +1018,14 @@
     $('cls-sub').textContent = note;
     $('cls-body').textContent = '';
     $('cls-foot').style.display = 'none';
-    if ($('cls-spec')) $('cls-spec').textContent = '';
+    strongNote(false);
+    // цифр по региону нет — показывать нечего и в «Основных показателях»
+    drawKey(null);
+    $('spec-sub').textContent = note;
+    $('spec-body').textContent = '';
+    $('spec-foot').textContent = '';
+    regView = 'cls';
+    applyRegView();
   }
 
   /* --------------------- экран «Регионы присутствия» --------------------- */
@@ -960,6 +1105,9 @@
     if (!shapes.some(function (s) { return s.id === id; })) return;
     regionId = id;
     if (!rec(id, kind)) kind = 'soft';
+    // карточка всегда открывается на классах зерна
+    regView = 'cls';
+    specKey = KEY_SPEC;
     drawRegion();
     show('region');
     need = true;
@@ -1172,6 +1320,8 @@
         openFirst();
       });
       $('back-map').addEventListener('click', function () { resetIdle(); backToMap(); });
+      // плашка «Основные показатели» — переключатель правой панели
+      $('card-key').addEventListener('click', function () { resetIdle(); toggleRegView(); });
       $('hub-btn').addEventListener('click', function () {
         U.goSection('story', { screen: 'hub' });
       });

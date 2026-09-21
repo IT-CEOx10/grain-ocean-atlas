@@ -104,7 +104,11 @@
           <span id="sum-total" class="metric-value">—</span>
           <span class="metric-unit">тыс. т</span>
         </div>
-        <div class="metric-caption">поставлено на экспорт</div>
+        <div class="metric-caption">
+          <span>поставлено на экспорт</span>
+          <!-- сколько стран-импортёров было в этом году (data/export.json) -->
+          <span id="sum-countries" class="sum-countries"></span>
+        </div>
       </div>
     </section>
 
@@ -133,7 +137,7 @@
 
     <section id="panel-products" class="panel">
       <div class="prod-head">
-        <span>Продукция, <span id="country-year">—</span></span>
+        <span>Продукция, тыс. т</span>
         <span id="country-more" class="product-more"></span>
       </div>
       <div id="country-products" class="product-grid"></div>

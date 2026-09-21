@@ -1192,6 +1192,15 @@
     }
   }
 
+  /**
+   * Куда встаёт центр планеты на кадре «Страна». Справа лежат панели
+   * страны и продукции (от 1326 px), слева панелей нет — поэтому глобус
+   * уезжает левее середины, чтобы кадр не заваливался вправо.
+   * Подстраивается полями globe.countryX / globe.countryY в config.json.
+   */
+  function countryFx() { return gcfg.countryX != null ? gcfg.countryX : 0.40; }
+  function countryFy() { return gcfg.countryY != null ? gcfg.countryY : 0.51; }
+
   function focus(name) {
     var r = routeByName[name];
     if (!r) return;
@@ -1205,7 +1214,8 @@
     // глобус на «Карте» крупнее, но экран «Путь» от этого меняться не должен.
     var far = gcfg.focusMaxZoom != null ? gcfg.focusMaxZoom : gcfg.defaultZoom;
     var zoom = U.clamp(gcfg.focusZoom + angle * 0.55, gcfg.focusZoom, far);
-    animateTo({ phi: U.clamp(a.phi, -1.2, 1.2), theta: a.theta, zoom: zoom, fx: 0.55, fy: 0.51 }, 1000);
+    animateTo({ phi: U.clamp(a.phi, -1.2, 1.2), theta: a.theta, zoom: zoom,
+                fx: countryFx(), fy: countryFy() }, 1000);
     autoRotate = false;
   }
 
@@ -1218,7 +1228,7 @@
     if (mode === 'A') {
       animateTo({ fx: HOME.fx, fy: HOME.fy }, 700);
     } else {
-      animateTo({ fx: 0.55, fy: 0.51 }, 700);
+      animateTo({ fx: countryFx(), fy: countryFy() }, 700);
     }
   }
 

@@ -365,7 +365,9 @@ body.mon-screen { background: #141d23; }
   flex-direction: column;
   gap: 4px;
   width: 463px;
-  height: 745px;
+  /* ленты годов под картой в новом макете нет, поэтому колонка стала
+     выше: плашка «Всего по России» выросла под две цифры */
+  height: 777px;
 }
 #sec-monitoring .mn-col .mn-panel {
   position: relative;
@@ -373,13 +375,18 @@ body.mon-screen { background: #141d23; }
   box-sizing: border-box;
 }
 
+/* «Всего по России»: в новом макете внутри одной плашки две цифры —
+   валовой сбор и обследованный объём. Плашка от этого выше, а список
+   «Топ-10» ниже: высота всей колонки ограничена кадром. */
 #sec-monitoring .mn-total {
   display: flex;
   flex-direction: column;
-  gap: 26px;
-  height: 216px;
+  gap: 16px;
+  height: 304px;
   touch-action: pan-y;
 }
+#sec-monitoring .mn-total .mn-slot + .mn-slot { margin-top: 4px; }
+#sec-monitoring .mn-total .mn-note { margin-top: 4px; }
 #sec-monitoring .mn-gost { height: 148px; }
 
 /* Кадр нарисован в Akkurat, у нас Inter: у него выше линия прописных,
@@ -411,7 +418,7 @@ body.mon-screen { background: #141d23; }
 
 #sec-monitoring .mn-top {
   flex: none;
-  height: 373px;
+  height: 317px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -565,8 +572,14 @@ body.mon-screen { background: #141d23; }
   box-sizing: border-box;
 }
 #sec-monitoring .mn-legend .is-data { background: #244f28; }
-#sec-monitoring .mn-legend .is-strong { background: #e6b416; }
 #sec-monitoring .mn-legend .is-none { background: #2a3533; }
+/* сильная пшеница — звезда того же цвета, что и звёздочки на карте */
+#sec-monitoring .mn-legend .is-star {
+  flex: none;
+  width: 30px;
+  height: 26px;
+  fill: #e6b416;
+}
 
 #sec-monitoring .map-hint {
   position: absolute;
@@ -871,33 +884,94 @@ body.mon-screen { background: #141d23; }
   color: var(--mn-muted);
 }
 
-/* спец. характеристики зерна: третья панель левой колонки */
-#sec-monitoring .mn-spec {
-  height: auto !important;
-  min-height: 0;
-  padding: 16px 32px;
-}
-#sec-monitoring .mn-spec:empty,
-#sec-monitoring .mn-spec > div:empty { display: none; }
-#sec-monitoring .s-head {
-  margin-bottom: 6px;
-  font-size: 18px;
+/* плашка «сильная пшеница»: тёмное стекло под панелью классов зерна
+   (она кончается на 874 px). Видна только у регионов с признаком —
+   класс is-on ставит src/monitoring.js */
+#sec-monitoring .mn-strong {
+  left: 1264px;
+  top: 890px;
+  width: 576px;
+  box-sizing: border-box;
+  padding: 20px 32px;
+  display: none;
+  font-size: 20px;
   font-weight: 300;
-  line-height: 24px;
-  color: var(--mn-muted);
-}
-#sec-monitoring .s-row {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 18px;
-  font-weight: 300;
-  line-height: 24px;
+  line-height: 28px;
   color: var(--mn-text);
 }
-#sec-monitoring .s-row b {
+#sec-monitoring .mn-strong.is-on { display: block; }
+
+/* ---- плашка-переключатель «Основные показатели» в левой колонке ----
+   Третья панель колонки: заголовок и крупное число ведущего показателя
+   (белка). Ниже колонки стоит кнопка «К карте России» (922 px), поэтому
+   плашка ниже соседних — высота по содержимому. */
+#sec-monitoring .mn-metrics .mn-key {
+  height: auto;
+  min-height: 0;
+  padding: 24px 32px;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid transparent;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+/* заголовок плашки уже соседних (панель всего 400 px) — в одну строку */
+#sec-monitoring .mn-key .mn-cap {
+  font-size: 28px;
+  line-height: 34px;
+  white-space: nowrap;
+}
+#sec-monitoring .mn-key .mn-note { margin-top: 4px; }
+/* выбранная плашка: светлее соседних, с голубоватой подсветкой и рамкой */
+/* показателей по региону нет — плашка гаснет и не нажимается */
+#sec-monitoring .mn-key.is-off { opacity: .55; cursor: default; }
+#sec-monitoring .mn-key.is-pick {
+  background: rgba(190, 228, 240, .18);
+  border-color: rgba(168, 214, 232, .5);
+  box-shadow: 0 0 48px rgba(130, 200, 228, .28);
+}
+
+/* ---- правая панель в режиме «Основные показатели» ----
+   Габариты те же, что у «Классов зерна» (класс mn-cls), различается
+   только содержимое: строки показателей и пояснение под списком. */
+#sec-monitoring .mn-cls.is-off { display: none; }
+#sec-monitoring .k-row {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 56px;
+  padding: 0 12px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+  color: var(--mn-text);
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .k-row.is-on { background: rgba(190, 228, 240, .16); }
+#sec-monitoring .k-name { display: flex; flex-direction: column; gap: 2px; }
+#sec-monitoring .k-name b {
+  font-size: 24px;
   font-weight: 400;
+  line-height: 28.8px;
+}
+#sec-monitoring .k-name span {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 22px;
+  color: var(--mn-muted);
+}
+#sec-monitoring .k-val {
+  flex: none;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 38.4px;
   color: var(--mn-gold);
   font-variant-numeric: tabular-nums;
 }
@@ -938,12 +1012,6 @@ body.mon-screen { background: #141d23; }
   box-shadow: 0 0 28px rgba(221, 193, 149, .3);
 }
 #sec-monitoring .mn-mark.is-off { opacity: .45; pointer-events: none; }
-
-/* панель, на которую показывает метка, на секунду подсвечивается */
-#sec-monitoring .mn-panel.is-lit {
-  box-shadow: inset 0 0 0 1px rgba(221, 193, 149, .55),
-    0 0 40px rgba(221, 193, 149, .18);
-}
 
 /* ============== экран «Регионы присутствия ЦОК АПК» ============== */
 

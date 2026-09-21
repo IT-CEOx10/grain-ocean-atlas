@@ -141,6 +141,8 @@
     "defaultZoom": 4.3,
     "focusZoom": 2.9,
     "focusMaxZoom": 4.3,
+    "countryX": 0.40,
+    "countryY": 0.51,
     "minZoom": 2.0,
     "maxZoom": 7.5,
     "arcSegments": 56,

@@ -83,14 +83,13 @@
 
       <div class="mn-legend">
         <span><i class="is-data"></i>Регионы с данными по сборам зерна</span>
-        <span><i class="is-strong"></i>Регионы с сильной пшеницей</span>
+        <!-- сильная пшеница в макете помечена звездой, а не квадратом -->
+        <span><svg class="is-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2l2.95 6.33 6.85.83-5.05 4.72 1.33 6.82L12 17.6l-6.08 3.3 1.33-6.82L2.2 9.36l6.85-.83z"/></svg>Регионы с сильной пшеницей</span>
         <span><i class="is-none"></i>Не проводится госмониторинг</span>
       </div>
 
       <div class="map-hint">Коснитесь региона, чтобы узнать больше</div>
 
-      <!-- лента годов под картой: оформление то же, что на глобусе -->
-      <div class="mn-timeline"><div id="years" class="mn-years"></div></div>
     </section>
 
     <!-- ============ экран 24: выбранный регион ============ -->
@@ -116,8 +115,12 @@
           <div class="mn-cap">Обследовано зерна</div>
           <div id="surv-body"></div>
         </section>
-        <!-- спец. характеристики: их дают не по всем субъектам -->
-        <section id="card-spec" class="mn-panel mn-spec"><div id="cls-spec"></div></section>
+        <!-- переключатель: справа вместо классов зерна показываются
+             основные (средневзвешенные) показатели -->
+        <button id="card-key" class="mn-panel mn-key" type="button">
+          <div class="mn-cap">Основные показатели</div>
+          <div id="key-body"></div>
+        </button>
       </div>
 
       <section id="card-cls" class="mn-panel mn-cls">
@@ -126,6 +129,18 @@
         <div id="cls-body" class="mn-cls-list"></div>
         <div id="cls-foot" class="mn-cls-foot">Значения для показа структуры</div>
       </section>
+
+      <!-- второй вид правой панели: разбор основных показателей зерна -->
+      <section id="card-spec" class="mn-panel mn-cls is-off">
+        <div class="mn-cap">Основные показатели</div>
+        <div id="spec-sub" class="mn-cls-sub"></div>
+        <div id="spec-body" class="mn-cls-list"></div>
+        <div id="spec-foot" class="mn-cls-foot"></div>
+      </section>
+
+      <!-- признак «сильной пшеницы» из таблицы заказчика: показывается
+           только у регионов, где он есть (см. src/monitoring.js) -->
+      <div id="cls-strong" class="mn-panel mn-strong">Регион с сильной пшеницей: белок &gt; 13,5&nbsp;% и клейковина &gt; 28&nbsp;%</div>
 
       <button id="back-map" class="mn-btn mn-back" type="button">← К карте России</button>
     </section>
