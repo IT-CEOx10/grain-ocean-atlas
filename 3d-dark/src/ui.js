@@ -256,13 +256,30 @@
     renderList();
   }
 
+  /*
+   * Медаль перед названием в «Топ-5» (макет от 25 сентября): лента-«галочка»
+   * и круг под ней. 1–3 место — золото, серебро, бронза, 4–5 — приглушённый
+   * зеленовато-серый. Рисунок один, цвет задаёт класс (styles/app.css,
+   * .medal.m1…m5), поэтому иконка вшита прямо сюда, без файлов.
+   */
+  var MEDAL_SVG =
+    '<svg class="medal-i" viewBox="0 0 18 21" aria-hidden="true">' +
+    '<path fill-rule="evenodd" d="M0 0h18l-6.6 9.4H6.6zM5 2.2h8L9 7.4z"/>' +
+    '<circle cx="9" cy="15" r="6"/></svg>';
+
   function renderTop5(items) {
     els.top5.innerHTML = '';
-    items.forEach(function (it) { els.top5.appendChild(row(it)); });
+    items.forEach(function (it, i) { els.top5.appendChild(row(it, i + 1)); });
   }
 
-  function row(it) {
+  /** place — место в «Топ-5» (1…5): у такой строки перед названием медаль. */
+  function row(it, place) {
     var n = U.el('div', 'country-row');
+    if (place) {
+      var m = U.el('i', 'medal m' + place);
+      m.innerHTML = MEDAL_SVG;
+      n.appendChild(m);
+    }
     n.appendChild(U.el('span', 'nm', it.name));
     n.appendChild(U.el('span', 'vl', U.fmtVolume(it.value)));
     n.addEventListener('click', function () { handlers.onStart(it.name); });
@@ -329,6 +346,11 @@
 
   var newsOpen = 0;
 
+  // значки кнопки пункта: «×» у раскрытого, «↓» у свёрнутых — белые
+  // линии в 2 px, как в макете (символы шрифта выходили тоньше и серее)
+  var NEWS_CLOSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13"/></svg>';
+  var NEWS_OPEN = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v13M2.5 8.5L8 14l5.5-5.5"/></svg>';
+
   /** Новая лента (сменился год): раскрыт снова первый пункт. */
   function renderNews(items) {
     newsOpen = 0;
@@ -344,15 +366,21 @@
       var head = U.el('button', 'news-head');
       head.type = 'button';
       head.appendChild(U.el('i', 'news-n', String(i + 1)));
-      head.appendChild(U.el('span', 'news-t', n.title));
-      head.appendChild(U.el('i', 'news-x', i === newsOpen ? '✕' : '↓'));
+      // как в разметке кадра: заголовок и текст — одна колонка справа
+      // от номера, текст идёт сразу под заголовком (зазор 6 px)
+      var col = U.el('span', 'news-c');
+      col.appendChild(U.el('span', 'news-t', n.title));
+      col.appendChild(U.el('span', 'news-p', n.text));
+      head.appendChild(col);
+      var x = U.el('i', 'news-x');
+      x.innerHTML = i === newsOpen ? NEWS_CLOSE : NEWS_OPEN;
+      head.appendChild(x);
       head.addEventListener('click', function () {
         newsOpen = (newsOpen === i) ? -1 : i;
         drawNews(items);
         handlers.onInteract();
       });
       box.appendChild(head);
-      box.appendChild(U.el('div', 'news-p', n.text));
       els.news.appendChild(box);
     });
     syncScrollbars();

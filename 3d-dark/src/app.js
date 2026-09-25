@@ -279,10 +279,15 @@
       });
       UI.setupVideos(CFG.globeVideo, CFG.globeVideoPoster);
 
+      // русские названия контуров для подписей на глобусе: iso -> название
+      var names = {};
+      DATA.countries.forEach(function (c) { if (c.iso && !names[c.iso]) names[c.iso] = c.name; });
+
       Globe.init({
         canvas: $('globe'),
         config: CFG,
         topo: topo,
+        names: names,
         onInteract: resetIdle,
         // тап по дуге или по маркеру страны сразу открывает «Путь»
         onPick: function (name) {

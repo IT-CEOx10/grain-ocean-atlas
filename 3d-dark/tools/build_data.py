@@ -6,6 +6,9 @@
     0 — группа продукции, 1 — продукт, 2 — страна);
   - берёт годы из строки заголовков (2014..2025);
   - подтягивает координаты и iso-коды из data/countries_ru.json;
+    если на стенде страна называется не так, как в xlsx, у неё в справочнике
+    есть поле "xlsx": ["название в xlsx", ...] — например, «Беларусь»
+    (в xlsx «Белоруссия»); xlsx при этом править не нужно;
   - пишет data/export.json;
   - сверяет суммы с листом «по годам» и печатает таблицу сравнения.
 
@@ -187,6 +190,11 @@ def main():
         die("Нет справочника data/countries_ru.json.")
     ref = json.load(open(ref_path, encoding="utf-8"))
     ref = {nrm(k): v for k, v in ref.items()}
+    # названия из xlsx, под которыми страна записана иначе, чем на стенде
+    alias = {}
+    for k, v in ref.items():
+        for a in v.get("xlsx") or []:
+            alias[nrm(a)] = k
 
     wb = openpyxl.load_workbook(xlsx, data_only=True)
     ws = find_sheet(wb, SHEET_COUNTRIES)
@@ -199,6 +207,17 @@ def main():
     print("Годы: %s" % ", ".join(str(y) for y in years))
 
     groups, products, rows, group_totals = parse_countries_sheet(ws, header_row, year_cols)
+    # xlsx-название -> название стенда (поле "xlsx" в справочнике)
+    renamed = {}
+    for name in list(rows):
+        if name in alias and alias[name] != name:
+            target = alias[name]
+            if target in rows:
+                die("В xlsx страна есть и как «%s», и как «%s»." % (name, target))
+            rows[target] = rows.pop(name)
+            renamed[name] = target
+    for a, t in sorted(renamed.items()):
+        print("Переименовано по справочнику: «%s» -> «%s»" % (a, t))
     print("Групп продукции: %d, продуктов: %d, стран в файле: %d"
           % (len(groups), len(products), len(rows)))
 

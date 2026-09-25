@@ -195,6 +195,46 @@ body.mon-screen { background: #141d23; }
   white-space: pre-line;
 }
 
+/* Вкладки «Госмониторинг зерна / Регионы присутствия» под заголовком
+   (макеты 25.09: 553:1480 и 553:1029). Плашка 677x64 с радиусом 20,
+   внутри две кнопки; выбранная светлее. На госмониторинге заголовок
+   в две строки, поэтому вкладки ниже, чем на регионах присутствия. */
+#sec-monitoring .mn-tabs {
+  position: absolute;
+  z-index: 6;
+  left: 50px;
+  top: 175px;
+  display: flex;
+  gap: 4px;
+  width: 677px;
+  height: 64px;
+  padding: 3px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: rgba(22, 43, 41, .92);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
+#scr-presence .mn-tabs { left: 49px; top: 120px; }
+#sec-monitoring .mn-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 17px;
+  background: none;
+  color: var(--mn-text);
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
+  cursor: pointer;
+  transition: background .18s ease;
+}
+#sec-monitoring .mn-tab.is-on { background: #2f4240; cursor: default; }
+#sec-monitoring .mn-tab:not(.is-on):active { background: rgba(47, 66, 64, .6); }
+
 /* поиск: одно поле «Поиск по регионам» слева от «Главного меню» */
 #sec-monitoring .mn-search {
   position: absolute;
@@ -362,6 +402,34 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-total .mn-num { margin-top: -4px; }
 #sec-monitoring .mn-gost .mn-num { margin-top: -8px; }
 
+/* макет 553:1480: цифры сводки чуть мельче (61 вместо 64), а единица
+   «тыс. т» при них совсем мелкая — 10 px; «%» у доли ГОСТ прежний.
+   Подпись прижата к цифре плотнее, вторая цифра ниже — места сняты
+   с кадра docs/mockup/figma-1920/27-monitoring-2026. */
+#sec-monitoring .mn-col .mn-num { font-size: 61px; }
+#sec-monitoring .mn-total .mn-num i { font-size: 10px; }
+#sec-monitoring .mn-total .mn-num { margin-top: 4px; }
+#sec-monitoring .mn-total .mn-note { margin-top: -5px; }
+#sec-monitoring .mn-total .mn-slot + .mn-slot { margin-top: 17px; }
+#sec-monitoring .mn-gost .mn-num { margin-top: -10px; }
+/* заголовок «Топ-10 регионов» в макете на кегль мельче и чуть выше */
+#sec-monitoring .mn-top .mn-top-head { font-size: 21px; margin: -1px 0 5px; }
+
+/* Высоты плашек колонки по макету 553:1480: 299 + 150 + 299, колонка
+   кончается в 36 px от низа кадра. Строки «Топ-10» 46 px через 6,
+   название ближе к верху строки, полоска под ним. */
+#sec-monitoring .mn-col { height: 756px; }
+#sec-monitoring .mn-col .mn-total { height: 299px; }
+#sec-monitoring .mn-col .mn-gost { height: 150px; }
+#sec-monitoring .mn-col .mn-top { height: 299px; }
+#sec-monitoring .mn-gost .mn-num { margin-top: -6px; }
+#sec-monitoring .mn-top .mn-top-list { gap: 6px; }
+#sec-monitoring .mn-top .t-row { height: 46px; }
+#sec-monitoring .mn-top .t-main { padding: 7px 16px 0; gap: 5px; }
+/* цифры сводки: в кадре Akkurat, у Inter цифры шире — чуть сжимаем */
+#sec-monitoring .mn-col .mn-num { letter-spacing: -.035em; gap: 6px; }
+#sec-monitoring .mn-total .mn-num i { font-size: 11px; letter-spacing: 0; }
+
 #sec-monitoring .mn-top {
   flex: none;
   height: 317px;
@@ -497,11 +565,12 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-legend {
   position: absolute;
   z-index: 5;
-  left: 890px;
-  top: 896px;
+  /* макет 553:1480: легенда слева под картой, рядом с колонкой панелей */
+  left: 563px;
+  top: 901px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 #sec-monitoring .mn-legend span {
   display: flex;
@@ -512,32 +581,36 @@ body.mon-screen { background: #141d23; }
   line-height: 28px;
   color: var(--mn-text);
 }
+/* квадратики легенды — цвета заливки карты, рамка 2 px приглушённым
+   золотом (по пикселям кадра 27-monitoring-2026) */
 #sec-monitoring .mn-legend i {
   flex: none;
   width: 30px;
   height: 20px;
-  border: 1px solid #e5c773;
+  border: 2px solid rgba(229, 199, 115, .5);
   border-radius: 4px;
   box-sizing: border-box;
 }
-#sec-monitoring .mn-legend .is-data { background: #244f28; }
+#sec-monitoring .mn-legend .is-data { background: #144434; }
 #sec-monitoring .mn-legend .is-none { background: #2a3533; }
-/* сильная пшеница — звезда того же цвета, что и звёздочки на карте */
-#sec-monitoring .mn-legend .is-star {
+/* сильная пшеница — золотой колосок, тот же, что на карте, но крупнее:
+   16x40, по оси квадратиков соседних строк */
+#sec-monitoring .mn-legend .is-rye {
   flex: none;
   width: 30px;
-  height: 26px;
+  height: 40px;
+  margin: -6px 0;
   fill: #e6b416;
 }
 
 #sec-monitoring .map-hint {
   position: absolute;
   z-index: 5;
-  /* подсказка справа от легенды, на одной с ней линии и левее
-     кнопок масштаба */
-  left: 1336px;
-  top: 976px;
-  font-size: 20px;
+  /* подсказка правее легенды, у нижнего края, левее кнопок масштаба
+     (макет 553:1480) */
+  left: 1182px;
+  top: 986px;
+  font-size: 23px;
   font-weight: 400;
   line-height: 1.2;
   white-space: nowrap;
@@ -594,11 +667,12 @@ body.mon-screen { background: #141d23; }
   font-variant-numeric: tabular-nums;
 }
 
-/* выноска у выбранного региона присутствия: подпись и линия к контуру */
+/* выноска у выбранного региона присутствия: подпись и линия к контуру.
+   В макете 553:1029 подпись узкая, «Московская / область» в две строки */
 #sec-monitoring .mn-call {
   position: absolute;
   z-index: 4;
-  width: 220px;
+  width: 150px;
   font-size: 20px;
   font-weight: 300;
   line-height: 24px;
@@ -643,9 +717,10 @@ body.mon-screen { background: #141d23; }
 #sec-monitoring .mn-zooms .mn-round { width: 86px; height: 80px; }
 #sec-monitoring.on-region #map-tools { display: none; }
 
-/* на регионах присутствия кнопок две, они меньше и стоят ниже карточки */
+/* на регионах присутствия кнопок две, они меньше и стоят слева
+   от карточки филиала, у её нижнего края (макет 553:1029) */
 #sec-monitoring.on-presence #map-tools {
-  right: 48px;
+  right: 536px;
   bottom: 45px;
   gap: 11.2px;
 }
@@ -1069,7 +1144,9 @@ body.mon-screen { background: #141d23; }
   text-transform: uppercase;
   color: var(--mn-gold);
 }
-#sec-monitoring .mn-hub { left: 1540px; top: 48px; width: 300px; height: 108px; }
+/* «В Центр» в макете 553:1029 стоит на 16 px правее и ниже,
+   чем «Главное меню» на госмониторинге */
+#sec-monitoring .mn-hub { left: 1556px; top: 64px; width: 298px; height: 106px; }
 
 #sec-monitoring .mn-pres-cap {
   position: absolute;
@@ -1084,18 +1161,37 @@ body.mon-screen { background: #141d23; }
   color: var(--mn-gold);
 }
 
+/* Высота карточки — по содержимому, но не ниже нижнего края кадра
+   (32 px от края карточки кадра, как в макете: у Москвы с контактами
+   плашка доходит ровно до него). Что не влезло — листается пальцем
+   внутри карточки. */
 #sec-monitoring .mn-pres {
   left: 1370px;
   top: 238px;
   width: 470px;
-  height: 620px;
+  max-height: 778px;
   border-radius: 32px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  scrollbar-width: none;
 }
+#sec-monitoring .mn-pres::-webkit-scrollbar { width: 0; height: 0; display: none; }
+#sec-monitoring .mn-pres > * { flex: none; }
+/* своя полоса прокрутки карточки: место и высоту ставит syncPresBar */
+#sec-monitoring .mn-pres-sb {
+  left: 1822px;
+  right: auto;
+  bottom: auto;
+  z-index: 6;
+  width: 6px;
+}
+#sec-monitoring .mn-pres-sb > i { width: 6px; }
 /* крестик в правом верхнем углу карточки: зона касания 56x56 —
    стенд сенсорный. Прячет карточку вместе с подписью «Выбранный
    регион» (класс pres-card-off на обёртке раздела) */
@@ -1125,33 +1221,47 @@ body.mon-screen { background: #141d23; }
    под ней (Приморский и Хабаровский края) снова кликается */
 #sec-monitoring.pres-card-off .mn-pres,
 #sec-monitoring.pres-card-off .mn-pres-cap,
-#sec-monitoring.pres-card-off .mn-pres-foot,
+#sec-monitoring.pres-card-off .mn-pres-sb,
 #sec-monitoring.pres-card-off .mn-pres-close {
   opacity: 0;
   pointer-events: none;
 }
 #sec-monitoring .mn-pres,
 #sec-monitoring .mn-pres-cap,
-#sec-monitoring .mn-pres-foot {
+#sec-monitoring .mn-pres-sb {
   transition: opacity .22s ease;
 }
 
+/* справа у названия место под крестик: длинное название
+   («Головной офис ЦОК АПК») переносится, а не заходит под него */
 #sec-monitoring .mn-pres-name {
-  margin: 0;
+  margin: 2px 0 0;
+  padding-right: 48px;
   font-size: 32px;
   font-weight: 300;
   line-height: 38.4px;
   color: var(--mn-text);
 }
-/* у филиалов бывает до девяти направлений: интерлиньяж чуть плотнее
-   кадра, иначе самый длинный список не помещается в плашку */
-#sec-monitoring .mn-pres-body {
+/* интерлиньяж 28, как в кадре: длинная карточка теперь листается */
+#sec-monitoring .mn-pres-body,
+#sec-monitoring .mn-pres-contacts {
   font-size: 20px;
   font-weight: 300;
-  line-height: 26px;
+  line-height: 28px;
   color: var(--mn-muted);
   white-space: pre-line;
   overflow-wrap: break-word;
+}
+/* контакты: адрес, пустая строка, телефоны столбиком, почта
+   с подчёркиванием (макет 553:1029) */
+#sec-monitoring .mn-pres-tel { margin-top: 28px; }
+#sec-monitoring .mn-pres-tel:first-child { margin-top: 0; }
+#sec-monitoring .mn-pres-mail {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  -webkit-user-select: text;
+  user-select: text;
 }
 #sec-monitoring .mn-pres-todo {
   font-size: 20px;
@@ -1160,16 +1270,37 @@ body.mon-screen { background: #141d23; }
   color: var(--mn-gold);
 }
 
-#sec-monitoring .mn-pres-foot {
+/* слева внизу: «• 18 филиалов ЦОК АПК по всей России» над подсказкой;
+   точка — как точки лабораторий на карте. Рядом — значок головного
+   офиса: золотое кольцо, как его отметка на карте. */
+#sec-monitoring .pres-count {
   position: absolute;
   z-index: 5;
-  left: 1402px;
-  top: 806px;
-  width: 390px;
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 19.6px;
+  left: 49px;
+  top: 941px;
+  display: flex;
+  gap: 40px;
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 28px;
   color: var(--mn-text);
+  pointer-events: none;
+}
+#sec-monitoring .pres-count span { display: flex; align-items: center; gap: 9px; }
+#sec-monitoring .pres-count b { font-weight: inherit; }
+#sec-monitoring .pres-count i { flex: none; box-sizing: border-box; border-radius: 50%; }
+#sec-monitoring .pres-count .is-lab {
+  width: 11px;
+  height: 11px;
+  background: #f6e3bb;
+  box-shadow: 0 0 10px rgba(246, 227, 187, .6);
+}
+#sec-monitoring .pres-count .is-hq {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid #e6b416;
+  background: radial-gradient(circle, #f6e3bb 0 3.6px, rgba(14, 43, 46, .85) 4.4px);
+  box-shadow: 0 0 10px rgba(246, 212, 120, .5);
 }
 
 #sec-monitoring .pres-hint {

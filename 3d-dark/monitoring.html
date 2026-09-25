@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="styles/app.css">
 <link rel="stylesheet" href="styles/story-theme.css">
 <link rel="stylesheet" href="styles/monitoring.css">
+<link rel="stylesheet" href="styles/keyboard.css">
 </head>
 <body class="mon-screen">
 
@@ -50,12 +51,21 @@
       <h1 id="map-title" class="mn-title">Госмониторинг зерна
 пшеницы 2026</h1>
 
+      <!-- вкладки двух карт раздела (макеты 553:1480 и 553:1029):
+           госмониторинг и регионы присутствия -->
+      <div class="mn-tabs">
+        <button class="mn-tab is-on" type="button" data-view="map">Госмониторинг зерна</button>
+        <button class="mn-tab" type="button" data-view="presence">Регионы присутствия</button>
+      </div>
+
       <!-- «Главное меню» справа сверху, как на глобусе: 300x108 -->
       <button id="home-btn" class="mn-btn mn-home" type="button">Главное меню</button>
       <!-- поиск по регионам: одно поле, переход в глобус — через главное меню -->
       <div class="mn-search">
         <svg class="mn-search-ico" viewBox="0 0 48 48" aria-hidden="true"><path d="M34.9778 37L25.8778 27.9C25.1556 28.4778 24.325 28.9352 23.3861 29.2722C22.4472 29.6093 21.4481 29.7778 20.3889 29.7778C17.7648 29.7778 15.544 28.869 13.7264 27.0514C11.9088 25.2338 11 23.013 11 20.3889C11 17.7648 11.9088 15.544 13.7264 13.7264C15.544 11.9088 17.7648 11 20.3889 11C23.013 11 25.2338 11.9088 27.0514 13.7264C28.869 15.544 29.7778 17.7648 29.7778 20.3889C29.7778 21.4481 29.6093 22.4472 29.2722 23.3861C28.9352 24.325 28.4778 25.1556 27.9 25.8778L37 34.9778L34.9778 37ZM20.3889 26.8889C22.1944 26.8889 23.7292 26.2569 24.9931 24.9931C26.2569 23.7292 26.8889 22.1944 26.8889 20.3889C26.8889 18.5833 26.2569 17.0486 24.9931 15.7847C23.7292 14.5208 22.1944 13.8889 20.3889 13.8889C18.5833 13.8889 17.0486 14.5208 15.7847 15.7847C14.5208 17.0486 13.8889 18.5833 13.8889 20.3889C13.8889 22.1944 14.5208 23.7292 15.7847 24.9931C17.0486 26.2569 18.5833 26.8889 20.3889 26.8889Z"></path></svg>
-        <input id="search" type="search" placeholder="Поиск по регионам" autocomplete="off">
+        <!-- inputmode="none": системная клавиатура Windows не выезжает,
+             вместо неё своя экранная (src/keyboard.js, data-osk) -->
+        <input id="search" type="search" placeholder="Поиск по регионам" autocomplete="off" inputmode="none" data-osk>
       </div>
 
       <div class="mn-col">
@@ -80,8 +90,9 @@
 
       <div class="mn-legend">
         <span><i class="is-data"></i>Регионы с данными по сборам зерна</span>
-        <!-- сильная пшеница в макете помечена звездой, а не квадратом -->
-        <span><svg class="is-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2l2.95 6.33 6.85.83-5.05 4.72 1.33 6.82L12 17.6l-6.08 3.3 1.33-6.82L2.2 9.36l6.85-.83z"/></svg>Регионы с сильной пшеницей</span>
+        <!-- сильная пшеница в макете помечена золотым колоском (слой «rye»),
+             тот же рисунок стоит на карте (RYE в src/monitoring.js) -->
+        <span><svg class="is-rye" viewBox="0 0 24 60" aria-hidden="true"><path d="M12 1C14.6 1 15.6 4.5 15.6 8C15.6 11.5 14 14.5 12 15.5C10 14.5 8.4 11.5 8.4 8C8.4 4.5 9.4 1 12 1ZM11.3 22.5C6 22.5 1.2 19 1.2 13.5C6.5 13.5 11.3 16.5 11.3 22.5ZM12.7 22.5C18 22.5 22.8 19 22.8 13.5C17.5 13.5 12.7 16.5 12.7 22.5ZM11.3 31.7C6 31.7 1.2 28.2 1.2 22.7C6.5 22.7 11.3 25.7 11.3 31.7ZM12.7 31.7C18 31.7 22.8 28.2 22.8 22.7C17.5 22.7 12.7 25.7 12.7 31.7ZM11.3 40.9C6 40.9 1.2 37.4 1.2 31.9C6.5 31.9 11.3 34.9 11.3 40.9ZM12.7 40.9C18 40.9 22.8 37.4 22.8 31.9C17.5 31.9 12.7 34.9 12.7 40.9ZM11.3 50.1C6 50.1 1.2 46.6 1.2 41.1C6.5 41.1 11.3 44.1 11.3 50.1ZM12.7 50.1C18 50.1 22.8 46.6 22.8 41.1C17.5 41.1 12.7 44.1 12.7 50.1ZM10.8 49H13.2V59.5H10.8Z"/></svg>Регионы с сильной пшеницей</span>
         <span><i class="is-none"></i>Не проводится госмониторинг</span>
       </div>
 
@@ -155,7 +166,15 @@
 
       <h1 class="pres-title">Регионы присутствия ЦОК АПК</h1>
 
-      <button id="hub-btn" class="mn-btn mn-hub" type="button">Главное меню</button>
+      <!-- вкладки двух карт раздела (макеты 553:1480 и 553:1029):
+           госмониторинг и регионы присутствия -->
+      <div class="mn-tabs">
+        <button class="mn-tab" type="button" data-view="map">Госмониторинг зерна</button>
+        <button class="mn-tab is-on" type="button" data-view="presence">Регионы присутствия</button>
+      </div>
+
+      <!-- «В Центр» — в центр управления презентации (экран hub) -->
+      <button id="hub-btn" class="mn-btn mn-hub" type="button">В Центр</button>
 
       <div class="mn-pres-cap">Выбранный регион</div>
 
@@ -165,10 +184,17 @@
         <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M13.4 37L11 34.6 21.6 24 11 13.4 13.4 11 24 21.6 34.6 11 37 13.4 26.4 24 37 34.6 34.6 37 24 26.4 13.4 37Z"></path></svg>
       </button>
 
+      <!-- карточка листается пальцем, если не помещается (три адреса
+           у Красноярского филиала); полоса прокрутки своя, как у «Топ-10» -->
       <section id="card-pres" class="mn-panel mn-pres"></section>
+      <div id="pres-sb" class="mn-sb mn-pres-sb is-off"><i></i></div>
 
-      <div id="pres-foot" class="mn-pres-foot">Лаборатории показаны по населённым
-        пунктам, без подсчёта отдельных корпусов.</div>
+      <!-- слева внизу: число филиалов (считается по data/presence.json)
+           и значок головного офиса -->
+      <div class="pres-count">
+        <span><i class="is-lab"></i><b id="pres-count">18 филиалов ЦОК АПК по всей России</b></span>
+        <span id="pres-hq-key"><i class="is-hq"></i>Головной офис</span>
+      </div>
 
       <div class="pres-hint">Выберите регион, чтобы узнать больше.
         Перетаскивайте карту для перемещения.</div>
@@ -185,6 +211,7 @@
 <div id="page-fade" class="is-on"></div>
 
 <script src="src/util.js"></script>
+<script src="src/keyboard.js"></script>
 <script src="src/monitoring.js"></script>
 </body>
 </html>

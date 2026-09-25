@@ -253,6 +253,17 @@ button { border: 0; background: none; cursor: pointer; padding: 0; }
   margin-top: 1px;
 }
 .glabel.is-port { color: var(--gold2); }
+/* Названия стран при сильном приближении (src/globe.js, updateNames):
+   светлый текст с лёгкой тенью, без плашек — чтобы не спорить с картой.
+   Страны-импортёры выбранного года чуть ярче остальных. */
+.glabel.is-name {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: .02em;
+  color: rgba(233, 238, 230, .72);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .55);
+}
+.glabel.is-name.is-imp { font-weight: 500; color: #F5F1E6; }
 
 .panel {
   position: absolute;
@@ -1783,6 +1794,26 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 }
 #sec-globe .country-row .vl { display: none; }
 
+/* Медаль у строк «Топ-5» (макет от 25.09): значок 18x21 в 2 px от края
+   строки, название начинается с 126 px кадра, как в макете. Цвета сняты
+   с макета: золото, серебро, бронза и приглушённый зеленовато-серый. */
+#sec-globe .top5-list .country-row { justify-content: flex-start; gap: 0; }
+/* в макете 25.09 название в строке «Топ-5» стоит по центру медали —
+   подъём на 3 px, нужный строкам списка, здесь не нужен */
+#sec-globe .top5-list .country-row .nm { top: 0; }
+#sec-globe .medal {
+  flex: none;
+  display: block;
+  width: 18px;
+  height: 21px;
+  margin: 0 10px 0 2px;
+  color: #788C7A;
+}
+#sec-globe .medal-i { display: block; width: 18px; height: 21px; fill: currentColor; }
+#sec-globe .medal.m1 { color: #F8D166; }
+#sec-globe .medal.m2 { color: #DADADA; }
+#sec-globe .medal.m3 { color: #CE8342; }
+
 /* Список остальных стран. Ширина 385 = 373 строки + 4 зазор + 8 полоса
    прокрутки: полоса встаёт ровно туда, где она нарисована в кадре. */
 #sec-globe.is-map #country-list {
@@ -1830,7 +1861,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 }
 #sec-globe .sb.is-off { display: none; }
 #sec-globe #sb-countries { left: 441px; top: 348px; height: 668px; }
-#sec-globe #sb-news { left: 1836px; top: 446px; height: 415px; }
+#sec-globe #sb-news { left: 1836px; top: 488px; height: 371px; }
 #sec-globe:not(.is-map) .sb { display: none; }
 #sec-globe.is-map.is-nonews #sb-news { display: none; }
 
@@ -1842,7 +1873,9 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
 /* ---- правая колонка: объём за год и лента новостей ---- */
 
 /* В обновлённом макете правая колонка опущена под кнопку «Главное меню»:
-   плашка с объёмом начинается на 188, лента новостей — на 426. */
+   плашка с объёмом начинается на 188, лента новостей — на 456
+   (макет от 25.09: в плашке добавилась строка «N СТРАН-ИМПОРТЁРОВ»,
+   плашка выросла до 264, лента ужалась до 420). */
 /* Заливку тут приходится назначать заново: старое правило зелёной темы
    (html.theme-green #panel-summary) снимает фон у всей колонки, а в
    кадре это цельная тёмная стеклянная панель с радиусом 24. */
@@ -1851,7 +1884,7 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   right: auto;
   top: 188px;
   width: 530px;
-  height: 234px;
+  height: 264px;
   padding: 32px;
   background: var(--panel);
   border: 0;
@@ -1926,19 +1959,21 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   line-height: 1.4;
   color: var(--text);
 }
-/* В сводке к подписи «поставлено на экспорт» добавлено число стран-
-   импортёров за год. Высота панели в кадре фиксированная (234 px),
-   лишняя строка в неё не влезает — поэтому цифра стоит в той же строке,
-   прижатая к правому краю. */
-#sec-globe #panel-summary .metric-caption {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-}
+/* Число стран-импортёров за год — отдельной строкой под «поставлено на
+   экспорт», заглавными, как в макете от 25.09 («124 СТРАНЫ-ИМПОРТЁРА»):
+   23 px, начертание 300, цвет основного текста — кегль подобран по ширине
+   строки в макете (292 px). Узел лежит внутри подписи
+   (разметка не менялась), поэтому строку делает display: block. */
+#sec-globe #panel-summary .metric-caption { display: block; }
 #sec-globe .sum-countries {
+  display: block;
+  margin-top: 24px;
   white-space: nowrap;
-  color: var(--muted);
+  font-size: 23px;
+  font-weight: 300;
+  line-height: 28px;
+  text-transform: uppercase;
+  color: var(--text);
   font-variant-numeric: tabular-nums;
 }
 #sec-globe .sum-countries:empty { display: none; }
@@ -1947,9 +1982,9 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   position: absolute;
   left: 1326px;
   right: auto;
-  top: 426px;
+  top: 456px;
   width: 529px;
-  height: 450px;
+  height: 420px;
   padding: 32px;
   border-radius: 24px;
   z-index: 4;
@@ -2001,8 +2036,16 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   font-weight: 400;
   color: var(--text);
 }
-#sec-globe .news-t {
+/* колонка справа от номера: заголовок и под ним текст, зазор 6 px */
+#sec-globe .news-c {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+#sec-globe .news-t {
+  display: block;
   min-width: 0;
   padding-top: 0;
   font-family: inherit;
@@ -2021,22 +2064,34 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   justify-content: center;
   width: 35px;
   height: 33px;
-  border-radius: 50%;
+  /* в макете 25.09 кнопка — скруглённый квадрат, значок белый */
+  border-radius: 12px;
   border: 0;
-  background: rgba(255, 255, 255, .06);
+  background: rgba(246, 246, 246, .1);
   font-style: normal;
-  font-size: 15px;
-  color: var(--icon);
+  color: #FFFFFF;
+}
+#sec-globe .news-x svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 #sec-globe .news-p {
-  margin: 6px 0 0 72px;
-  padding-right: 43px;
+  display: block;
+  margin: 0;
   font-size: 16px;
   font-weight: 300;
   line-height: 24px;
   color: var(--text);
 }
 #sec-globe .news-item.is-off .news-p { display: none; }
+/* у свёрнутого пункта однострочный заголовок стоит по центру номера */
+#sec-globe .news-item.is-off .news-head { align-items: center; }
 
 /* ---- панель годов: 2015–2026, год без данных неактивен ----
    Общая для кадров «Карта» и «Страна»: 1170x124 на месте из кадра. */
@@ -2171,7 +2226,10 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   left: 1325px;
   top: 356px;
   width: 529px;
-  height: 517px;
+  /* высота по содержимому (правка заказчика 25.09): у страны с одним
+     продуктом нет большого пустого блока; самое большее — 517, как в макете */
+  height: auto;
+  max-height: 517px;
   padding: 32px;
   border-radius: 24px;
   z-index: 4;
@@ -2198,13 +2256,17 @@ html.theme-green #touch-hint.is-on { opacity: 1; }
   color: var(--muted);
   white-space: nowrap;
 }
-/* Таблица продукции: две колонки по 12 строк на 401 px высоты —
-   ровно столько, сколько остаётся в панели под шапкой. */
+/* Таблица продукции: две колонки, самое большее по 12 строк (401 px) —
+   столько остаётся в панели под шапкой. Колонки выравниваются по высоте
+   (column-fill: balance): три продукта — это две строки, а не столбик
+   на всю панель; один продукт — одна строка. */
 #sec-globe.is-country .product-grid {
   margin: 4px 0 0;
-  height: 401px;
+  height: auto;
+  max-height: 401px;
   columns: 2;
   column-gap: 16px;
+  column-fill: balance;
   overflow: hidden;
 }
 #sec-globe.is-country .product-item {

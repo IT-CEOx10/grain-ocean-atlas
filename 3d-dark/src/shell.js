@@ -154,6 +154,8 @@
     var s = secs[name];
     if (!s) return;
     params = params || {};
+    // экранная клавиатура (src/keyboard.js) при смене раздела убирается
+    if (global.Keyboard) global.Keyboard.close();
 
     if (name === curName) {              // уже здесь — только довести до нужного экрана
       if (s.ready && s.api.show) s.api.show(params);
@@ -197,6 +199,7 @@
 
   function toAttractor() {
     ping();
+    if (global.Keyboard) global.Keyboard.close();
     ORDER.forEach(function (n) {
       var s = secs[n];
       if (s && s.ready && s.api.reset) s.api.reset();

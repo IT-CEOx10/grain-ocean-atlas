@@ -68,11 +68,14 @@
   var endPointsBig = null, endPointsSmall = null, particles = null;
 
   var topoFeatures = null;              // контуры стран для подсветки
+  var geoCountries = [];                // те же контуры для выбора касанием и подписей
+  var namesRu = {};                     // iso -> русское название (из данных экспорта)
   var highlightCtx = null, highlightTex = null, highlightIso = null;
   var highlightLine = null, highlightGlow = null;
 
   var routes = [];                      // [{name, curve, pts, mesh, value, norm, baseHalf}]
   var routeByName = {};
+  var routeByIso = {};                  // iso контура -> маршрут текущего года
   var selected = null;
 
   // Домашний ракурс: Россия, Чёрное море, Ближний Восток, Африка, Индия.
@@ -377,6 +380,183 @@
     }
     highlightTex.needsUpdate = true;
     highlight.visible = !!feat;
+  }
+
+  /* ---------------- страна под пальцем: контуры в долготе/широте ----------------
+
+     Чтобы страну можно было выбрать касанием по всей её территории, а не
+     только по точке на конце дуги, контуры из countries-110m.json один раз
+     раскладываются в плоские кольца «долгота — широта»:
+
+       - долготы кольца разворачиваются в непрерывный ряд, как в tracePath:
+         кольцо, пересекающее 180-й меридиан (Чукотка, Фиджи), не рвётся;
+         точку касания потом проверяем со сдвигом на 0 и ±360;
+       - кольцо, которое обходит полюс целиком (Антарктида), замыкается
+         через сам полюс, иначе «внутри» у него не определено;
+       - у каждого кольца заранее посчитана рамка (bbox): касание сначала
+         отсекается по рамкам, до честной проверки доходят одна-две страны;
+       - дыры в полигонах и мультиполигоны учитываются правилом чёт-нечет:
+         точка внутри страны, если она внутри нечётного числа её колец.
+
+     Контуров 177, проверка идёт только в момент касания, поэтому никакой
+     сетки поверх рамок не нужно: на стенде это доли миллисекунды. */
+
+  /* Русские названия для контуров, которых нет в данных экспорта (туда
+     попадают только страны, куда хоть раз возили зерно); здесь — официальные
+     краткие названия. Остальные имена берутся из data/export.json — это те
+     же названия, что в списке стран и карточке (их источник —
+     data/countries_ru.json). Контуры без кода (Северный
+     Кипр, Сомалиленд, Косово) и спорные территории не подписываются. */
+  var EXTRA_RU = {
+    '242': 'Фиджи', '732': 'Западная Сахара', '148': 'Чад',
+    '238': 'Фолклендские острова', '304': 'Гренландия', '626': 'Тимор-Лешти',
+    '858': 'Уругвай', '084': 'Белиз', '328': 'Гайана', '388': 'Ямайка',
+    '624': 'Гвинея-Бисау', '748': 'Эсватини', '548': 'Вануату', '064': 'Бутан',
+    '540': 'Новая Каледония', '090': 'Соломоновы Острова', '010': 'Антарктида'
+  };
+  // Россию не подписываем: над портом отправления уже стоит «Россия».
+  // Название на глобусе всегда ровно такое же, как в списке стран и
+  // в карточке (data/export.json), — без сокращений и замен.
+  var NAME_SKIP = { '643': 1, '158': 1, '260': 1 };
+
+  /** Кольцо GeoJSON -> плоское кольцо с непрерывной долготой и рамкой. */
+  function flatRing(ring) {
+    var n = ring.length, xs = new Float64Array(n + 2), ys = new Float64Array(n + 2);
+    var lon = ring[0][0], minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (var i = 0; i < n; i++) {
+      if (i > 0) {
+        var d = ring[i][0] - ring[i - 1][0];
+        if (d > 180) d -= 360; else if (d < -180) d += 360;
+        lon += d;
+      }
+      xs[i] = lon; ys[i] = ring[i][1];
+    }
+    // обошли полюс по кругу (Антарктида): замыкаем кольцо через полюс
+    if (Math.abs(xs[n - 1] - xs[0]) > 180) {
+      var pole = ys[0] < 0 ? -90 : 90;
+      xs[n] = xs[n - 1]; ys[n] = pole;
+      xs[n + 1] = xs[0]; ys[n + 1] = pole;
+      n += 2;
+    }
+    for (var k = 0; k < n; k++) {
+      if (xs[k] < minX) minX = xs[k]; if (xs[k] > maxX) maxX = xs[k];
+      if (ys[k] < minY) minY = ys[k]; if (ys[k] > maxY) maxY = ys[k];
+    }
+    return { xs: xs, ys: ys, n: n, minX: minX, maxX: maxX, minY: minY, maxY: maxY };
+  }
+
+  /** Точка внутри плоского кольца (луч по долготе, правило чёт-нечет). */
+  function inRing(r, x, y) {
+    if (y < r.minY || y > r.maxY || x < r.minX || x > r.maxX) return false;
+    var inside = false, xs = r.xs, ys = r.ys;
+    for (var i = 0, j = r.n - 1; i < r.n; j = i++) {
+      if ((ys[i] > y) !== (ys[j] > y) &&
+          x < (xs[j] - xs[i]) * (y - ys[i]) / (ys[j] - ys[i]) + xs[i]) inside = !inside;
+    }
+    return inside;
+  }
+
+  /** Кольцо с учётом 180-го меридиана: пробуем долготу как есть и ±360. */
+  function inRingWrap(r, lon, lat) {
+    return inRing(r, lon, lat) || inRing(r, lon + 360, lat) || inRing(r, lon - 360, lat);
+  }
+
+  /** Площадь плоского кольца в «градусах²», поправленная на широту. */
+  function ringArea(r) {
+    var a = 0;
+    for (var i = 0, j = r.n - 1; i < r.n; j = i++) a += (r.xs[j] - r.xs[i]) * (r.ys[j] + r.ys[i]);
+    var midLat = (r.minY + r.maxY) / 2;
+    return Math.abs(a / 2) * Math.cos(midLat * DEG);
+  }
+
+  /** Квадрат расстояния от точки до границ полигона (в локальной проекции). */
+  function edgeDist2(poly, x, y, kx) {
+    var best = Infinity;
+    for (var p = 0; p < poly.length; p++) {
+      var r = poly[p];
+      for (var i = 0, j = r.n - 1; i < r.n; j = i++) {
+        var d = segDist2(x * kx, y, r.xs[j] * kx, r.ys[j], r.xs[i] * kx, r.ys[i]);
+        if (d < best) best = d;
+      }
+    }
+    return best;
+  }
+
+  function inPoly(poly, x, y) {
+    var c = false;
+    for (var p = 0; p < poly.length; p++) if (inRing(poly[p], x, y)) c = !c;
+    return c;
+  }
+
+  /**
+   * Где ставить подпись: точка внутри самого большого полигона страны,
+   * дальше всего отстоящая от его границ (упрощённый polylabel — перебор
+   * по сетке и уточнение вокруг лучшей клетки). Центр масс не годится:
+   * у Хорватии, Чили или Норвегии он лежит за пределами страны.
+   */
+  function labelPoint(poly) {
+    var r0 = poly[0];
+    var kx = Math.cos((r0.minY + r0.maxY) / 2 * DEG);
+    var bx = (r0.minX + r0.maxX) / 2, by = (r0.minY + r0.maxY) / 2, bd = -1;
+    var x0 = r0.minX, y0 = r0.minY, w = r0.maxX - r0.minX, h = r0.maxY - r0.minY;
+    for (var pass = 0; pass < 2; pass++) {
+      var N = pass ? 8 : 14;
+      for (var i = 0; i < N; i++) {
+        for (var j = 0; j < N; j++) {
+          var x = x0 + (i + 0.5) / N * w, y = y0 + (j + 0.5) / N * h;
+          if (!inPoly(poly, x, y)) continue;
+          var d = edgeDist2(poly, x, y, kx);
+          if (d > bd) { bd = d; bx = x; by = y; }
+        }
+      }
+      // второй проход — мельче, вокруг найденной точки
+      w = w / 14 * 2; h = h / 14 * 2; x0 = bx - w / 2; y0 = by - h / 2;
+    }
+    return { lat: by, lon: bx };
+  }
+
+  /** Раскладка контуров: вызывается один раз, после загрузки topojson. */
+  function buildGeoIndex() {
+    geoCountries = [];
+    if (!topoFeatures) return;
+    for (var f = 0; f < topoFeatures.length; f++) {
+      var feat = topoFeatures[f], g = feat.geometry;
+      if (!g || feat.id == null) continue;
+      var polys = g.type === 'Polygon' ? [g.coordinates] : g.coordinates;
+      var rings = [], best = null, bestA = -1;
+      for (var p = 0; p < polys.length; p++) {
+        var poly = [];
+        for (var r = 0; r < polys[p].length; r++) {
+          var fr = flatRing(polys[p][r]);
+          poly.push(fr); rings.push(fr);
+        }
+        var a = ringArea(poly[0]);
+        if (a > bestA) { bestA = a; best = poly; }
+      }
+      var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+      rings.forEach(function (q) {
+        if (q.minX < minX) minX = q.minX; if (q.maxX > maxX) maxX = q.maxX;
+        if (q.minY < minY) minY = q.minY; if (q.maxY > maxY) maxY = q.maxY;
+      });
+      geoCountries.push({
+        iso: String(feat.id), rings: rings, main: best, area: bestA,
+        minX: minX, maxX: maxX, minY: minY, maxY: maxY, label: null
+      });
+    }
+  }
+
+  /** Контур страны под точкой (lat, lon) или null — океан. */
+  function countryAt(lat, lon) {
+    for (var c = 0; c < geoCountries.length; c++) {
+      var g = geoCountries[c];
+      if (lat < g.minY || lat > g.maxY) continue;
+      var inside = false;
+      for (var r = 0; r < g.rings.length; r++) {
+        if (inRingWrap(g.rings[r], lon, lat)) inside = !inside;
+      }
+      if (inside) return g;
+    }
+    return null;
   }
 
   /*
@@ -725,6 +905,9 @@
     // едва заметные границы стран
     borders = buildBorders(opts.topo);
     world.add(borders);
+    // те же контуры — для выбора страны касанием и для подписей названий
+    namesRu = opts.names || {};
+    buildGeoIndex();
 
     // мягкая заливка выбранной страны (контур добавляется отдельно, линиями)
     highlight = new THREE.Mesh(
@@ -889,8 +1072,12 @@
       document.fonts.ready.then(function () {
         var all = labels.concat([originLabel, selLabel]);
         all.forEach(function (L) { L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; });
+        namesMeasured = false;
       });
     }
+    // Узлы названий стран и точки под них готовим заранее, в паузе после
+    // запуска (десятки миллисекунд), а не в момент первого приближения.
+    setTimeout(prepNames, 1500);
   }
 
   var pTmp = new THREE.Vector3(), pNrm = new THREE.Vector3();
@@ -925,11 +1112,13 @@
   var originPt = { x: 960, y: 540 };
   var zeroV = new THREE.Vector3();
 
+  /** Возвращает true, если подпись показана; её рамка остаётся в L.rect. */
   function placeLabel(L, worldPos, alpha, isOrigin) {
-    if (alpha <= 0.01) { L.el.style.opacity = 0; return; }
+    L.rect = null;
+    if (alpha <= 0.01) { L.el.style.opacity = 0; return false; }
     project(worldPos, L);
     if (isOrigin) { originPt.x = L.x; originPt.y = L.y; }
-    if (!L.front) { L.el.style.opacity = 0; return; }
+    if (!L.front) { L.el.style.opacity = 0; return false; }
 
     // Подпись отодвигается от центра глобуса, а рядом с точкой отправления —
     // от неё самой: иначе подписи ближних стран тонут в узле маршрутов.
@@ -952,12 +1141,16 @@
       }
       if (!ok) dy += L.h + 6;
     }
-    if (!ok) { L.el.style.opacity = 0; return; }
-    placed.push(labelRect(L, dy));
+    if (!ok) { L.el.style.opacity = 0; return false; }
+    L.rect = labelRect(L, dy);
+    placed.push(L.rect);
     L.el.style.transform = 'translate(-50%, -140%) translate(' +
       L.x.toFixed(1) + 'px,' + (L.y + dy).toFixed(1) + 'px)';
     L.el.style.opacity = alpha;
+    return true;
   }
+
+  var topShown = {};                    // iso стран, у которых видна подпись с объёмом
 
   function updateLabels() {
     placed.length = 0;
@@ -975,12 +1168,14 @@
       selLabel.el.style.opacity = 0;
     }
 
+    for (var k in topShown) delete topShown[k];
     for (var i = 0; i < labels.length; i++) {
       var L = labels[i];
-      if (selected) { L.el.style.opacity = 0; continue; }
+      if (selected) { L.el.style.opacity = 0; L.rect = null; continue; }
       tmpV.copy(L.pos).applyMatrix4(world.matrixWorld);
-      placeLabel(L, tmpV, 1);
+      if (placeLabel(L, tmpV, 1) && L.iso) topShown[L.iso] = 1;
     }
+    updateNames();
   }
 
   function rebuildLabels(items) {
@@ -991,7 +1186,166 @@
       var L = makeLabel(null);
       setLabelText(L, top[j].name, U.fmtVolume(top[j].value) + ' тыс. т');
       L.pos = toVec3(top[j].lat, top[j].lon, R * 1.004);
+      L.iso = top[j].iso ? String(top[j].iso) : null;
+      L.name = top[j].name;
       labels.push(L);
+    }
+  }
+
+  /* ---------------- названия стран при сильном приближении ----------------
+
+     Когда глобус подведён близко (zoom от NAMES_FROM до NAMES_FULL), на нём
+     проявляются русские названия стран — чтобы страну можно было узнать
+     и коснуться. Правила:
+
+       - подпись стоит в «середине» самого большого полигона страны
+         (labelPoint), а не в столице;
+       - видна только на лицевой стороне шара и гаснет к его краю;
+       - подписи не налезают друг на друга: раскладываются по порядку
+         важности — сначала страны-импортёры выбранного года (по объёму),
+         потом остальные по площади; не влезшая подпись скрывается;
+       - у восьми крупнейших направлений уже есть подпись с объёмом —
+         второе название поверх неё не ставим;
+       - на кадре «Страна» названий нет: там своя подсветка и подпись.
+
+     Узлы создаются один раз (около 170 штук), а в кадре меняются только
+     transform и opacity — и только когда значение действительно
+     изменилось. Пока глобус не приближен, цикл их вообще не трогает. */
+
+  var NAMES_FROM = 2.9;                 // с какого расстояния камеры начинают проявляться
+  var NAMES_FULL = 2.45;                // с какого видны целиком (ближе всего — minZoom 2.0)
+  var nameLabels = null;                // [{el, w, h, pos, iso, area, imp, x, y, op, tf, rect}]
+  var namesOn = false;                  // в прошлом кадре подписи были на экране
+  var namesMeasured = false;
+  var nv = new THREE.Vector3();
+
+  function prepNames() {
+    if (nameLabels || !labelHost) return;
+    nameLabels = [];
+    for (var i = 0; i < geoCountries.length; i++) {
+      var g = geoCountries[i];
+      if (NAME_SKIP[g.iso]) continue;
+      var name = namesRu[g.iso] || EXTRA_RU[g.iso];
+      if (!name) continue;
+      var p = labelPoint(g.main);
+      var el = document.createElement('div');
+      el.className = 'glabel is-name';
+      el.textContent = name;
+      el.style.opacity = 0;
+      labelHost.appendChild(el);
+      nameLabels.push({ el: el, w: 0, h: 0, iso: g.iso, area: g.area, imp: 0,
+        pos: toVec3(p.lat, p.lon, R * 1.004), x: 0, y: 0, op: 0, tf: '', rect: null });
+    }
+    namesMeasured = false;
+    sortNames();
+  }
+
+  /** Порядок важности: импортёры года по объёму, затем крупные страны. */
+  function sortNames() {
+    if (!nameLabels) return;
+    nameLabels.forEach(function (L) {
+      var r = routeByIso[L.iso];
+      L.imp = r ? r.value : 0;
+      L.el.classList.toggle('is-imp', !!r);
+    });
+    nameLabels.sort(function (a, b) { return (b.imp - a.imp) || (b.area - a.area); });
+  }
+
+  function measureNames() {
+    if (!nameLabels) return;
+    nameLabels.forEach(function (L) { L.w = L.el.offsetWidth; L.h = L.el.offsetHeight; });
+    namesMeasured = nameLabels.length > 0 && nameLabels[0].w > 0;
+  }
+
+  /** 0 — названий нет, 1 — видны целиком; плавно по расстоянию камеры. */
+  function namesAlpha() {
+    if (selected) return 0;
+    var t = (NAMES_FROM - view.zoom) / (NAMES_FROM - NAMES_FULL);
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    return t * t * (3 - 2 * t);
+  }
+
+  /*
+   * Плашки интерфейса поверх глобуса: панели, кнопки, заголовок. Подпись
+   * под плашкой не видна целиком, а обрезок названия у её края («Туркменист»)
+   * выглядит как ошибка — такие подписи не показываем. Рамки плашек
+   * снимаются из разметки в координатах сцены 1920×1080 и обновляются
+   * раз в полсекунды: кадр раздела мог смениться.
+   */
+  var obstacles = [], obstaclesT = 0;
+
+  function readObstacles() {
+    obstacles.length = 0;
+    var host = labelHost && labelHost.parentNode;
+    if (!host) return;
+    var hr = host.getBoundingClientRect();
+    var k = host.offsetWidth ? hr.width / host.offsetWidth : 1;
+    if (!k) return;
+    var els = host.querySelectorAll('.panel, .ghost-btn, .screen-title');
+    for (var i = 0; i < els.length; i++) {
+      var r = els[i].getBoundingClientRect();
+      if (!r.width || !r.height) continue;       // скрыта на этом кадре
+      obstacles.push({ l: (r.left - hr.left) / k, r: (r.right - hr.left) / k,
+                       t: (r.top - hr.top) / k, b: (r.bottom - hr.top) / k });
+    }
+  }
+
+  function updateNames() {
+    var a = namesAlpha();
+    if (a <= 0.01) {
+      if (namesOn) {
+        for (var h = 0; h < nameLabels.length; h++) {
+          var Lh = nameLabels[h];
+          Lh.rect = null;
+          if (Lh.op) { Lh.el.style.opacity = 0; Lh.op = 0; }
+        }
+        namesOn = false;
+      }
+      return;
+    }
+    if (!nameLabels) prepNames();
+    if (!nameLabels) return;
+    if (!namesMeasured) measureNames();
+    var now = performance.now();
+    if (!namesOn || now - obstaclesT > 500) { readObstacles(); obstaclesT = now; }
+    namesOn = true;
+
+    var W = canvas.clientWidth || 1920, H = canvas.clientHeight || 1080;
+    var cam = camera.position, m = world.matrixWorld;
+    for (var i = 0; i < nameLabels.length; i++) {
+      var L = nameLabels[i], op = 0;
+      L.rect = null;
+      nv.copy(L.pos).applyMatrix4(m);
+      // косинус между нормалью в точке и направлением на камеру:
+      // 1 — точка смотрит прямо на нас, 0 — на самом краю диска
+      var tx = cam.x - nv.x, ty = cam.y - nv.y, tz = cam.z - nv.z;
+      var c = (nv.x * tx + nv.y * ty + nv.z * tz) / (Math.sqrt(tx * tx + ty * ty + tz * tz) * 1.004);
+      if (c > 0.05) {
+        nv.project(camera);
+        L.x = (nv.x * 0.5 + 0.5) * W;
+        L.y = (-nv.y * 0.5 + 0.5) * H;
+        var tf = 'translate(' + L.x.toFixed(1) + 'px,' + L.y.toFixed(1) + 'px) translate(-50%,-50%)';
+        if (tf !== L.tf) { L.el.style.transform = tf; L.tf = tf; }
+        if (c > 0.2 && !topShown[L.iso] && L.x > 0 && L.x < W && L.y > 0 && L.y < H) {
+          var rect = { l: L.x - L.w / 2, r: L.x + L.w / 2, t: L.y - L.h / 2, b: L.y + L.h / 2 };
+          var ok = true, j;
+          for (j = 0; j < obstacles.length && ok; j++) {
+            if (overlaps(rect, obstacles[j])) ok = false;
+          }
+          for (j = 0; j < placed.length && ok; j++) {
+            if (overlaps(rect, placed[j])) ok = false;
+          }
+          if (ok) {
+            placed.push(rect);
+            L.rect = rect;
+            var e = (c - 0.2) / 0.22;
+            e = e > 1 ? 1 : e;
+            op = a * e;
+          }
+        }
+      }
+      op = Math.round(op * 20) / 20;
+      if (op !== L.op) { L.el.style.opacity = op; L.op = op; }
     }
   }
 
@@ -1005,6 +1359,7 @@
     });
     routes = [];
     routeByName = {};
+    routeByIso = {};
     [endPointsBig, endPointsSmall, particles].forEach(function (p) {
       if (!p) return;
       world.remove(p);
@@ -1090,6 +1445,7 @@
       };
       routes.push(route);
       routeByName[it.name] = route;
+      if (it.iso && !routeByIso[it.iso]) routeByIso[String(it.iso)] = route;
     });
 
     // светящиеся точки на концах: два размера — крупные направления заметнее
@@ -1112,6 +1468,7 @@
     }
 
     rebuildLabels(items);
+    sortNames();                        // импортёры года — первыми в очереди подписей
 
     if (animate === false) {
       routes.forEach(function (r) { r.mesh.geometry.setDrawRange(0, Infinity); });
@@ -1248,6 +1605,7 @@
       goal.theta = from.theta + d;
     }
     target = { from: from, to: goal, t0: performance.now(), dur: dur || 800 };
+    spin.theta = spin.phi = 0;          // перелёт камеры отменяет докрутку
   }
 
   /* ---------------------------- управление ---------------------------- */
@@ -1256,15 +1614,40 @@
   var dragging = false, pinchStart = 0, zoomStart = 0;
   var tapInfo = null;
 
+  /*
+   * Вращение «за пальцем». Шар крутится в ту же сторону, куда тянут,
+   * и точка под пальцем остаётся под пальцем: угол поворота на один
+   * пиксель — это размер пикселя на глубине ближней точки шара
+   * (uPxK · (zoom − R)). Поэтому вблизи шар крутится медленнее,
+   * вдали — быстрее, и выбрать страну при сильном приближении легко.
+   * Касания приходят в пикселях окна, а сцена 1920×1080 масштабируется
+   * под экран (fitStage в app.js) — делим на этот масштаб.
+   *
+   * После быстрого взмаха шар ещё немного докручивается по инерции
+   * и плавно останавливается (spin, гасится в loop).
+   */
+  var spin = { theta: 0, phi: 0 };      // скорость докрутки, рад/с
+  var SPIN_DAMP = 4.0;                  // чем больше, тем быстрее гаснет
+  var lastMove = 0;
+
+  function dragK() {
+    var rect = canvas.getBoundingClientRect();
+    var h = canvas.clientHeight || 1080;
+    var s = rect.height > 0 ? rect.height / h : 1;
+    return uPxK.value * Math.max(view.zoom - R, 0.2) / s;
+  }
+
   function bindPointer() {
     canvas.addEventListener('pointerdown', function (e) {
       canvas.setPointerCapture(e.pointerId);
       pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
       var n = Object.keys(pointers).length;
       onInteract();
+      spin.theta = spin.phi = 0;
       if (n === 1) {
         dragging = true;
         tapInfo = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
+        lastMove = performance.now();
         target = null;
         autoRotate = false;
       } else if (n === 2) {
@@ -1285,9 +1668,18 @@
 
       if (n === 1 && dragging) {
         if (tapInfo) tapInfo.moved += Math.abs(dx) + Math.abs(dy);
-        var k = 0.0055 * (view.zoom / 3);
-        view.theta -= dx * k;
-        view.phi = U.clamp(view.phi + dy * k, -1.35, 1.35);
+        var k = dragK();
+        // поворот вокруг наклонённой оси: у полюса точка на экране ходит
+        // медленнее (cos широты), подгоняем, но не больше чем в 1,7 раза
+        var dTh = dx * k / Math.max(Math.cos(view.phi), 0.6);
+        var dPh = dy * k;
+        view.theta += dTh;              // тянут вправо — шар крутится вправо
+        view.phi = U.clamp(view.phi + dPh, -1.35, 1.35);
+        // скорость для докрутки: сглаженная по последним движениям
+        var now = performance.now(), dt = Math.max((now - lastMove) / 1000, 0.008);
+        lastMove = now;
+        spin.theta = spin.theta * 0.5 + (dTh / dt) * 0.5;
+        spin.phi = spin.phi * 0.5 + (dPh / dt) * 0.5;
       } else if (n === 2) {
         var d = pinchDist();
         if (pinchStart > 4 && d > 4) {
@@ -1297,10 +1689,19 @@
     });
 
     function release(e) {
-      if (tapInfo && Object.keys(pointers).length === 1 &&
-          tapInfo.moved < 12 && performance.now() - tapInfo.t < 500) {
+      // касание, а не перетаскивание: палец почти не сдвинулся и отпущен быстро
+      var single = Object.keys(pointers).length === 1;
+      if (tapInfo && single && tapInfo.moved < 12 && performance.now() - tapInfo.t < 500) {
+        spin.theta = spin.phi = 0;
         var name = pick(e.clientX, e.clientY);
         if (name) onPick(name);
+      } else if (!tapInfo || !single || performance.now() - lastMove > 90) {
+        // палец остановился перед тем, как его убрали, или это был щипок —
+        // шар остаётся там, где его отпустили
+        spin.theta = spin.phi = 0;
+      } else {
+        spin.theta = U.clamp(spin.theta, -6, 6);
+        spin.phi = U.clamp(spin.phi, -3, 3);
       }
       delete pointers[e.pointerId];
       if (!Object.keys(pointers).length) { dragging = false; tapInfo = null; }
@@ -1309,6 +1710,7 @@
     canvas.addEventListener('pointercancel', function (e) {
       delete pointers[e.pointerId];
       dragging = false; tapInfo = null;
+      spin.theta = spin.phi = 0;
     });
 
     canvas.addEventListener('wheel', function (e) {
@@ -1316,6 +1718,7 @@
       onInteract();
       target = null;
       autoRotate = false;
+      spin.theta = spin.phi = 0;
       view.zoom = U.clamp(view.zoom * (1 + Math.sign(e.deltaY) * 0.10), gcfg.minZoom, gcfg.maxZoom);
     }, { passive: false });
 
@@ -1362,6 +1765,18 @@
     return qx * qx + qy * qy;
   }
 
+  /*
+   * Что открывается по касанию, по порядку:
+   *   1. маркер страны на конце дуги (допуск HIT_DOT_PX);
+   *   2. подпись страны — с объёмом или название при приближении;
+   *   3. территория страны: луч из точки касания, точка на шаре,
+   *      широта и долгота, контур из countries-110m.json (countryAt);
+   *   4. дуга маршрута (допуск HIT_ARC_PX).
+   * Страна открывается, только если в выбранном году в неё возили зерно;
+   * касание океана, России или страны без поставок ничего не открывает
+   * (если рядом нет дуги). Перетаскивание сюда не доходит: release()
+   * зовёт pick только для короткого касания без сдвига.
+   */
   function pick(clientX, clientY) {
     if (!routes.length) return null;
     var rect = canvas.getBoundingClientRect();
@@ -1376,6 +1791,55 @@
     hitM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
       .multiply(world.matrixWorld);
 
+    var hit = pickRoutes(px, py, W, H);
+    if (hit.dot) return hit.dot;
+    var byLabel = pickLabel(px, py);
+    if (byLabel) return byLabel;
+    var land = landAt(px, py, W, H);
+    if (land && land.route) return land.route.name;
+    return hit.arc;
+  }
+
+  /** Подпись под пальцем: сначала подписи с объёмом, потом названия. */
+  function pickLabel(px, py) {
+    var M = 6;                          // палец толще курсора — чуть расширяем рамку
+    function inside(r) { return r && px > r.l - M && px < r.r + M && py > r.t - M && py < r.b + M; }
+    for (var i = 0; i < labels.length; i++) {
+      if (inside(labels[i].rect) && routeByName[labels[i].name]) return labels[i].name;
+    }
+    if (nameLabels) {
+      for (var j = 0; j < nameLabels.length; j++) {
+        var L = nameLabels[j];
+        if (L.op >= 0.5 && inside(L.rect) && routeByIso[L.iso]) return routeByIso[L.iso].name;
+      }
+    }
+    return null;
+  }
+
+  var ray = new THREE.Raycaster(), rayNdc = new THREE.Vector2(), rayP = new THREE.Vector3();
+
+  /**
+   * Точка экрана -> страна на шаре. Возвращает null, если луч прошёл мимо
+   * планеты, иначе {lat, lon, iso, route}: iso — контур под пальцем
+   * (null — океан), route — маршрут выбранного года в эту страну.
+   */
+  function landAt(px, py, W, H) {
+    rayNdc.set(px / W * 2 - 1, -(py / H * 2 - 1));
+    ray.setFromCamera(rayNdc, camera);
+    var o = ray.ray.origin, d = ray.ray.direction;
+    // пересечение с шаром радиуса R в центре сцены
+    var b = o.dot(d), c = o.lengthSq() - R * R, disc = b * b - c;
+    if (disc < 0) return null;
+    rayP.copy(o).addScaledVector(d, -b - Math.sqrt(disc));
+    world.worldToLocal(rayP);
+    var ll = vecToLatLon(rayP);
+    var g = countryAt(ll.lat, ll.lon);
+    return { lat: ll.lat, lon: ll.lon, iso: g ? g.iso : null,
+             route: g ? (routeByIso[g.iso] || null) : null };
+  }
+
+  /** Маркеры и дуги маршрутов в экранных координатах. */
+  function pickRoutes(px, py, W, H) {
     var dotBest = null, dotD2 = HIT_DOT_PX * HIT_DOT_PX;
     var arcBest = null, arcD2 = HIT_ARC_PX * HIT_ARC_PX;
 
@@ -1404,7 +1868,7 @@
         if (sd < arcD2) { arcD2 = sd; arcBest = r.name; }
       }
     }
-    return dotBest || arcBest;
+    return { dot: dotBest, arc: arcBest };
   }
 
   /* ------------------------------ цикл ------------------------------ */
@@ -1429,6 +1893,13 @@
       view.fy = target.from.fy + (target.to.fy - target.from.fy) * e;
       applyViewOffset();
       if (p >= 1) target = null;
+    } else if ((spin.theta || spin.phi) && !Object.keys(pointers).length) {
+      // докрутка после взмаха: скорость гаснет по экспоненте
+      view.theta += spin.theta * dt;
+      view.phi = U.clamp(view.phi + spin.phi * dt, -1.35, 1.35);
+      var fade = Math.exp(-SPIN_DAMP * dt);
+      spin.theta *= fade; spin.phi *= fade;
+      if (Math.abs(spin.theta) < 0.01 && Math.abs(spin.phi) < 0.01) spin.theta = spin.phi = 0;
     } else if (autoRotate && !Object.keys(pointers).length) {
       view.theta -= gcfg.autoRotateSpeed * dt;
     }
@@ -1459,8 +1930,11 @@
     }
 
     renderer.render(scene, camera);
+    var tl = performance.now();
     updateLabels();
+    labelMs = labelMs * 0.9 + (performance.now() - tl) * 0.1;
   }
+  var labelMs = 0;                      // время раскладки подписей за кадр, мс (Globe.stats)
 
   /* ------------------------------ API ------------------------------ */
 
@@ -1472,6 +1946,7 @@
       L.w = L.el.offsetWidth;
       L.h = L.el.offsetHeight;
     });
+    namesMeasured = false;              // названия перемерятся при первом показе
   }
 
   global.Globe = {
@@ -1485,7 +1960,7 @@
     stats: function () {
       return { fps: Math.round(fps), running: !!rafId,
                frames: renderer ? renderer.info.render.frame : 0,
-               routes: routes.length };
+               routes: routes.length, labelMs: +labelMs.toFixed(2) };
     },
     setRoutes: setRoutes,
     setSelected: setSelected,
@@ -1517,6 +1992,24 @@
     },
     // для отладки: попадание по экранным координатам
     _pick: function (x, y) { return pick(x, y); },
+    // для отладки: какая страна на шаре под точкой экрана (координаты окна)
+    _landAt: function (x, y) {
+      scene.updateMatrixWorld(true);
+      var rect = canvas.getBoundingClientRect();
+      var W = canvas.clientWidth || 1920, H = canvas.clientHeight || 1080;
+      var r = landAt((x - rect.left) / rect.width * W, (y - rect.top) / rect.height * H, W, H);
+      return r ? { lat: +r.lat.toFixed(2), lon: +r.lon.toFixed(2), iso: r.iso,
+                   route: r.route ? r.route.name : null } : null;
+    },
+    // для отладки: видимые названия стран и их рамки на экране
+    _names: function () {
+      return (nameLabels || []).filter(function (L) { return L.op > 0; }).map(function (L) {
+        return { t: L.el.textContent, op: L.op, imp: !!L.imp,
+                 r: L.rect && [Math.round(L.rect.l), Math.round(L.rect.t), Math.round(L.rect.r), Math.round(L.rect.b)] };
+      });
+    },
+    _view: function () { return { phi: view.phi, theta: view.theta, zoom: view.zoom }; },
+    _obstacles: function () { return obstacles.map(function (o) { return [o.l, o.t, o.r, o.b].map(Math.round); }); },
     _project: function (lat, lon) {
       scene.updateMatrixWorld(true);
       var v = toVec3(lat, lon, R * 1.006);
